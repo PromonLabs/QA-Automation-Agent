@@ -1,0 +1,545 @@
+"""
+Qwen2.5:14b client via Ollama HTTP API.
+Includes a smart natural-language step parser as LLM fallback.
+"""
+import re
+import json
+import asyncio
+import httpx
+from typing import List, Dict, Any, AsyncIterator
+
+from app.core.config import settings
+
+
+SYSTEM_PROMPT = """You are a browser automation expert. Your job is to read ANY description of a web flow — even informal, broken English, or conversational — and convert it into a precise, ordered, step-by-step browser automation plan as JSON.
+
+Rules:
+- Read the ENTIRE task before planning. Understand the full intent.
+- Words like "next", "then", "after that", "continue", "proceed", "now", "also" mean the next action follows the previous one.
+- Words like "if", "when", "might", "optional", "may" mean optional=true.
+- Numbers alone (like "100", "200") after "select" or "choose" mean a dropdown selection (action: select).
+- ALWAYS produce steps in the CORRECT ORDER the user described them.
+- Every step MUST have a screenshot — the executor handles this automatically.
+- For card/payment pages: number fields → type action with the value.
+
+Respond ONLY with valid JSON in this exact structure (no markdown, no text outside JSON):
+{
+  "reasoning": "brief understanding of the full flow",
+  "steps": [
+    {"step_number":1,"action":"navigate","target":"https://example.com","description":"Open the page"},
+    {"step_number":2,"action":"click","target":"Login","description":"Click login button"},
+    {"step_number":3,"action":"type","target":"email field","value":"user@example.com","description":"Enter email"},
+    {"step_number":4,"action":"select","target":"amount","value":"100","description":"Select amount 100"},
+    {"step_number":5,"action":"press_key","target":"Enter","description":"Submit form"},
+    {"step_number":6,"action":"verify","target":"success","description":"Verify success message","optional":true}
+  ],
+  "expected_outcome": "what success looks like"
+}
+
+Actions: navigate, click, type, select, wait, screenshot, verify, scroll, press_key
+- navigate: target=URL
+- click: target=button/link label text
+- type: target=field name or label, value=text to type
+- select: target=dropdown name, value=option value/text (use for amount dropdowns, dropdowns)
+- press_key: target=key name (Enter, Escape, Tab)
+- verify: target=text that should be visible on page
+- wait: target=milliseconds
+
+ONLY output the JSON object. Nothing else."""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# JSON extraction helpers
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _extract_json(text: str) -> dict | None:
+    if not text:
+        return None
+    text = re.sub(r"```(?:json)?\s*", "", text).strip()
+    text = re.sub(r"```\s*", "", text).strip()
+    try:
+        return json.loads(text)
+    except Exception:
+        pass
+    depth, start = 0, None
+    for i, ch in enumerate(text):
+        if ch == "{":
+            if depth == 0:
+                start = i
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0 and start is not None:
+                try:
+                    return json.loads(text[start : i + 1])
+                except Exception:
+                    start = None
+    return None
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Smart natural-language step parser (LLM fallback)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _strip_quotes(s: str) -> str:
+    """Remove surrounding straight or curly quotes: '"Hello"' → 'Hello'."""
+    s = s.strip()
+    if len(s) >= 2 and s[0] in ('"', "'", "“", "‘") and s[-1] in ('"', "'", "”", "’"):
+        return s[1:-1].strip()
+    return s
+
+
+def _parse_step(raw_line: str) -> Dict[str, Any]:
+    """
+    Convert ONE natural-language browser step into a structured action dict.
+    Handles both human-written steps and LLM-generated steps (quoted targets,
+    colon-separated field:value, standalone field labels, etc.).
+    """
+    # Strip bullet / dash / number / "Step N:" prefixes
+    line = re.sub(r"^(?:step\s+\d+\s*:\s*)", "", raw_line.strip(), flags=re.IGNORECASE)
+    line = re.sub(r"^[\-\*\•\→\d]+[\.\)]\s*", "", line).strip()
+    line = re.sub(r"^[\-\*\•\→]\s+", "", line).strip()
+    lo = line.lower()
+
+    # ── "SS" — explicit screenshot marker ────────────────────────────────
+    if lo.strip() == "ss":
+        return {"action": "screenshot", "target": "screenshot", "description": "SS — take screenshot"}
+
+    # ── Skip pure header / label lines (no actionable content) ───────────
+    # e.g. "Steps:", "Login with:", "Enter payment card details:", "Return a summary showing:"
+    if re.match(r"^[\w\s]+:$", line) or re.match(r"^(steps?|login\s+with|enter\s+payment|return\s+a\s+summary)\b.*:$", lo):
+        return {"action": "skip", "target": "", "description": line}
+
+    # ── "Give the report …" → skip (report is generated by orchestrator) ───
+    if re.match(r"^give\s+the\s+report\b", lo) or re.match(r"^\s*report\s*$", lo):
+        return {"action": "skip", "target": "", "description": line}
+
+    # ── URL → always navigate ─────────────────────────────────────────────
+    url_m = re.search(r"https?://[^\s,)\"\']+", line)
+    if url_m:
+        return {"action": "navigate", "target": url_m.group(), "description": line}
+
+    # ── Named screenshot (save as filename) ──────────────────────────────
+    # e.g. "After X, screen shot that page and save it as - search-result.png -"
+    m = re.search(
+        r"(?:screen[\s\-]?shot|screenshot).+?save\s+it\s+as\s*[\-\s\"\']*([a-zA-Z0-9_\-]+\.(?:png|jpg))",
+        line, re.IGNORECASE,
+    )
+    if m:
+        return {"action": "screenshot", "target": m.group(1).strip(), "description": line}
+
+    # ── Pure screenshot / "take a screenshot" ─────────────────────────────
+    if re.match(r"^take\s+.*\bscreenshot\b", lo) or lo.startswith("screenshot"):
+        return {"action": "screenshot", "target": "screenshot", "description": line}
+
+    # ── "After X, take screenshot" or "screen shot the page" ─────────────
+    if "screen" in lo and ("shot" in lo or "capture" in lo):
+        return {"action": "screenshot", "target": "screenshot", "description": line}
+
+    # ── Return / final summary → screenshot ───────────────────────────────
+    if re.match(r"^return\b", lo) or "final result" in lo:
+        return {"action": "screenshot", "target": "final", "description": line}
+
+    # ── Scroll ────────────────────────────────────────────────────────────
+    if re.match(r"^scroll\b", lo):
+        if any(w in lo for w in ["bottom", "down", "below"]):
+            return {"action": "scroll", "target": "bottom", "description": line}
+        if any(w in lo for w in ["top", "up", "above"]):
+            return {"action": "scroll", "target": "top", "description": line}
+        return {"action": "scroll", "target": "down", "description": line}
+
+    # ── Press Escape ──────────────────────────────────────────────────────
+    if "escape" in lo or (re.search(r"\besc\b", lo) and "press" in lo):
+        return {"action": "press_key", "target": "Escape", "description": line, "optional": True}
+
+    # ── Press Enter ───────────────────────────────────────────────────────
+    if re.search(r"\bpress\s+enter\b", lo):
+        return {"action": "press_key", "target": "Enter", "description": line}
+
+    # ── "Wait for X to appear" → poll for text ───────────────────────────
+    m = re.match(r"^wait\s+for\s+(.+?)\s+to\s+appear", lo)
+    if m:
+        return {"action": "wait_for", "target": m.group(1).strip(), "description": line}
+
+    # ── Wait (must come before navigate to stop "load" keyword hijack) ────
+    if re.match(r"^wait\b", lo):
+        ms_m = re.search(r"(\d+)\s*(ms|milliseconds?|seconds?|s\b)", lo)
+        if ms_m:
+            n = int(ms_m.group(1))
+            ms = n * 1000 if "second" in ms_m.group(2) or ms_m.group(2) == "s" else n
+        else:
+            ms = 3000  # default wait
+        return {"action": "wait", "target": str(ms), "description": line}
+
+    # ── Subscriber / external ID extraction ──────────────────────────────────
+    if re.search(r'\bexternal\s+id\b|\bsubscriber\s+id\b|\bmsisdn\b', lo):
+        return {"action": "extract", "target": "SUBSCRIBER_EXTERNAL_ID", "description": line}
+
+    # ── Balance extraction steps (checked before generic note pattern) ──────
+    if re.search(r'\bnew\s+balance\b', lo) and any(w in lo for w in ["note", "read", "get", "check"]):
+        return {"action": "extract", "target": "NEW_BALANCE", "description": line}
+    if re.search(r'\bold\s+balance\b', lo) and any(w in lo for w in ["note", "read", "get", "check"]):
+        return {"action": "extract", "target": "OLD_BALANCE", "description": line}
+
+    # ── "Note the X on this page" → screenshot to record current state ──────
+    # Catches any "Note the ..." step regardless of what X is
+    if ("note" in lo and ("variable" in lo or "save" in lo)) or \
+       re.match(r"^note\s+the\b", lo):
+        return {"action": "screenshot", "target": "note_value", "description": line}
+
+    # ── Verify / Check ────────────────────────────────────────────────────
+    if re.match(r"^(verify|check|assert|confirm|ensure)\b", lo):
+        subject = re.sub(
+            r"^(verify|check|assert|confirm|ensure)\s+(that\s+)?(the\s+)?",
+            "",
+            line,
+            flags=re.IGNORECASE,
+        ).strip()
+        # Shorten: "balance field shows an updated amount after TopUp" → "balance"
+        subject = re.split(r"\s+(?:field|shows|was|is|has|were)\b", subject)[0].strip()
+        return {"action": "verify", "target": subject, "description": line}
+
+    # ── Select amount: value (LLM colon format) ──────────────────────────
+    m = re.match(r"^select\s+(?:recharge\s+)?amount\s*:\s*(.+)$", line, re.IGNORECASE)
+    if m:
+        return {"action": "select", "target": "amount", "value": m.group(1).strip(), "description": line}
+
+    # ── Enter field: value (LLM colon format e.g. "Enter phone number: 123456789") ──
+    m = re.match(r"^enter\s+(.+?):\s*(.+)$", line, re.IGNORECASE)
+    if m:
+        field = m.group(1).strip()
+        value = m.group(2).strip()
+        return {"action": "type", "target": field, "value": value, "description": line}
+
+    # ── Standalone "Field: Value" lines (LLM format) ──────────────────────
+    # e.g. "Card Number: 1000 0000 0000 0008", "CVV: 121", "Username: admin@..."
+    _INPUT_FIELD_WORDS = {
+        "number", "card", "expiry", "month", "year", "cvv", "cvc", "ccv",
+        "password", "username", "email", "phone", "code", "pin",
+        "name", "address", "zip", "postal",
+    }
+    m = re.match(r"^(.+?):\s+(.+)$", line)
+    if m:
+        field_raw = m.group(1).strip()
+        if any(w in field_raw.lower() for w in _INPUT_FIELD_WORDS):
+            return {"action": "type", "target": field_raw, "value": m.group(2).strip(), "description": line}
+
+    # ── Fill X (field) with Y ─────────────────────────────────────────────
+    m = re.match(r"^fill\s+(.+?)\s+(?:field\s+)?with[:\s]+(.+)$", line, re.IGNORECASE)
+    if m:
+        field = re.sub(r"\s+field$", "", m.group(1).strip())
+        value = m.group(2).strip()
+        return {"action": "type", "target": field, "value": value, "description": line}
+
+    # ── Find the X field/box/input and type Y ────────────────────────────
+    m = re.match(
+        r"^find\s+(?:the\s+)?(.+?)\s+(?:input\s+)?(?:field|box|input|area)\s+and\s+type\s+(.+)$",
+        line,
+        re.IGNORECASE,
+    )
+    if m:
+        return {"action": "type", "target": m.group(1).strip(), "value": m.group(2).strip(), "description": line}
+
+    # ── Find X and take a screenshot → screenshot (e.g. "Find the Sign in link and take a screenshot") ──
+    if re.match(r"^find\s+.+\s+and\s+take\s+a\s+screenshot\b", lo):
+        return {"action": "screenshot", "target": "screenshot", "description": line}
+
+    # ── Find the X link → click ───────────────────────────────────────────
+    m = re.match(r"^find\s+(?:the\s+)?(.+?)\s+(?:link|button|element)\s*$", line, re.IGNORECASE)
+    if m:
+        return {"action": "click", "target": m.group(1).strip(), "description": line}
+
+    # ── "Enter LABEL in TYPE box VALUE" (flow format with value at end) ────
+    # e.g. "Enter Username in inuput box admin@example.com"
+    # e.g. "Enter Password in input box test1234"
+    m = re.match(r"^enter\s+(\w+(?:\s+\w+)?)\s+in\s+\S+\s+box\s+(.+)$", line, re.IGNORECASE)
+    if m:
+        field = m.group(1).strip()
+        value = m.group(2).strip()
+        return {"action": "type", "target": field, "value": value, "description": line}
+
+    # ── Enter X in (the) Y field ──────────────────────────────────────────
+    m = re.match(
+        r"^enter\s+(.+?)\s+in\s+(?:the\s+)?(.+?)(?:\s+(?:or\s+\w+\s+)?field)?$",
+        line,
+        re.IGNORECASE,
+    )
+    if m:
+        value = m.group(1).strip()
+        field = m.group(2).split(" or ")[0].strip()   # "email or username" → "email"
+        # Strip leading field-type label word if present:
+        # "username admin@example.com" → "admin@example.com"
+        # "password test1234" → "test1234"
+        value = re.sub(
+            r"^(?:username|email|phone(?:\s+number)?|password|user(?:name)?|id)\s+",
+            "",
+            value,
+            flags=re.IGNORECASE,
+        ).strip()
+        return {"action": "type", "target": field, "value": value, "description": line}
+
+    # ── Type X into/in Y ─────────────────────────────────────────────────
+    m = re.match(
+        r"^type\s+(.+?)\s+(?:into|in)\s+(?:the\s+)?(.+?)(?:\s+field)?$",
+        line,
+        re.IGNORECASE,
+    )
+    if m:
+        return {"action": "type", "target": m.group(2).strip(), "value": m.group(1).strip(), "description": line}
+
+    # ── Type X (no field) → infer field from context ──────────────────────
+    m = re.match(r"^type\s+(.+)$", line, re.IGNORECASE)
+    if m:
+        val = m.group(1).strip()
+        return {"action": "type", "target": "input", "value": val, "description": line}
+
+    # ── Conditional: "If X, type Y again" ────────────────────────────────
+    m = re.match(r"^if\s+.+?,\s*type\s+(.+?)(?:\s+again)?$", line, re.IGNORECASE)
+    if m:
+        return {"action": "type", "target": "phone", "value": m.group(1).strip(), "description": line, "optional": True}
+
+    # ── Conditional: "If X, click A or B or C" ───────────────────────────
+    m = re.match(r"^if\s+.+?,?\s*click\s+(.+?)(?:\s+to\s+.+)?$", line, re.IGNORECASE)
+    if m:
+        parts = [p.strip() for p in re.split(r"\s+or\s+", m.group(1))]
+        return {
+            "action": "click",
+            "target": parts[0],
+            "alternatives": parts[1:],
+            "description": line,
+            "optional": True,
+        }
+
+    # ── "When X appears/screen, select Y or Z" → select/click (optional) ─
+    m = re.match(r"^when\s+.+?,?\s*select\s+(.+?)(?:\s+or\s+(?:the\s+)?(.+?))?$", line, re.IGNORECASE)
+    if m:
+        primary = _strip_quotes(m.group(1).strip())
+        alt_raw = m.group(2).strip() if m.group(2) else ""
+        # Extract the last token (number) as value if present: "2GB data 100 kr" → "100"
+        num_m = re.search(r"\b(\d+)\b", primary)
+        val = num_m.group(1) if num_m else primary
+        alts = [_strip_quotes(a.strip()) for a in re.split(r"\s+or\s+", alt_raw)] if alt_raw else []
+        return {"action": "select", "target": "amount", "value": val,
+                "alternatives": alts, "description": line, "optional": False}
+
+    # ── "When X appears/screen, click Y" → click (optional) ─────────────
+    m = re.match(r"^when\s+.+?,?\s*click\s+(.+?)(?:\s+to\s+.+)?$", line, re.IGNORECASE)
+    if m:
+        parts = [_strip_quotes(p.strip()) for p in re.split(r"\s+or\s+", m.group(1))]
+        return {"action": "click", "target": parts[0], "alternatives": parts[1:],
+                "description": line, "optional": False}
+
+    # ── "In X box/field enter Y" / "In the X enter Y" ───────────────────
+    # e.g. "In Search box enter the 236619" → search "236619"
+    m = re.match(
+        r"^in\s+(?:the\s+)?(.+?)\s*(?:box|field|input|area)?\s*[,]?\s+enter\s+(?:the\s+)?(.+)$",
+        line, re.IGNORECASE,
+    )
+    if m:
+        field = m.group(1).strip()
+        value = m.group(2).strip()
+        if "search" in field.lower():
+            return {"action": "search", "target": "search", "value": value, "description": line}
+        return {"action": "type", "target": field, "value": value, "description": line}
+
+    # ── "Enter your X Y in the Z box" / "Enter X Y in input box" ─────────
+    # e.g. "Enter your phone number 236619 in the input box"
+    m = re.match(
+        r"^enter\s+(?:your\s+)?(.+?)\s+(.+?)\s+in\s+(?:the\s+)?(?:.+\s+)?(?:box|field|input|area)$",
+        line, re.IGNORECASE,
+    )
+    if m:
+        field = m.group(1).strip()
+        value = m.group(2).strip()
+        return {"action": "type", "target": field, "value": value, "description": line}
+
+    # ── Search for X → type value then press Enter ───────────────────────
+    m = re.match(r"^search\s+(?:for\s+)?(?:customer\s+with\s+)?(?:phone\s+number\s+)?(.+)$", line, re.IGNORECASE)
+    if m:
+        return {"action": "search", "target": "search", "value": m.group(1).strip(), "description": line}
+
+    # ── Select amount/option X ────────────────────────────────────────────
+    m = re.match(r"^select\s+(?:recharge\s+)?amount\s+(.+?)$", line, re.IGNORECASE)
+    if m:
+        return {"action": "select", "target": "amount", "value": _strip_quotes(m.group(1).strip()), "description": line}
+    m = re.match(r"^select\s+(?:recharge\s+)?(?:amount\s+)?(.+?)$", line, re.IGNORECASE)
+    if m:
+        val = _strip_quotes(m.group(1).strip())
+        # Numeric values or known amounts → select action (dropdown)
+        if re.match(r"^\d+$", val):
+            return {"action": "select", "target": "amount", "value": val, "description": line}
+        return {"action": "click", "target": val, "description": line}
+
+    # ── "Click on the customer …" / "Open their profile" ───────────────────
+    # Extract the customer identifier (number/name) from the step text if present,
+    # otherwise fall back to a generic "customer row" selector.
+    if "click on the customer" in lo or "open their profile" in lo or "open the customer" in lo:
+        id_match = re.search(r"\b(\d{5,}|[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})\b", line)
+        customer_target = id_match.group(1) if id_match else "customer"
+        return {"action": "click", "target": customer_target, "description": line}
+
+    # ── "Refresh the page until X" → poll with page refresh ─────────────
+    if re.search(r'\bref[a-z]*sh\b', lo) and "until" in lo:
+        m = re.search(r'\buntil\s+(?:the\s+)?(?:status\s+(?:is\s+)?)?(.+)$', lo)
+        target_val = m.group(1).strip() if m else "COMPLETED"
+        return {"action": "refresh_until", "target": target_val, "description": line}
+
+    # ── "Click first X" → click first visible row/link in table ──────────
+    m = re.match(r"^click\s+(?:the\s+)?first\s+(.+?)$", line, re.IGNORECASE)
+    if m:
+        return {"action": "click_first_row", "target": m.group(1).strip(), "description": line}
+
+    # ── Click the X button / Click button labeled X / Click X or Y ───────
+    m = re.match(
+        r"^click\s+(?:the\s+)?(?:button\s+(?:labeled\s+)?|on\s+)?(.+?)(?:\s+button)?$",
+        line,
+        re.IGNORECASE,
+    )
+    if m:
+        label = _strip_quotes(m.group(1).strip())
+        # Handle "Login or Sign In" → multiple options
+        if re.search(r"\s+or\s+", label, re.IGNORECASE):
+            parts = [_strip_quotes(p.strip()) for p in re.split(r"\s+or\s+", label)]
+            return {"action": "click", "target": parts[0], "alternatives": parts[1:], "description": line}
+        return {"action": "click", "target": label, "description": line}
+
+    # ── Login shorthand ───────────────────────────────────────────────────
+    if "login" in lo and ("with" in lo or "using" in lo):
+        return {"action": "click", "target": "Login", "description": line}
+
+    # ── Default: treat as click on the whole line (best effort) ──────────
+    return {"action": "click", "target": line, "description": line}
+
+
+def _steps_from_task(task: str) -> List[Dict[str, Any]]:
+    """
+    Extract a list of step dicts from any task format:
+    - Full JSON flow file: {"name":..., "task": {"steps": [...]}}
+    - Flat JSON:           {"steps": [...]}
+    - Natural language:    "line1\nline2\n..."
+    """
+    raw_lines: List[str] = []
+
+    try:
+        parsed = json.loads(task)
+        if isinstance(parsed, list):
+            raw_lines = [str(s) for s in parsed]
+        elif isinstance(parsed, dict):
+            steps = (
+                parsed.get("steps")
+                or (parsed.get("task") or {}).get("steps")
+                or []
+            )
+            if isinstance(steps, list) and steps:
+                raw_lines = [str(s) for s in steps]
+    except (json.JSONDecodeError, TypeError):
+        pass
+
+    if not raw_lines:
+        raw_lines = [l.strip() for l in task.splitlines() if l.strip()]
+
+    steps = []
+    step_num = 1
+    for line in raw_lines:
+        step = _parse_step(line)
+        if step.get("action") == "skip":
+            continue   # drop pure header / label lines entirely
+        step["step_number"] = step_num
+        steps.append(step)
+        step_num += 1
+
+    return steps
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LLM Client
+# ─────────────────────────────────────────────────────────────────────────────
+
+_llm_lock = asyncio.Lock()   # Ollama processes one generation at a time
+
+
+class LLMClient:
+    def __init__(self):
+        self.host    = settings.OLLAMA_HOST
+        self.model   = settings.LLM_MODEL
+        self.timeout = settings.LLM_TIMEOUT
+
+    async def generate_plan(self, task: str) -> dict:
+        """Try LLM first (unless SKIP_LLM=true), fall back to direct NL parsing."""
+        import os
+        if os.getenv("SKIP_LLM", "false").lower() != "true":
+            # If LLM is already busy (parallel run), skip it — the caller gets
+            # an instant NL-parsed plan so its browser starts without delay.
+            if not _llm_lock.locked():
+                try:
+                    async with _llm_lock:
+                        plan = await self._call_llm(task)
+                        if plan and len(plan.get("steps", [])) > 1:
+                            return plan
+                except Exception:
+                    pass
+
+
+        steps = _steps_from_task(task)
+        return {
+            "reasoning": f"Direct execution of {len(steps)} steps",
+            "steps": steps,
+            "expected_outcome": "Complete all steps successfully",
+        }
+
+    async def _call_llm(self, task: str) -> dict:
+        url = f"{self.host}/api/generate"
+        payload = {
+            "model": self.model,
+            "prompt": (
+                f"Create a browser automation plan for this task:\n{task[:2000]}\n\n"
+                "Respond with ONLY the JSON object."
+            ),
+            "system": SYSTEM_PROMPT,
+            "stream": False,
+            "options": {"temperature": 0.05, "top_p": 0.9, "num_predict": 3000},
+        }
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            resp = await client.post(url, json=payload)
+            resp.raise_for_status()
+            raw = resp.json().get("response", "")
+
+        plan = _extract_json(raw)
+        if plan and "steps" in plan and len(plan["steps"]) > 0:
+            return plan
+        return {}
+
+    async def stream_reasoning(self, task: str) -> AsyncIterator[str]:
+        url = f"{self.host}/api/generate"
+        payload = {
+            "model": self.model,
+            "prompt": f"Task: {task[:1000]}\n\nBrowser automation JSON plan:",
+            "system": SYSTEM_PROMPT,
+            "stream": True,
+            "options": {"temperature": 0.05},
+        }
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            async with client.stream("POST", url, json=payload) as resp:
+                async for line in resp.aiter_lines():
+                    if line:
+                        try:
+                            data = json.loads(line)
+                            token = data.get("response", "")
+                            if token:
+                                yield token
+                        except json.JSONDecodeError:
+                            pass
+
+    async def check_health(self) -> bool:
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.get(f"{self.host}/api/tags")
+                if resp.status_code == 200:
+                    models = resp.json().get("models", [])
+                    return any(self.model in m.get("name", "") for m in models)
+        except Exception:
+            pass
+        return False
+
+
+llm_client = LLMClient()

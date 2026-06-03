@@ -1,0 +1,23 @@
+{
+  "summary": "Automated flow with 33 steps",
+  "urls": [],
+  "credential_env_vars": [],
+  "step_count": 33,
+  "key_steps": [
+    "\"Navigate to  tusaaa lab = \",",
+    "\"Click the button labeled TopUp Talk\",",
+    "\"Find the phone number input field and type = phone number\",",
+    "\"If a second phone number confirmation field appears, type = phone number again\",",
+    "\"Click the Continue button\",",
+    "\"Select recharge amount 100\",",
+    "\"Click the Continue button\",",
+    "\"If a Log in or Sign in dialog appears, click Cancel or press Escape to dismiss it without filling any field\",",
+    "\"Fill card number field with = card number\",",
+    "\"Fill card expiry month with = card expiry month\","
+  ],
+  "risks": [],
+  "hints": [],
+  "source": "llm_analysis",
+  "flow_name": "After edit 8",
+  "updated_at": "2026-05-27T12:44:00.010311+00:00"
+}

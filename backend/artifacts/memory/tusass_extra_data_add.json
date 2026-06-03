@@ -1,0 +1,106 @@
+{
+  "observed_failures": [
+    {
+      "step": "Step 33 failed: Click the first Operation Id number link (the first blue number in the Operation Id column, which is the top row of the table)",
+      "error": "Step 33 failed: Click the first Operation Id number link (the first blue number in the Operation Id column, which is the top row of the table)",
+      "at": "2026-06-02T05:58:49.021195+00:00"
+    },
+    {
+      "step": "Step 31 failed: IN that page check Status header in which color if it in blue its waiing for activation, if its in green its Completed",
+      "error": "Step 31 failed: IN that page check Status header in which color if it in blue its waiing for activation, if its in green its Completed",
+      "at": "2026-06-02T06:05:39.465611+00:00"
+    },
+    {
+      "step": "Step 27 failed: Click the - with password - link",
+      "error": "Step 27 failed: Click the - with password - link",
+      "at": "2026-06-02T06:18:52.540559+00:00"
+    },
+    {
+      "step": "Step 27 failed: Click Login with password",
+      "error": "Step 27 failed: Click Login with password",
+      "at": "2026-06-02T06:38:19.216178+00:00"
+    },
+    {
+      "step": "Step 35 failed: Find status word in that page, if the status is not COMPLETED, then keep refreshing the page until status is turned to COMPLETED",
+      "error": "Step 35 failed: Find status word in that page, if the status is not COMPLETED, then keep refreshing the page until status is turned to COMPLETED",
+      "at": "2026-06-02T07:47:10.049875+00:00"
+    },
+    {
+      "step": "Step 39 failed: Click the - Login with password  - button",
+      "error": "Step 39 failed: Click the - Login with password  - button",
+      "at": "2026-06-02T08:30:53.481843+00:00"
+    },
+    {
+      "step": "Step 39 failed: Click the - Login with password  - button",
+      "error": "Step 39 failed: Click the - Login with password  - button",
+      "at": "2026-06-02T08:37:26.653091+00:00"
+    },
+    {
+      "step": "Step 39 failed: Click the - Login with password  - button",
+      "error": "Step 39 failed: Click the - Login with password  - button",
+      "at": "2026-06-02T09:45:57.465828+00:00"
+    },
+    {
+      "step": "Step 7 failed: In Search box enter the 236619",
+      "error": "Step 7 failed: In Search box enter the 236619",
+      "at": "2026-06-02T10:01:37.699548+00:00"
+    },
+    {
+      "step": "Step 39 failed: Click the - Login with password  - button",
+      "error": "Step 39 failed: Click the - Login with password  - button",
+      "at": "2026-06-02T10:06:58.956429+00:00"
+    },
+    {
+      "step": "Step 43 failed: In Search box enter the 236619",
+      "error": "Step 43 failed: In Search box enter the 236619",
+      "at": "2026-06-02T11:27:42.658691+00:00"
+    },
+    {
+      "step": "Step 15 failed: Click the Continue button",
+      "error": "Step 15 failed: Click the Continue button",
+      "at": "2026-06-02T11:40:14.398075+00:00"
+    },
+    {
+      "step": "Step 43 failed: In Search box enter the 236619",
+      "error": "Step 43 failed: In Search box enter the 236619",
+      "at": "2026-06-02T11:49:17.573192+00:00"
+    },
+    {
+      "step": "Step 43 failed: In Search box enter the 236619",
+      "error": "Step 43 failed: In Search box enter the 236619",
+      "at": "2026-06-02T11:57:07.115772+00:00"
+    },
+    {
+      "step": "Step 43 failed: In Search box enter the 236619",
+      "error": "Step 43 failed: In Search box enter the 236619",
+      "at": "2026-06-02T12:31:19.219053+00:00"
+    },
+    {
+      "step": "Step 43 failed: In Search box enter the 236619",
+      "error": "Step 43 failed: In Search box enter the 236619",
+      "at": "2026-06-02T12:47:56.858308+00:00"
+    },
+    {
+      "step": "Step 36 failed: Check that the data row status is green and shows COMPLETED",
+      "error": "Step 36 failed: Check that the data row status is green and shows COMPLETED",
+      "at": "2026-06-03T05:44:41.938672+00:00"
+    },
+    {
+      "step": "Step 43 failed: In Search box enter the 236619",
+      "error": "Step 43 failed: In Search box enter the 236619",
+      "at": "2026-06-03T05:57:12.376566+00:00"
+    },
+    {
+      "step": "Step 37 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 37 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-03T05:57:13.285959+00:00"
+    },
+    {
+      "step": "Step 43 failed: In Search box enter the 236619",
+      "error": "Step 43 failed: In Search box enter the 236619",
+      "at": "2026-06-03T06:26:17.068087+00:00"
+    }
+  ],
+  "flow_name": "Tusass Extra data add",
+  "updated_at": "2026-06-03T06:26:17.068784+00:00"
+}

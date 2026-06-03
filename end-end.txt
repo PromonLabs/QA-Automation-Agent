@@ -1,0 +1,352 @@
+# AI Browser Automation Platform — Full Product Architecture
+
+I want to build a full-stack AI Browser Automation Platform using local LLMs.
+
+The platform should allow users to upload or create browser automation flows in natural language, and then automatically execute those flows inside a real browser using AI agents.
+
+This is NOT traditional Selenium scripting.
+
+The AI agent should reason about the UI dynamically and interact like a human user.
+
+---
+
+## CORE IDEA
+
+Users can:
+
+* Create automation flows
+* Upload QA/browser tasks
+* Run telecom/payment/admin portal tests
+* Watch browser execution live
+* View logs/screenshots/results
+
+The system should use:
+
+* Local LLM (Qwen2.5:14b — 7cdf5a0187d5 — 9.0 GB)
+* Browser AI agents
+* Real Chromium browser automation
+* Web dashboard UI
+
+Everything should run locally/private.
+
+---
+
+## MAIN GOAL
+
+Build an AI agent platform that can:
+
+1. Read human instructions
+2. Understand browser tasks
+3. Control browser automatically
+4. Handle UI dynamically
+5. Verify results
+6. Return reports/screenshots/logs
+
+---
+
+## EXAMPLE FLOW
+
+Example user flow:
+
+* Open telecom portal
+* Click “TopUp Talk”
+* Select amount 100
+* Enter phone number
+* Complete payment
+* Open admin portal
+* Login
+* Search customer
+* Verify balance
+* Verify extra data
+* Return final result
+
+The AI agent should convert this into browser actions automatically.
+
+---
+
+## TECH STACK
+
+Frontend:
+
+* Next.js
+* React
+* TailwindCSS
+* shadcn/ui
+
+Backend:
+
+* FastAPI (Python)
+
+AI:
+
+* Qwen2.5:14b (local — 7cdf5a0187d5 — 9.0 GB)
+
+Browser Automation:
+
+* Browser Use
+* Playwright
+
+<!-- Database removed: storage handled via filesystem or in-memory artifacts -->
+
+---
+
+## SYSTEM ARCHITECTURE
+
+Frontend Dashboard
+↓
+FastAPI Backend
+↓
+Agent Orchestrator
+↓
+Local LLM (Qwen2.5:14b)
+↓
+Browser Use Agent
+↓
+Chromium Browser
+
+---
+
+## REQUIRED FEATURES
+
+1. Authentication
+
+* Login page
+* Session management
+
+2. Dashboard
+
+* List all automation flows
+* Start/stop tasks
+* Execution history
+
+3. Flow Builder
+   Users can:
+
+* Write natural language tasks
+* Upload JSON workflows
+* Save reusable flows
+
+4. Agent Execution Engine
+   The backend should:
+
+* Send tasks to local LLM
+* Launch browser agent
+* Execute steps
+* Capture logs/screenshots
+
+5. Live Browser Streaming
+   Users should see:
+
+* Real-time browser execution
+* Live screenshots or stream
+
+6. Logging System
+   Store:
+
+* Step logs
+* Errors
+* Screenshots
+* Execution duration
+
+7. Results Page
+   Show:
+
+* Success/failure
+* Final verification results
+* Added balance/data
+* Screenshots
+
+---
+
+## AI AGENT BEHAVIOR
+
+The AI agent should:
+
+* Understand instructions dynamically
+* Find buttons/inputs automatically
+* Handle popups
+* Retry failed actions
+* Wait for loading intelligently
+* Navigate pages like a human
+
+Avoid hardcoded selectors when possible.
+
+---
+
+## BROWSER EXECUTION FEATURES
+
+Support:
+
+* Chromium
+* Headless mode
+* Visible mode
+* Screenshot capture
+* Video recording
+* Download handling
+
+---
+
+## FLOW FORMAT
+
+Support both:
+
+1. Natural language tasks
+
+Example:
+“Recharge number 236619 with amount 100 and verify admin balance.”
+
+2. JSON flow format
+
+Example:
+{
+"steps": [
+"Open portal",
+"Click TopUp Talk",
+"Enter phone number",
+"Complete payment"
+]
+}
+
+---
+
+## BACKEND API DESIGN
+
+Create APIs:
+
+POST /flows/create
+GET /flows
+POST /execute
+GET /execution/{id}
+GET /logs/{id}
+GET /screenshots/{id}
+
+---
+
+## (Database removed)
+
+Storage of executions, logs, and screenshots is handled via filesystem artifacts or in-memory structures; no database required.
+
+---
+
+## EXECUTION ENGINE
+
+When execution starts:
+
+1. Backend creates execution record (stored as filesystem artifact or kept in-memory)
+2. Sends task to local LLM
+3. LLM generates browser reasoning
+4. Browser agent executes actions
+5. Logs stream back to frontend
+6. Screenshots saved to filesystem
+7. Final result stored as an execution artifact
+
+---
+
+## LIVE LOG STREAMING
+
+Use:
+
+* WebSockets
+  OR
+* Server-Sent Events
+
+Frontend should show:
+
+* Current action
+* Browser state
+* AI reasoning
+* Errors
+
+---
+
+## SECURITY
+
+* Environment variable secrets
+* Secure credential storage
+* Session authentication
+* Role-based access later
+
+---
+
+## DEPLOYMENT
+
+Support:
+
+* Local Ubuntu server
+* Docker deployment
+
+---
+
+
+
+Services:
+
+* frontend
+* backend
+* ollama
+
+---
+
+## UI DESIGN
+
+Modern AI dashboard style.
+
+Pages:
+
+* Login
+* Dashboard
+* New Flow
+* Execution Viewer
+* Logs Viewer
+* Settings
+
+---
+
+## FUTURE FEATURES
+
+Future roadmap:
+
+* Multi-agent workflows
+* Parallel browser sessions
+* AI self-healing automation
+* Voice commands
+* Workflow recorder
+* AI-generated test cases
+* Browser memory
+* Enterprise integrations
+
+---
+
+## IMPORTANT REQUIREMENTS
+
+* Modular architecture
+* Clean folder structure
+* Production-ready code
+* Async execution
+* Streaming support
+* Extensible agent system
+
+---
+
+## DELIVERABLES
+
+Generate:
+
+1. Full project structure
+2. Frontend code
+3. Backend code
+4. Agent orchestration layer
+5. Qwen2.5 integration
+6. Browser Use integration
+7. Execution artifact storage (filesystem)
+8. API routes
+9. Docker setup
+10. README
+11. Setup instructions
+12. Sample flows
+13. Live execution system
+
+The platform should feel like a modern AI browser automation operating system.
+
+
+theme : back and white full style of the web page 

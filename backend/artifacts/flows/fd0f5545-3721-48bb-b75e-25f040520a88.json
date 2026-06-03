@@ -1,0 +1,13 @@
+{
+  "id": "fd0f5545-3721-48bb-b75e-25f040520a88",
+  "name": "Create",
+  "description": "Loaded from disk: json-flow/Create",
+  "format": "json",
+  "task": "\n{\n  \"name\": \"Create Account\",\n  \"steps\": [\n    \"Navigate to ${ACCOUNT_CREATE_URL}\",\n    \"Click escape \"\n\n  ]\n}\n\n",
+  "tags": [
+    "disk-flow"
+  ],
+  "env_vars": {},
+  "created_at": "2026-06-03T05:08:35.906629+00:00",
+  "updated_at": "2026-06-03T05:08:35.906629+00:00"
+}

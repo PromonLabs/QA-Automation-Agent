@@ -1,0 +1,23 @@
+{
+  "summary": "Automated flow with 35 steps",
+  "urls": [],
+  "credential_env_vars": [],
+  "step_count": 35,
+  "key_steps": [
+    "{",
+    "\"name\": \" Tusass TopUp Talk \",",
+    "\"steps\": [",
+    "\"Navigate to ${COS_URL}\",",
+    "\"Click escape button to show the - Login with password  - button\",",
+    "\"Click the - Login with password  - button\",",
+    "\" Enter Username in inuput box ${ADMIN_USER}\",",
+    "\" Enter Password in input box ${ADMIN_PASS}\",",
+    "\"Click the - Log in  - button\",",
+    "\"In Search box enter the ${MISTIN_ID}\","
+  ],
+  "risks": [],
+  "hints": [],
+  "source": "llm_analysis",
+  "flow_name": "sampl4",
+  "updated_at": "2026-06-02T10:28:41.141908+00:00"
+}

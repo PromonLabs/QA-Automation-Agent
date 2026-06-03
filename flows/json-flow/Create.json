@@ -1,0 +1,10 @@
+
+{
+  "name": "Create Account",
+  "steps": [
+    "Navigate to ${ACCOUNT_CREATE_URL}",
+    "Click escape "
+
+  ]
+}
+

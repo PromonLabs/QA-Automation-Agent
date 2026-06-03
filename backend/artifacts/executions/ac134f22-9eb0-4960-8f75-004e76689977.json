@@ -1,0 +1,118 @@
+{
+  "id": "ac134f22-9eb0-4960-8f75-004e76689977",
+  "flow_id": "0a4318f2-2dce-4665-aad7-0624bc3ea462",
+  "flow_name": "Create",
+  "status": "failed",
+  "started_at": "2026-06-02T12:36:35.606944+00:00",
+  "finished_at": "2026-06-02T12:36:37.154813+00:00",
+  "duration_seconds": 1.55,
+  "logs": [
+    {
+      "timestamp": "2026-06-02T12:36:35.645335+00:00",
+      "level": "info",
+      "message": "\ud83d\udcdd Task extracted: 4 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-02T12:36:35.672680+00:00",
+      "level": "info",
+      "message": "  Step 1: Navigate to ${ACCOUNT_CREATE_URL}",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-02T12:36:35.713963+00:00",
+      "level": "info",
+      "message": "  Step 4: Click the Tusass option",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-02T12:36:35.735926+00:00",
+      "level": "info",
+      "message": "\ud83e\udd16 Sending task to qwen2.5:14b\u2026",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-02T12:36:35.751578+00:00",
+      "level": "info",
+      "message": "\ud83d\udccb Plan ready: 4 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-02T12:36:35.772028+00:00",
+      "level": "info",
+      "message": "\ud83d\udcad Direct execution of 4 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-02T12:36:36.260139+00:00",
+      "level": "info",
+      "message": "\ud83d\ude80 Browser launched \u2014 4 steps",
+      "step": 0,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-02T12:36:36.260387+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 1: Navigate to ${ACCOUNT_CREATE_URL}",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-02T12:36:36.348420+00:00",
+      "level": "error",
+      "message": "  \u2717 STEP FAILED \u2014 'Navigate to ${ACCOUNT_CREATE_URL}' not found on page",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-02T12:36:36.403734+00:00",
+      "level": "info",
+      "message": "  [fail] screenshot",
+      "step": 1,
+      "screenshot": "step_001_FAIL_s01_1780403796.png"
+    },
+    {
+      "timestamp": "2026-06-02T12:36:36.403912+00:00",
+      "level": "error",
+      "message": "\u274c STOPPED at step 1 \u2014 Navigate to ${ACCOUNT_CREATE_URL}",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-02T12:36:36.443411+00:00",
+      "level": "info",
+      "message": "Final state captured",
+      "step": 1,
+      "screenshot": "step_001_final_1780403796.png"
+    },
+    {
+      "timestamp": "2026-06-02T12:36:37.156246+00:00",
+      "level": "error",
+      "message": "\u274c FAILED \u2014 0/4 steps in 1.5s",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-02T12:36:37.188069+00:00",
+      "level": "info",
+      "message": "\ud83d\udcc4 Report: Create_2026-06-02_12-36.pdf",
+      "step": null,
+      "screenshot": null
+    }
+  ],
+  "screenshots": [
+    "step_001_FAIL_s01_1780403796.png",
+    "step_001_final_1780403796.png"
+  ],
+  "result_summary": "Step 1 failed: Navigate to ${ACCOUNT_CREATE_URL}",
+  "error": null,
+  "steps_completed": 0,
+  "steps_total": 4,
+  "report_file": null
+}
