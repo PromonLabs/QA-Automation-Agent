@@ -280,13 +280,44 @@ async def get_env(user: str = Depends(get_current_user)):
     return vars_list
 
 
+_ENV_SECTIONS = [
+    ("Platform Settings",             ["SCREENSHOT_MODE","SKIP_LLM","BROWSER_HEADLESS","BROWSER_SLOW_MO","BROWSER_NAVIGATION_TIMEOUT"]),
+    ("Shared Admin Credentials",       ["ADMIN_USER","ADMIN_PASS","ADMIN_EMAIL","ADMIN_PASSWORD","OPERATIONS_USER","OPERATIONS_PASS"]),
+    ("Flow 1 : New Account Creation",  ["ICC_URL","CSR_USER","CSR_PASSWORD","ACCOUNT_NUMBER","MSITCOS_URL"]),
+    ("Flow 2 : Tusass TopUp Talk",     ["COS_URL","PORTAL_URL","MISTIN_ID","PHONE_NUMBER","MOBILE_NUMBER","TOPUP_AMOUNT"]),
+    ("Flow 3 : Tusass Extra Data Add", ["COS_OPERATION_URL","DATA_AMOUNT"]),
+    ("Payment Card Details",           ["CARD_NUMBER","CARD_MONTH","CARD_YEAR","CARD_CVV","CARD_EXPIRY","CARD_CVC"]),
+]
+
 @router.put("/env")
 async def save_env(body: EnvPayload, user: str = Depends(get_current_user)):
-    """Overwrite the .env file with updated key=value pairs."""
-    lines = [f"{v.key}={v.value}" for v in body.vars if v.key.strip()]
-    content = "\n".join(lines) + "\n"
+    """Overwrite the .env file with updated key=value pairs, preserving section headers."""
+    var_map = {v.key.strip().upper(): v for v in body.vars if v.key.strip()}
+
+    lines: list[str] = []
+    used: set[str] = set()
+
+    for section_title, keys in _ENV_SECTIONS:
+        section_vars = [var_map[k.upper()] for k in keys if k.upper() in var_map]
+        if not section_vars:
+            continue
+        lines.append(f"# ── {section_title} {'─' * max(0, 60 - len(section_title))}")
+        for v in section_vars:
+            lines.append(f"{v.key}={v.value}")
+            used.add(v.key.strip().upper())
+        lines.append("")
+
+    # Any vars not belonging to a known section go at the end
+    extras = [v for v in body.vars if v.key.strip() and v.key.strip().upper() not in used]
+    if extras:
+        lines.append("# ── Other ───────────────────────────────────────────────────────────────")
+        for v in extras:
+            lines.append(f"{v.key}={v.value}")
+        lines.append("")
+
+    content = "\n".join(lines)
     try:
         _ENV_FILE.write_text(content, encoding="utf-8")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save .env: {e}")
-    return {"ok": True, "count": len(lines)}
+    return {"ok": True, "count": len(used) + len(extras)}
