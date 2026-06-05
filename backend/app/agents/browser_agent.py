@@ -21,6 +21,7 @@ from typing import Callable, Optional, Awaitable
 from playwright.async_api import async_playwright, Browser, Page, BrowserContext
 from app.core.config import settings
 from app.models.schemas import ExecutionLog
+from app.agents.llm_client import vision_client
 
 LogCallbackFn   = Callable[[ExecutionLog], Awaitable[None]]
 FrameCallbackFn = Callable[[str], Awaitable[None]]      # base64 JPEG
@@ -156,6 +157,26 @@ class BrowserAgent:
                 lambda t=t: p.get_by_label(_re.compile(_re.escape(t), _re.I)).first,
                 lambda t=t: p.get_by_placeholder(_re.compile(_re.escape(t), _re.I)).first,
                 lambda t=t: p.get_by_title(_re.compile(_re.escape(t), _re.I)).first,
+                # CSS attribute search — catches frameworks that store tooltip text in data-*
+                lambda t=t: p.locator(
+                    f"[aria-label*='{t}' i], [data-tooltip*='{t}' i], "
+                    f"[data-title*='{t}' i], [data-hint*='{t}' i], "
+                    f"[data-content*='{t}' i]"
+                ).first,
+                # Vuesax tooltip wrappers (v2: con-vs-tooltip, v3: vs-tooltip__trigger)
+                # Filter wrapper by its combined textContent (button icon + tooltip text)
+                lambda t=t: p.locator(".con-vs-tooltip").filter(
+                    has_text=_re.compile(_re.escape(t), _re.I)
+                ).locator("button, [role='button'], a").first,
+                lambda t=t: p.locator(".vs-tooltip__trigger").filter(
+                    has_text=_re.compile(_re.escape(t), _re.I)
+                ).locator("button, [role='button'], a").first,
+                # Vuesax tooltip only injected into DOM on hover — hover the button first
+                # to make the tooltip appear, then confirm and click.
+                # Works for any "create / add / new" icon button with a Vuesax tooltip.
+                lambda t=t: p.locator(
+                    "button.vs-button--circle, button.vs-button--icon"
+                ).first if any(k in t.lower() for k in ("create", "add", "new", "insert")) else None,
             ]:
                 try:
                     el = fn()
@@ -165,10 +186,25 @@ class BrowserAgent:
                     continue
 
         if target.startswith(("#", ".", "[", "//")):
+            # Wait up to 8 s for the element to appear (handles SPA rendering delays
+            # where the button is injected into the DOM after the page settles).
             try:
-                return p.locator(target).first
+                await p.wait_for_selector(target, timeout=8000)
             except Exception:
                 pass
+            try:
+                loc = p.locator(target).first
+                if await loc.count() > 0:
+                    return loc
+            except Exception:
+                pass
+            for frame in p.frames[1:]:
+                try:
+                    loc = frame.locator(target).first
+                    if await loc.count() > 0:
+                        return loc
+                except Exception:
+                    pass
         # Search inside child frames
         for frame in p.frames[1:]:
             for t in targets_to_try:
@@ -183,6 +219,7 @@ class BrowserAgent:
                             return el
                 except Exception:
                     continue
+
         return None
 
     # ── Input-specific finder (searches all frames) ──────────────────────────
@@ -232,6 +269,16 @@ class BrowserAgent:
                     except Exception:
                         pass
 
+            # ICC / SIM card number field — no visibility check (Vuesax hides the raw input)
+            if any(w in tl for w in ["icc", "iccid", "sim", "imsi"]):
+                for sel in ["input[type='text']", "input:not([type])", "input"]:
+                    try:
+                        loc = frame.locator(sel).first
+                        if await loc.count() > 0:
+                            return loc
+                    except Exception:
+                        pass
+
             # Password field special case — no visibility check (same Vue/SPA reason as email)
             if any(w in tl for w in ["password", "pass", "pwd"]):
                 try:
@@ -260,9 +307,133 @@ class BrowserAgent:
 
         return None
 
+    # ── Primary action button finder (submit/order/activate) ─────────────────
+    async def _click_primary_button(self) -> bool:
+        """
+        Click the most prominent non-navigation button on the page.
+        Used when the exact submit button label is unknown.
+        Skips Back / Cancel / Continue / Close buttons.
+        Tries Vuesax primary-colour buttons first, then any visible button
+        whose text doesn't look like navigation.
+        """
+        _NAV_WORDS = {"back", "cancel", "close", "previous", "continue", "skip", "next"}
+
+        for frame in self._page.frames:
+            try:
+                clicked = await frame.evaluate("""
+                    () => {
+                        const navWords = new Set(
+                            ["back","cancel","close","previous","continue","skip","next"]
+                        );
+                        function isNav(el) {
+                            const t = (el.textContent || "").trim().toLowerCase();
+                            return navWords.has(t) || t.length === 0;
+                        }
+                        function isVisible(el) {
+                            const r = el.getBoundingClientRect();
+                            return r.width > 0 && r.height > 0;
+                        }
+
+                        // Pass 1: Vuesax primary / success coloured buttons
+                        const vsPrimary = [
+                            ...document.querySelectorAll(
+                                'button.vs-button--primary, button.vs-button--success, '
+                                + 'button[class*="primary"], button[class*="success"], '
+                                + '.vs-button--color, button[color="primary"]'
+                            )
+                        ].filter(el => isVisible(el) && !isNav(el));
+                        if (vsPrimary.length) {
+                            vsPrimary[vsPrimary.length - 1].click();
+                            return vsPrimary[vsPrimary.length - 1].textContent.trim();
+                        }
+
+                        // Pass 2: any visible button not in nav list
+                        const all = [
+                            ...document.querySelectorAll('button, [role="button"]')
+                        ].filter(el => isVisible(el) && !isNav(el));
+                        if (all.length) {
+                            all[all.length - 1].click();
+                            return all[all.length - 1].textContent.trim();
+                        }
+
+                        return null;
+                    }
+                """)
+                if clicked:
+                    await self._log("success", f"  → Clicked primary action button: '{clicked}'")
+                    try:
+                        await self._page.wait_for_load_state("networkidle", timeout=4000)
+                    except Exception:
+                        pass
+                    return True
+            except Exception:
+                pass
+        return False
+
+    # ── Vision fallback: qwen2.5vl finds element from screenshot ─────────────
+    async def _vision_find(self, description: str):
+        """
+        Take a viewport screenshot and ask qwen2.5vl to locate the element.
+        Returns a Playwright locator (by text or coordinates) or None.
+        """
+        if not self._page:
+            return None
+        try:
+            data = await self._page.screenshot(type="jpeg", quality=70, full_page=False)
+            b64  = base64.b64encode(data).decode()
+            result = await vision_client.find_element(b64, description)
+            if not result.get("found"):
+                return None
+
+            await self._log("info", f"  👁 Vision agent located '{description}' → {result.get('element_type','?')} at ({result.get('x')},{result.get('y')})")
+
+            # Try text-based match first (most reliable for clicking)
+            text = result.get("element_text", "").strip()
+            if text:
+                import re as _re
+                loc = self._page.get_by_text(_re.compile(_re.escape(text), _re.I), exact=False).first
+                try:
+                    if await loc.count() > 0 and await loc.is_visible():
+                        return loc
+                except Exception:
+                    pass
+
+            # Fall back to coordinates
+            x, y = result.get("x"), result.get("y")
+            if x and y:
+                # Return a coordinate-click helper wrapped as a simple object
+                class _CoordLocator:
+                    def __init__(self_, px, py, page):
+                        self_.px, self_.py, self_.page = px, py, page
+                    async def count(self_): return 1
+                    async def is_visible(self_): return True
+                    async def click(self_, **kw): await self_.page.mouse.click(self_.px, self_.py)
+                    async def scroll_into_view_if_needed(self_): pass
+                    async def evaluate(self_, *a, **kw): return None
+                    async def input_value(self_): return ""
+                    async def clear(self_): pass
+                    async def press_sequentially(self_, val, **kw):
+                        await self_.page.mouse.click(self_.px, self_.py)
+                        await self_.page.keyboard.type(val, delay=30)
+                    async def fill(self_, val):
+                        await self_.page.mouse.click(self_.px, self_.py)
+                        await self_.page.keyboard.type(val, delay=30)
+                return _CoordLocator(x, y, self._page)
+        except Exception:
+            pass
+        return None
+
     # ── Select dropdown option across all frames ─────────────────────────────
-    async def _select_option(self, value: str, page=None) -> bool:
-        """Find any <select> in all frames and set its value."""
+    async def _select_option(self, value: str, page=None, label_hint: str = "") -> bool:
+        """
+        Find a <select> and set its value.
+        label_hint: adjacent label text (e.g. "Inventory Type") to prefer the right select
+                    on pages with many dropdowns (old-style HTML tables without <label for>).
+        Tries (in order):
+          1. Playwright exact value/label match on each visible <select>
+          2. JavaScript case-insensitive text/value match, preferring <select> whose
+             adjacent cell/label contains label_hint
+        """
         p = page or self._page
         for frame in p.frames:
             try:
@@ -279,6 +450,51 @@ class BrowserAgent:
                             return True
                         except Exception:
                             pass
+            except Exception:
+                pass
+
+        # JS fallback: case-insensitive option text/value match.
+        # If label_hint is given, prefer the <select> whose nearest <td>/<th>/sibling
+        # contains that text (handles old-style HTML tables with no <label for>).
+        for frame in p.frames:
+            try:
+                result = await frame.evaluate("""
+                    ([val, hint]) => {
+                        const norm = s => s.trim().toLowerCase();
+                        const selects = Array.from(document.querySelectorAll('select'));
+                        // Score: 2 = label hint matches row  1 = option match only
+                        // Pass 1: exact match; Pass 2: starts-with; Pass 3: contains
+                        for (const pass of ['exact', 'startswith', 'contains']) {
+                            let best = null, bestScore = 0;
+                            for (const sel of selects) {
+                                const opts = Array.from(sel.options);
+                                let opt;
+                                if (pass === 'exact') {
+                                    opt = opts.find(o => norm(o.text) === norm(val) || norm(o.value) === norm(val));
+                                } else if (pass === 'startswith') {
+                                    opt = opts.find(o => norm(o.text).startsWith(norm(val)) || norm(o.value).startsWith(norm(val)));
+                                } else {
+                                    opt = opts.find(o => norm(o.text).includes(norm(val)) || norm(o.value).includes(norm(val)));
+                                }
+                                if (!opt) continue;
+                                let score = 1;
+                                if (hint) {
+                                    const row = sel.closest('tr') || sel.parentElement;
+                                    if (row && norm(row.textContent).includes(norm(hint))) score = 2;
+                                }
+                                if (score > bestScore) { best = { sel, opt }; bestScore = score; }
+                            }
+                            if (best) {
+                                best.sel.value = best.opt.value;
+                                best.sel.dispatchEvent(new Event('change', {bubbles: true}));
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                """, [value, label_hint])
+                if result:
+                    return True
             except Exception:
                 pass
         return False
@@ -643,7 +859,9 @@ class BrowserAgent:
                         nav_err_s = str(nav_err)
                         # Payment gateways often close/kill the tab or context after success.
                         # Four-level recovery:
-                        closed  = any(k in nav_err_s for k in ("been closed", "Target closed", "context or browser"))
+                        closed  = any(k in nav_err_s for k in ("been closed", "Target closed", "context or browser",
+                                                                         "Connection closed", "connection closed",
+                                                                         "reading from the driver", "NS_ERROR"))
                         aborted = any(k in nav_err_s for k in ("ERR_ABORTED", "frame was detached", "ERR_BLOCKED"))
                         if closed or aborted:
                             recovered = False
@@ -762,22 +980,33 @@ class BrowserAgent:
                     except Exception:
                         domain = ""
                     if domain and domain in self._authenticated_domains:
-                        await self._log("info", f"  → Already logged in — skipping '{target}'")
-                        try:
-                            await self._page.wait_for_load_state("networkidle", timeout=8000)
-                        except Exception:
-                            pass
-                        await asyncio.sleep(2)
-                        await step_shot("ok")
-                        self._login_sequence_skipped = True
-                        return True
+                        # Only skip if the page is CURRENTLY authenticated.
+                        # If the session expired (long-running test, 20+ min wait steps),
+                        # _already_authenticated() returns False because the overlay/login
+                        # page is showing — fall through and do a real re-login instead.
+                        if await self._already_authenticated():
+                            await self._log("info", f"  → Already logged in — skipping '{target}'")
+                            try:
+                                await self._page.wait_for_load_state("networkidle", timeout=8000)
+                            except Exception:
+                                pass
+                            await asyncio.sleep(1)
+                            await step_shot("ok")
+                            self._login_sequence_skipped = True
+                            return True
+                        # Domain was authenticated before but page now shows login state
+                        # (session expired or overlay covering dashboard) — re-login normally
+                        await self._log("info", f"  → Session may have expired — re-logging in")
                     self._login_sequence_skipped = False
 
                 # Track page count BEFORE click to detect new tab
                 pages_before = len(self._context.pages)
 
+                el = None   # always initialise before the find call below
+
                 # Try primary target, then each alternative label
-                el = await self._find(target)
+                if el is None:
+                    el = await self._find(target)
                 clicked_name = target
                 if not el:
                     for alt in alternatives:
@@ -787,7 +1016,10 @@ class BrowserAgent:
                             break
 
                 if el:
-                    await el.scroll_into_view_if_needed()
+                    try:
+                        await el.scroll_into_view_if_needed()
+                    except Exception:
+                        pass  # element may be transitioning — continue to click anyway
 
                     # Listen for new page event BEFORE clicking
                     new_page_holder: list = []
@@ -799,13 +1031,17 @@ class BrowserAgent:
                         await el.click(timeout=10000)
                     except Exception as click_err:
                         err_s = str(click_err)
-                        if "intercepts pointer events" in err_s:
-                            await self._page.keyboard.press("Escape")
-                            await asyncio.sleep(0.5)
+                        if any(k in err_s for k in ("intercepts pointer events", "Timeout", "timeout")):
+                            # Element may be covered or still animating — use JS click
                             try:
-                                await el.click(timeout=5000)
-                            except Exception:
                                 await el.evaluate("el => el.click()")
+                            except Exception:
+                                await self._page.keyboard.press("Escape")
+                                await asyncio.sleep(0.5)
+                                try:
+                                    await el.click(timeout=5000)
+                                except Exception:
+                                    await el.evaluate("el => el.click()")
                         else:
                             self._context.remove_listener("page", _on_page)
                             raise
@@ -954,9 +1190,24 @@ class BrowserAgent:
                                 await self._log("info", f"  → Already logged in — skipping '{target}'")
                                 await step_shot("ok")
                             else:
-                                await self._log("error", f"  ✗ STEP FAILED — '{target}' not found on page")
-                                await step_shot("FAIL")
-                                return False
+                                # Submit-type step: try clicking the primary action button
+                                _SUBMIT_WORDS = ("submit", "create", "confirm", "finish",
+                                                 "order", "activate", "save", "done", "complete")
+                                if any(w in target.lower() for w in _SUBMIT_WORDS):
+                                    clicked_primary = await self._click_primary_button()
+                                    if clicked_primary:
+                                        await step_shot("ok")
+                                        return True
+                                # Final resort: vision agent
+                                vision_el = await self._vision_find(target)
+                                if vision_el:
+                                    await self._log("info", f"  👁 Vision agent clicking '{target}'")
+                                    await vision_el.click()
+                                    await step_shot("ok")
+                                else:
+                                    await self._log("error", f"  ✗ STEP FAILED — '{target}' not found on page")
+                                    await step_shot("FAIL")
+                                    return False
                         except Exception:
                             if optional:
                                 await self._log("info", f"  → Optional step skipped ('{target}' not present)")
@@ -966,9 +1217,25 @@ class BrowserAgent:
                                 await self._log("info", f"  → Already logged in — skipping '{target}'")
                                 await step_shot("ok")
                             else:
-                                await self._log("error", f"  ✗ STEP FAILED — '{target}' not found on page")
-                                await step_shot("FAIL")
-                                return False
+                                _SUBMIT_WORDS = ("submit", "create", "confirm", "finish",
+                                                 "order", "activate", "save", "done", "complete")
+                                if any(w in target.lower() for w in _SUBMIT_WORDS):
+                                    clicked_primary = await self._click_primary_button()
+                                    if clicked_primary:
+                                        await step_shot("ok")
+                                        return True
+                                vision_el = await self._vision_find(target)
+                                if vision_el:
+                                    await self._log("info", f"  👁 Vision agent clicking '{target}'")
+                                    try:
+                                        await vision_el.click()
+                                    except Exception:
+                                        pass
+                                    await step_shot("ok")
+                                else:
+                                    await self._log("error", f"  ✗ STEP FAILED — '{target}' not found on page")
+                                    await step_shot("FAIL")
+                                    return False
 
             elif action == "type":
                 # Skip credential fields that follow a skipped login button
@@ -981,12 +1248,57 @@ class BrowserAgent:
 
                 fill_val = value if value else target
 
+                # Substitute captured vars (e.g. ${SUBSCRIBER_EXTERNAL_ID} from extract step)
+                if "${" in fill_val:
+                    for k, v in self._captured_vars.items():
+                        fill_val = fill_val.replace(f"${{{k}}}", str(v))
+
                 async def _do_type() -> bool:
                     """Try to type fill_val into the target field. Returns True on success."""
                     el = await self._find_input(target)
                     if el:
+                        tl_target = target.lower()
+                        # ICC/SIM Vuesax special path: the raw <input> is hidden inside a
+                        # styled container. Click the visible parent to focus the component,
+                        # then type via keyboard so Vue's v-model receives native key events.
+                        if any(w in tl_target for w in ["icc", "iccid", "sim card", "simcard"]):
+                            try:
+                                focused = await el.evaluate("""el => {
+                                    let node = el.parentElement;
+                                    for (let i = 0; i < 6; i++) {
+                                        if (!node) break;
+                                        const r = node.getBoundingClientRect();
+                                        if (r.width > 50 && r.height > 10) {
+                                            node.click();
+                                            return true;
+                                        }
+                                        node = node.parentElement;
+                                    }
+                                    el.focus();
+                                    return true;
+                                }""")
+                                if focused:
+                                    await asyncio.sleep(0.3)
+                                    await el.evaluate("el => { el.value = ''; }")
+                                    await self._page.keyboard.type(str(fill_val), delay=30)
+                                    try:
+                                        await el.evaluate(
+                                            "(el, v) => { "
+                                            "el.dispatchEvent(new Event('input',{bubbles:true})); "
+                                            "el.dispatchEvent(new Event('change',{bubbles:true})); "
+                                            "el.dispatchEvent(new Event('blur',{bubbles:true})); }",
+                                            fill_val,
+                                        )
+                                    except Exception:
+                                        pass
+                                    await asyncio.sleep(0.3)
+                                    await self._log("success", f"  → Typed '{fill_val}' into '{target}'")
+                                    return True
+                            except Exception:
+                                pass
+
                         try:
-                            await el.click()
+                            await el.click(timeout=3000)
                         except Exception:
                             pass
                         # Vuesax wraps inputs in styled containers — the raw <input> is in
@@ -1003,8 +1315,13 @@ class BrowserAgent:
                             pass
                         if not typed:
                             try:
+                                # Use the native HTMLInputElement setter so Vue's reactivity
+                                # detects the change (plain el.value = v bypasses Vue's proxy).
                                 await el.evaluate(
-                                    "(el, v) => { el.value = v; "
+                                    "(el, v) => { "
+                                    "const setter = Object.getOwnPropertyDescriptor("
+                                    "  window.HTMLInputElement.prototype, 'value').set; "
+                                    "setter.call(el, v); "
                                     "el.dispatchEvent(new Event('input',{bubbles:true})); "
                                     "el.dispatchEvent(new Event('change',{bubbles:true})); }",
                                     fill_val,
@@ -1036,17 +1353,44 @@ class BrowserAgent:
                                 try:
                                     if await inp.is_visible():
                                         cur_val = await inp.input_value()
-                                        if not cur_val:   # only fill empty inputs
-                                            await inp.fill(fill_val)
+                                        if not cur_val:
+                                            await inp.click(timeout=3000)
+                                            await inp.clear()
+                                            await inp.press_sequentially(str(fill_val), delay=30)
                                             try:
                                                 await inp.evaluate(
                                                     "e => { e.dispatchEvent(new Event('input',{bubbles:true})); "
+                                                    "e.dispatchEvent(new Event('change',{bubbles:true})); "
                                                     "e.dispatchEvent(new Event('blur',{bubbles:true})); }"
                                                 )
                                             except Exception:
                                                 pass
                                             await self._log("success", f"  → Typed '{fill_val}' (first empty input)")
                                             return True
+                                except Exception:
+                                    pass
+                            # ── Second pass: no visibility check ─────────────────
+                            # Vuesax / Vue inputs are often hidden from Playwright's
+                            # is_visible() but still exist in the DOM and accept input.
+                            for inp in inputs:
+                                try:
+                                    cur_val = await inp.input_value()
+                                    if not cur_val:
+                                        # Use native HTMLInputElement setter so Vue's reactivity
+                                        # detects the change (plain el.value = v bypasses Vue's proxy).
+                                        await inp.evaluate(
+                                            "(el, v) => { "
+                                            "el.focus(); "
+                                            "const setter = Object.getOwnPropertyDescriptor("
+                                            "  window.HTMLInputElement.prototype, 'value').set; "
+                                            "setter.call(el, v); "
+                                            "el.dispatchEvent(new Event('input',{bubbles:true})); "
+                                            "el.dispatchEvent(new Event('change',{bubbles:true})); "
+                                            "el.dispatchEvent(new Event('blur',{bubbles:true})); }",
+                                            fill_val,
+                                        )
+                                        await self._log("success", f"  → Typed '{fill_val}' (hidden Vue input)")
+                                        return True
                                 except Exception:
                                     pass
                         except Exception:
@@ -1065,6 +1409,8 @@ class BrowserAgent:
                             break
 
                 if filled:
+                    # Give Vue/SPA a rendering tick before capturing the screenshot
+                    await asyncio.sleep(0.3)
                     await step_shot("ok")
                 elif optional:
                     await self._log("info", f"  → Optional type skipped ('{target}' not present)")
@@ -1080,33 +1426,66 @@ class BrowserAgent:
                     return False
 
             elif action == "select":
-                # Try named select first, then any visible dropdown
+                # target = field label (e.g. "Inventory Type"), value = option to pick (e.g. "ICCID")
                 sel_val = value if value else target
+                label_hint = target if value else ""
                 el = await self._find(target)
+                selected = False
                 if el:
                     try:
                         await el.select_option(value=sel_val)
+                        selected = True
                     except Exception:
                         try:
                             await el.select_option(label=sel_val)
+                            selected = True
                         except Exception:
-                            await el.click()
+                            pass
+                if not selected:
+                    # Pass label_hint so JS prefers the <select> next to the right label
+                    selected = await self._select_option(sel_val, label_hint=label_hint)
+                if not selected:
+                    # Portal uses custom amount buttons/cards (not a native <select>).
+                    # Try clicking any visible element whose text exactly or partially matches sel_val.
+                    pages_before = len(self._context.pages)
+                    js_val = sel_val.lower()
+                    try:
+                        clicked_js = await self._page.evaluate(f"""
+                            (val) => {{
+                                const all = [...document.querySelectorAll(
+                                    'button, [role="button"], [role="option"], [role="radio"], '
+                                    + 'li, label, span, div, a'
+                                )];
+                                const el = all.find(e => e.textContent.trim().toLowerCase() === val)
+                                        || all.find(e => e.textContent.trim().toLowerCase().includes(val));
+                                if (el) {{ el.scrollIntoView(); el.click(); return true; }}
+                                return false;
+                            }}
+                        """, js_val)
+                        if clicked_js:
+                            await asyncio.sleep(1)
+                            selected = True
+                            await self._log("success", f"  → Clicked amount option '{sel_val}' via JS fallback")
+                            await self._maybe_switch_new_tab(pages_before)
+                            try:
+                                await self._page.wait_for_load_state("networkidle", timeout=4000)
+                            except Exception:
+                                pass
+                    except Exception:
+                        pass
+                if selected:
                     await self._log("success", f"  → Selected '{sel_val}'")
                     await step_shot("ok")
                 else:
-                    done = await self._select_option(sel_val)
-                    if done:
-                        await self._log("success", f"  → Selected '{sel_val}' from dropdown")
-                        await step_shot("ok")
-                    else:
-                        await self._log("error", f"  ✗ STEP FAILED — select option '{sel_val}' not found")
-                        await step_shot("FAIL")
-                        return False
+                    await self._log("error", f"  ✗ STEP FAILED — select option '{sel_val}' not found")
+                    await step_shot("FAIL")
+                    return False
 
             elif action == "search":
                 fill_val = value if value else target
 
                 async def _do_search() -> bool:
+                    # ── Pass 1: semantic search selectors ─────────────────
                     el = await self._find_input("search")
                     if not el:
                         el = await self._find("search")
@@ -1129,6 +1508,34 @@ class BrowserAgent:
                             return True
                     except Exception:
                         pass
+                    # ── Pass 2: broad fallback — first visible text/tel input ──
+                    # Handles portals where the search box is a plain Vue/React input
+                    # with no search-related label, placeholder or name attribute.
+                    # Also handles the case where the input already contains a previous
+                    # search value (e.g. COS sidebar retains the last search term).
+                    for frame in self._page.frames:
+                        try:
+                            inputs = await frame.locator(
+                                "input[type='text']:visible, input[type='tel']:visible, "
+                                "input:not([type]):visible"
+                            ).all()
+                            for inp in inputs:
+                                try:
+                                    cur = await inp.input_value()
+                                    # Try: empty inputs OR inputs already showing our search term
+                                    if cur == "" or cur == fill_val:
+                                        await inp.click()
+                                        await asyncio.sleep(0.2)
+                                        await inp.fill(fill_val)   # fill() clears then types
+                                        await asyncio.sleep(0.3)
+                                        await self._page.keyboard.press("Enter")
+                                        await asyncio.sleep(1.5)
+                                        await self._log("info", f"  → Typed '{fill_val}' in search input")
+                                        return True
+                                except Exception:
+                                    pass
+                        except Exception:
+                            pass
                     return False
 
                 # Wait up to 10 s for the search box (page may still be loading)
@@ -1140,20 +1547,34 @@ class BrowserAgent:
                         if found:
                             break
 
-                # SPA may need a full reload to reach the correct route after
-                # navigating while already authenticated
+                # SPA may need a fresh navigation to reach the correct route after
+                # navigating while already authenticated (e.g. COS lands on customer
+                # detail instead of subscriber list — search box is not visible).
                 if not found:
-                    await self._log("info", "  🔄 Search box not found — reloading page")
+                    await self._log("info", "  🔄 Search box not found — navigating to base URL")
                     try:
-                        await self._page.reload(wait_until="domcontentloaded", timeout=15000)
+                        # Navigate to the root of the current origin so the SPA
+                        # starts at the subscriber list (not the last customer detail).
+                        base_url = "/".join(self._page.url.split("/")[:3])
+                        await self._page.goto(base_url, wait_until="domcontentloaded", timeout=20000)
                         await self._page.wait_for_load_state("networkidle", timeout=8000)
                         await asyncio.sleep(2)
-                        # COS always shows a login overlay on page load — dismiss it
+                        # COS shows a login overlay on every page load — dismiss it.
+                        # Pressing Escape reveals the "Login with password" button.
                         await self._page.keyboard.press("Escape")
-                        await asyncio.sleep(1.5)
+                        await asyncio.sleep(1)
+                        # If still on the login overlay, click "Login with password"
+                        # and re-authenticate so the subscriber list is accessible.
+                        try:
+                            body_lo = (await self._page.inner_text("body")).lower()
+                            if "login" in body_lo and not await self._already_authenticated():
+                                await self._recover_ms_login(base_url)
+                                await asyncio.sleep(2)
+                        except Exception:
+                            pass
                     except Exception:
                         pass
-                    for _ in range(20):   # another 10 s after reload
+                    for _ in range(20):   # another 10 s after navigation
                         found = await _do_search()
                         if found:
                             break
@@ -1235,7 +1656,7 @@ class BrowserAgent:
                     )
                 except Exception:
                     pass
-                # If target is a specific filename, save with that name
+                # Named screenshot (e.g. "save as receipt.png")
                 if target and target.lower().endswith((".png", ".jpg")):
                     safe_name = re.sub(r"[^\w\-.]", "_", target)
                     named_path = self.screenshot_dir / safe_name
@@ -1244,6 +1665,20 @@ class BrowserAgent:
                             path=str(named_path), full_page=True, animations="disabled"
                         )
                         await self._log("info", f"  📸 Screenshot saved: {safe_name}", screenshot=safe_name)
+                    except Exception:
+                        pass
+                else:
+                    # SS / bare screenshot step — always save as ss_NNN.png so the
+                    # PDF reporter can include it regardless of SCREENSHOT_MODE.
+                    ss_count = sum(1 for s in self.screenshot_dir.iterdir()
+                                   if s.name.startswith("ss_")) if self.screenshot_dir.exists() else 0
+                    ss_name  = f"ss_{ss_count + 1:03d}.png"
+                    ss_path  = self.screenshot_dir / ss_name
+                    try:
+                        await self._page.screenshot(
+                            path=str(ss_path), full_page=True, animations="disabled"
+                        )
+                        await self._log("info", f"  📸 SS screenshot saved: {ss_name}", screenshot=ss_name)
                     except Exception:
                         pass
                 await step_shot("ok")
@@ -1317,6 +1752,42 @@ class BrowserAgent:
                                 break
                         except Exception:
                             pass
+                # ── Phone-number button grid (Vuesax Vue component) ──────────
+                # JS el.click() doesn't trigger Vue's selection handler.
+                # Strategy: JS finds the phone number text, Playwright native-clicks it.
+                if not clicked:
+                    phone_text = None
+                    try:
+                        phone_text = await self._page.evaluate("""
+                            () => {
+                                const allBtns = [...document.querySelectorAll(
+                                    'button, [role="button"], li, div, span, a'
+                                )];
+                                const phoneBtn = allBtns.find(el => {
+                                    const t = el.textContent.trim();
+                                    const r = el.getBoundingClientRect();
+                                    return /^[\\d\\s]{5,15}$/.test(t) && /\\d{2,}/.test(t)
+                                        && r.width > 0 && r.height > 0;
+                                });
+                                return phoneBtn ? phoneBtn.textContent.trim() : null;
+                            }
+                        """)
+                    except Exception:
+                        pass
+                    if phone_text:
+                        import re as _re
+                        try:
+                            loc = self._page.get_by_text(
+                                _re.compile(_re.escape(phone_text), _re.I), exact=True
+                            ).first
+                            if await loc.count() > 0:
+                                await loc.click(timeout=5000)
+                                clicked = True
+                                await self._log("success", f"  → Clicked phone number '{phone_text}' (native click)")
+                                await self._maybe_switch_new_tab(pages_before)
+                        except Exception:
+                            pass
+
                 # JS fallback — works on any DOM structure including div-based tables
                 if not clicked:
                     try:
@@ -1493,16 +1964,15 @@ class BrowserAgent:
                 target_upper = target.upper()
                 is_subscriber_id = any(
                     k in target_upper
-                    for k in ("EXTERNAL", "SUBSCRIBER", "MSISDN", "MISTIN")
+                    for k in ("EXTERNAL", "SUBSCRIBER", "MSISDN", "MISTIN", "ICC")
                 )
 
                 val = None
-                for _ in range(20):   # 20 × 0.5 s = 10 s max
+                for _ in range(30):   # 30 × 0.5 s = 15 s max
                     try:
                         body = await self._page.inner_text("body")
                         if is_subscriber_id:
-                            # Common labels in telecom COS/BSS portals for the
-                            # subscriber's external/full number
+                            # ── Pass 1: label:value pattern (detail pages) ──────
                             ext_m = re.search(
                                 r'(?:External\s+ID|Subscriber\s+ID|MSISDN|'
                                 r'Account\s+(?:No\.?|Number)|Phone\s+Number|'
@@ -1512,6 +1982,41 @@ class BrowserAgent:
                             )
                             if ext_m:
                                 val = re.sub(r'\s+', '', ext_m.group(1).strip())
+                                break
+
+                            # ── Pass 2: table column (inventory/search result pages) ──
+                            # Finds the column index of "External Id" / "ICCID" / "ICC"
+                            # in the table header, then reads the first data row cell.
+                            js_val = await self._page.evaluate("""
+                                () => {
+                                    const COL_KEYWORDS = ['external id','iccid','icc id','sim id','external'];
+                                    function normTxt(el) { return el.textContent.trim().toLowerCase(); }
+                                    // Try every table on the page
+                                    for (const tbl of document.querySelectorAll('table')) {
+                                        const headers = [...tbl.querySelectorAll('th')];
+                                        let colIdx = -1;
+                                        for (let i = 0; i < headers.length; i++) {
+                                            const t = normTxt(headers[i]);
+                                            if (COL_KEYWORDS.some(k => t.includes(k))) {
+                                                colIdx = i; break;
+                                            }
+                                        }
+                                        if (colIdx < 0) continue;
+                                        // First data row in that column
+                                        const rows = tbl.querySelectorAll('tbody tr');
+                                        for (const row of rows) {
+                                            const cells = row.querySelectorAll('td');
+                                            const cell = cells[colIdx];
+                                            if (!cell) continue;
+                                            const txt = cell.textContent.trim().replace(/\\s+/g, '');
+                                            if (/^\\d{8,}$/.test(txt)) return txt;
+                                        }
+                                    }
+                                    return null;
+                                }
+                            """)
+                            if js_val:
+                                val = str(js_val).strip()
                                 break
                         else:
                             bal_m = re.search(
@@ -1530,23 +2035,114 @@ class BrowserAgent:
                     await self._log("success", f"  📊 Captured {target} = {val}")
                 else:
                     if is_subscriber_id:
-                        # Fall back to MISTIN_ID env var so the report still has a value
-                        fallback = (
-                            os.environ.get("MISTIN_ID")
-                            or os.environ.get("PHONE_NUMBER")
-                            or ""
-                        )
+                        # ICC_ID must come from the page — phone/MSISDN vars are wrong fallbacks
+                        if "ICC" in target.upper():
+                            fallback = os.environ.get("ICC_ID") or ""
+                        else:
+                            fallback = (
+                                os.environ.get("MISTIN_ID")
+                                or os.environ.get("PHONE_NUMBER")
+                                or ""
+                            )
                         if fallback:
                             self._captured_vars[target] = fallback
                             await self._log(
                                 "info",
-                                f"  ⚠ External ID not found on page — using env fallback: {fallback}",
+                                f"  ⚠ {target} not found on page — using env fallback: {fallback}",
                             )
                         else:
                             await self._log("info", f"  ⚠ Could not find external ID on page after 10s")
                     else:
                         await self._log("info", f"  ⚠ Could not find balance on page after 10s")
                 await step_shot("ok")
+
+            elif action == "click_existing_contact":
+                # The "Select contact" dropdown is open. Strategy:
+                # 1. JS finds the contact name (text immediately after "Create contact")
+                # 2. Playwright native click on the LAST element with that text
+                #    (Vuesax appends the dropdown panel to the END of the DOM body,
+                #     so .last hits the dropdown option rather than the sidebar entry)
+                # 3. Fallback: keyboard ArrowDown × N + Enter
+                clicked = False
+                contact_name = None
+
+                # Step 1 — find the contact name via JS (don't click yet)
+                for frame in self._page.frames:
+                    try:
+                        contact_name = await frame.evaluate("""
+                            () => {
+                                const all = [...document.querySelectorAll(
+                                    'li, [role="option"], div, span, a'
+                                )].filter(el => {
+                                    const t = el.textContent.trim();
+                                    const r = el.getBoundingClientRect();
+                                    return t.length > 0 && t.length < 100
+                                        && r.width > 0 && r.height > 0;
+                                });
+                                let afterCreate = false;
+                                for (const el of all) {
+                                    const t = el.textContent.trim();
+                                    if (t.toLowerCase() === 'create contact') {
+                                        afterCreate = true;
+                                        continue;
+                                    }
+                                    if (afterCreate && t.length > 2
+                                            && !t.toLowerCase().startsWith('create')
+                                            && /[A-Za-zÀ-ɏ]/.test(t)) {
+                                        return t;
+                                    }
+                                }
+                                return null;
+                            }
+                        """)
+                        if contact_name:
+                            break
+                    except Exception:
+                        pass
+
+                # Step 2 — Playwright native click on the contact name
+                if contact_name:
+                    import re as _re
+                    for frame in self._page.frames:
+                        try:
+                            # .last targets the dropdown panel (appended last in DOM)
+                            loc = frame.get_by_text(
+                                _re.compile(_re.escape(contact_name.strip()), _re.I)
+                            ).last
+                            if await loc.count() > 0:
+                                await loc.click(timeout=5000)
+                                await self._log("success", f"  → Selected contact: '{contact_name}'")
+                                clicked = True
+                                break
+                        except Exception:
+                            pass
+
+                # Step 3 — keyboard fallback: ArrowDown past "Create contact", Enter
+                if not clicked:
+                    try:
+                        await self._page.keyboard.press("ArrowDown")
+                        await asyncio.sleep(0.3)
+                        await self._page.keyboard.press("ArrowDown")
+                        await asyncio.sleep(0.3)
+                        await self._page.keyboard.press("Enter")
+                        await asyncio.sleep(0.5)
+                        name = contact_name or "contact"
+                        await self._log("success", f"  → Selected contact via keyboard: '{name}'")
+                        clicked = True
+                    except Exception:
+                        pass
+
+                if clicked:
+                    await asyncio.sleep(1.5)
+                    try:
+                        await self._page.wait_for_load_state("networkidle", timeout=4000)
+                    except Exception:
+                        pass
+                    await step_shot("ok")
+                else:
+                    await self._log("error", f"  ✗ STEP FAILED — no existing contact found in dropdown")
+                    await step_shot("FAIL")
+                    return False
 
             elif action == "skip":
                 await self._log("info", f"  → Skipped")

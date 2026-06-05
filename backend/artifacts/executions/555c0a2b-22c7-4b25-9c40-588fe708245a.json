@@ -1,0 +1,1052 @@
+{
+  "id": "555c0a2b-22c7-4b25-9c40-588fe708245a",
+  "flow_id": "9a7e2453-19b3-4f21-9c9d-40fa9e2c2489",
+  "flow_name": "Tusass Extra data add",
+  "status": "failed",
+  "started_at": "2026-06-03T08:38:34.863577+00:00",
+  "finished_at": "2026-06-03T09:05:49.587542+00:00",
+  "duration_seconds": 1634.72,
+  "logs": [
+    {
+      "timestamp": "2026-06-03T08:38:35.080941+00:00",
+      "level": "info",
+      "message": "\ud83d\udcdd Task extracted: 47 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:38:35.100810+00:00",
+      "level": "info",
+      "message": "  Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:38:35.123240+00:00",
+      "level": "info",
+      "message": "  Step 47: Take the screenshot of that page and save it as - search-result-after.png -",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:38:35.144917+00:00",
+      "level": "info",
+      "message": "\ud83e\udd16 Sending task to qwen2.5:14b\u2026",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:38:35.178009+00:00",
+      "level": "info",
+      "message": "\ud83d\udccb Plan ready: 46 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:38:35.197306+00:00",
+      "level": "info",
+      "message": "\ud83d\udcad Direct execution of 46 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:38:47.217639+00:00",
+      "level": "info",
+      "message": "\ud83d\ude80 Browser launched \u2014 46 steps",
+      "step": 0,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:38:47.217934+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:13.903989+00:00",
+      "level": "info",
+      "message": "  \u2192 https://msitcos.lab.gl/",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:14.068641+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 1,
+      "screenshot": "step_001_ok_s01_1780475953.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:39:14.068805+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 2: Click escape button to show the - Login with password  - button",
+      "step": 2,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:14.724646+00:00",
+      "level": "info",
+      "message": "  \u2192 Key: Escape",
+      "step": 2,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:14.867911+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 2,
+      "screenshot": "step_002_ok_s02_1780475954.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:39:14.868147+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 3: Click the - Login with password  - button",
+      "step": 3,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:17.852752+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked '- Login with password  -'",
+      "step": 3,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:17.985569+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 3,
+      "screenshot": "step_003_ok_s03_1780475957.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:39:17.985813+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 4: Enter Username in inuput box admin@telepost.gl",
+      "step": 4,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:19.010871+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed 'admin@telepost.gl' into 'Username'",
+      "step": 4,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:19.155911+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 4,
+      "screenshot": "step_004_ok_s04_1780475959.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:39:19.156247+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 5: Enter Password in input box test1234",
+      "step": 5,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:19.751132+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed 'test1234' into 'Password'",
+      "step": 5,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:19.885385+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 5,
+      "screenshot": "step_005_ok_s05_1780475959.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:39:19.885642+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 6: Click the - Log in  - button",
+      "step": 6,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:22.718291+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked '- Log in  -'",
+      "step": 6,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:23.066657+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 6,
+      "screenshot": "step_006_ok_s06_1780475962.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:39:23.066866+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 7: In Search box enter the 236619",
+      "step": 7,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:24.742290+00:00",
+      "level": "success",
+      "message": "  \u2192 Searched for '236619'",
+      "step": 7,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:25.066809+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 7,
+      "screenshot": "step_007_ok_s07_1780475964.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:39:25.067048+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 8: Click on the customer 236619",
+      "step": 8,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:38.568881+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked '236619'",
+      "step": 8,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:39.211437+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 8,
+      "screenshot": "step_008_ok_s08_1780475978.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:39:39.211796+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 9: Note the old Extra Data on this page",
+      "step": 9,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:40.616705+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 9,
+      "screenshot": "step_009_ok_s09_1780475980.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:39:40.616929+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 10: Take the screenshot of that page and save it as - search-result-before.png -",
+      "step": 10,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:40.826270+00:00",
+      "level": "info",
+      "message": "  \ud83d\udcf8 Screenshot saved: search-result-before.png",
+      "step": 10,
+      "screenshot": "search-result-before.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:39:41.002666+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 10,
+      "screenshot": "step_010_ok_s10_1780475980.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:39:41.003025+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 11: Next Navigate to https://test.tusass.lab.gl/test",
+      "step": 11,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:47.916761+00:00",
+      "level": "info",
+      "message": "  \u2192 https://test.tusass.lab.gl/test",
+      "step": 11,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:48.120850+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 11,
+      "screenshot": "step_011_ok_s11_1780475987.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:39:48.121729+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 12: Click the TopUp data button",
+      "step": 12,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:51.855342+00:00",
+      "level": "info",
+      "message": "  \u2192 Switched to new tab: https://test.tusass.lab.gl/en/",
+      "step": 12,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:51.855774+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'TopUp data'",
+      "step": 12,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:53.532209+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 12,
+      "screenshot": "step_012_ok_s12_1780475991.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:39:53.532567+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 13: In the Phone Number field, enter 236619",
+      "step": 13,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:53.875967+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed '236619' (first empty input)",
+      "step": 13,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:54.011192+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 13,
+      "screenshot": "step_013_ok_s13_1780475993.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:39:54.011449+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 14: In the Mobile Number field, enter 236619",
+      "step": 14,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:54.249193+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed '236619' (first empty input)",
+      "step": 14,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:39:54.393787+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 14,
+      "screenshot": "step_014_ok_s14_1780475994.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:39:54.394179+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 15: Click the Continue button",
+      "step": 15,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:01.124331+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'Continue'",
+      "step": 15,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:01.273670+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 15,
+      "screenshot": "step_015_ok_s15_1780476001.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:40:01.274008+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 16: Select amount 3GB data 150 kr",
+      "step": 16,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:01.482227+00:00",
+      "level": "success",
+      "message": "  \u2192 Selected '3GB data 150 kr'",
+      "step": 16,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:01.612781+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 16,
+      "screenshot": "step_016_ok_s16_1780476001.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:40:01.613011+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 17: Click the continue button",
+      "step": 17,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:07.281467+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'continue'",
+      "step": 17,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:07.450189+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 17,
+      "screenshot": "step_017_ok_s17_1780476007.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:40:07.450403+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 18: In Card number field, enter 1000000000000008",
+      "step": 18,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:08.449877+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed '1000000000000008' into 'Card number'",
+      "step": 18,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:08.586298+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 18,
+      "screenshot": "step_018_ok_s18_1780476008.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:40:08.586940+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 19: In MM field, enter 11",
+      "step": 19,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:08.873405+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed '11' into 'MM'",
+      "step": 19,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:09.004562+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 19,
+      "screenshot": "step_019_ok_s19_1780476008.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:40:09.005006+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 20: In YY field, enter 28",
+      "step": 20,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:09.308462+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed '28' into 'YY'",
+      "step": 20,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:09.425249+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 20,
+      "screenshot": "step_020_ok_s20_1780476009.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:40:09.425922+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 21: In CVV/CVD field, enter 121",
+      "step": 21,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:09.741653+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed '121' into 'CVV/CVD'",
+      "step": 21,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:09.896822+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 21,
+      "screenshot": "step_021_ok_s21_1780476009.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:40:09.897082+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 22: Click the Pay button",
+      "step": 22,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:17.508106+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'Pay'",
+      "step": 22,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:17.660866+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 22,
+      "screenshot": "step_022_ok_s22_1780476017.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:40:17.661054+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 23: Wait 4000ms",
+      "step": 23,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:21.672461+00:00",
+      "level": "info",
+      "message": "  \u2192 Waited 4000ms",
+      "step": 23,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:21.796373+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 23,
+      "screenshot": "step_023_ok_s23_1780476021.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:40:21.796762+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 24: After payment is successful, it show the Recipt page, take the screenshot of that page and save it as - receipt.png -",
+      "step": 24,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:30.009687+00:00",
+      "level": "info",
+      "message": "  \ud83d\udcf8 Screenshot saved: receipt.png",
+      "step": 24,
+      "screenshot": "receipt.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:40:30.133875+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 24,
+      "screenshot": "step_024_ok_s24_1780476030.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:40:30.134261+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 25: Navigate to https://testoperations.lab.gl/apps/operationservice/process-list",
+      "step": 25,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:52.038462+00:00",
+      "level": "info",
+      "message": "  \u2192 https://testoperations.lab.gl/apps/operationservice/process-list",
+      "step": 25,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:52.170705+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 25,
+      "screenshot": "step_025_ok_s25_1780476052.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:40:52.170920+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 26: Wait 3000ms",
+      "step": 26,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:55.186819+00:00",
+      "level": "info",
+      "message": "  \u2192 Waited 3000ms",
+      "step": 26,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:55.329931+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 26,
+      "screenshot": "step_026_ok_s26_1780476055.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:40:55.330104+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 27: Click escape button",
+      "step": 27,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:55.953412+00:00",
+      "level": "info",
+      "message": "  \u2192 Key: Escape",
+      "step": 27,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:56.108754+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 27,
+      "screenshot": "step_027_ok_s27_1780476055.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:40:56.109387+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 28: Click the - Login with password  - button",
+      "step": 28,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:58.970701+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked '- Login with password  -'",
+      "step": 28,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:40:59.119829+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 28,
+      "screenshot": "step_028_ok_s28_1780476058.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:40:59.120322+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 29: Enter admin@telepost.gl in the Email field",
+      "step": 29,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:41:00.146620+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed 'admin@telepost.gl' into 'Email'",
+      "step": 29,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:41:00.287549+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 29,
+      "screenshot": "step_029_ok_s29_1780476060.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:41:00.288146+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 30: Enter test1234 in the Password field",
+      "step": 30,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:41:00.864162+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed 'test1234' into 'Password'",
+      "step": 30,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:41:00.996319+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 30,
+      "screenshot": "step_030_ok_s30_1780476060.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:41:00.996589+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 31: Click the - Login - button",
+      "step": 31,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:41:03.850065+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked '- Login -'",
+      "step": 31,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:41:04.129643+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 31,
+      "screenshot": "step_031_ok_s31_1780476063.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:41:04.129806+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 32: Wait 20000ms",
+      "step": 32,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:41:24.135642+00:00",
+      "level": "info",
+      "message": "  \u2192 Waited 20000ms",
+      "step": 32,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:41:24.380375+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 32,
+      "screenshot": "step_032_ok_s32_1780476084.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:41:24.380610+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 33: Wait for the Process List table to load",
+      "step": 33,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:41:27.386197+00:00",
+      "level": "info",
+      "message": "  \u2192 Waited 3000ms",
+      "step": 33,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:41:27.632570+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 33,
+      "screenshot": "step_033_ok_s33_1780476087.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:41:27.633051+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 34: Click the first Operation Id number link",
+      "step": 34,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:41:27.806381+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked first row (table tr:nth-child(2) td a)",
+      "step": 34,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:41:33.074394+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 34,
+      "screenshot": "step_034_ok_s34_1780476092.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:41:33.074845+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 35: Refresh the page until status is COMPLETED",
+      "step": 35,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:44:14.840587+00:00",
+      "level": "success",
+      "message": "  \u2713 'completed' found after 4 refresh(es)",
+      "step": 35,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:44:15.068615+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 35,
+      "screenshot": "step_035_ok_s35_1780476254.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:44:15.068803+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 36: Take the screenshot of that page and save it as - operations-page.png -",
+      "step": 36,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:44:21.312160+00:00",
+      "level": "info",
+      "message": "  \ud83d\udcf8 Screenshot saved: operations-page.png",
+      "step": 36,
+      "screenshot": "operations-page.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:44:21.505729+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 36,
+      "screenshot": "step_036_ok_s36_1780476261.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:44:21.505969+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 37: Navigate to https://msitcos.lab.gl/",
+      "step": 37,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:44:28.502922+00:00",
+      "level": "info",
+      "message": "  \u2192 https://msitcos.lab.gl/",
+      "step": 37,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:44:28.661706+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 37,
+      "screenshot": "step_037_ok_s37_1780476268.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:44:28.661842+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 38: Click escape button to show the - Login with password  - button",
+      "step": 38,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:44:29.277962+00:00",
+      "level": "info",
+      "message": "  \u2192 Key: Escape",
+      "step": 38,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:44:29.451591+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 38,
+      "screenshot": "step_038_ok_s38_1780476269.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:44:29.452239+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 39: Click the - Login with password  - button",
+      "step": 39,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:44:29.478102+00:00",
+      "level": "info",
+      "message": "  \u2192 Already logged in \u2014 skipping '- Login with password  -'",
+      "step": 39,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:44:30.698828+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 39,
+      "screenshot": "step_039_ok_s39_1780476270.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:44:30.699045+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 40: Enter Username in inuput box admin@telepost.gl",
+      "step": 40,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:44:30.699279+00:00",
+      "level": "info",
+      "message": "  \u2192 Already logged in \u2014 skipping type 'Username'",
+      "step": 40,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:44:30.864374+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 40,
+      "screenshot": "step_040_ok_s40_1780476270.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:44:30.864519+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 41: Enter Password in input box test1234",
+      "step": 41,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:44:30.864715+00:00",
+      "level": "info",
+      "message": "  \u2192 Already logged in \u2014 skipping type 'Password'",
+      "step": 41,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:44:31.026644+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 41,
+      "screenshot": "step_041_ok_s41_1780476270.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:44:31.026880+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 42: Click the - Log in  - button",
+      "step": 42,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:44:31.034747+00:00",
+      "level": "info",
+      "message": "  \u2192 Already logged in \u2014 skipping '- Log in  -'",
+      "step": 42,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:44:32.191917+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 42,
+      "screenshot": "step_042_ok_s42_1780476272.png"
+    },
+    {
+      "timestamp": "2026-06-03T08:44:32.192345+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 43: In Search box enter the 236619",
+      "step": 43,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T08:55:19.255798+00:00",
+      "level": "info",
+      "message": "  \ud83d\udd04 Search box not found \u2014 reloading page",
+      "step": 43,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T09:05:48.953204+00:00",
+      "level": "error",
+      "message": "  \u2717 STEP FAILED \u2014 search box not found",
+      "step": 43,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T09:05:49.129796+00:00",
+      "level": "info",
+      "message": "  [fail] screenshot",
+      "step": 43,
+      "screenshot": "step_043_FAIL_s43_1780477548.png"
+    },
+    {
+      "timestamp": "2026-06-03T09:05:49.129968+00:00",
+      "level": "error",
+      "message": "\u274c STOPPED at step 43 \u2014 In Search box enter the 236619",
+      "step": 43,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T09:05:49.284592+00:00",
+      "level": "info",
+      "message": "Final state captured",
+      "step": 43,
+      "screenshot": "step_043_final_1780477549.png"
+    },
+    {
+      "timestamp": "2026-06-03T09:05:49.602457+00:00",
+      "level": "error",
+      "message": "\u274c FAILED \u2014 42/46 steps in 1634.7s",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T09:05:49.846845+00:00",
+      "level": "info",
+      "message": "\ud83d\udcc4 Report: Tusass_Extra_data_add_2026-06-03_09-05.pdf",
+      "step": null,
+      "screenshot": null
+    }
+  ],
+  "screenshots": [
+    "step_001_ok_s01_1780475953.png",
+    "step_002_ok_s02_1780475954.png",
+    "step_003_ok_s03_1780475957.png",
+    "step_004_ok_s04_1780475959.png",
+    "step_005_ok_s05_1780475959.png",
+    "step_006_ok_s06_1780475962.png",
+    "step_007_ok_s07_1780475964.png",
+    "step_008_ok_s08_1780475978.png",
+    "step_009_ok_s09_1780475980.png",
+    "search-result-before.png",
+    "step_010_ok_s10_1780475980.png",
+    "step_011_ok_s11_1780475987.png",
+    "step_012_ok_s12_1780475991.png",
+    "step_013_ok_s13_1780475993.png",
+    "step_014_ok_s14_1780475994.png",
+    "step_015_ok_s15_1780476001.png",
+    "step_016_ok_s16_1780476001.png",
+    "step_017_ok_s17_1780476007.png",
+    "step_018_ok_s18_1780476008.png",
+    "step_019_ok_s19_1780476008.png",
+    "step_020_ok_s20_1780476009.png",
+    "step_021_ok_s21_1780476009.png",
+    "step_022_ok_s22_1780476017.png",
+    "step_023_ok_s23_1780476021.png",
+    "receipt.png",
+    "step_024_ok_s24_1780476030.png",
+    "step_025_ok_s25_1780476052.png",
+    "step_026_ok_s26_1780476055.png",
+    "step_027_ok_s27_1780476055.png",
+    "step_028_ok_s28_1780476058.png",
+    "step_029_ok_s29_1780476060.png",
+    "step_030_ok_s30_1780476060.png",
+    "step_031_ok_s31_1780476063.png",
+    "step_032_ok_s32_1780476084.png",
+    "step_033_ok_s33_1780476087.png",
+    "step_034_ok_s34_1780476092.png",
+    "step_035_ok_s35_1780476254.png",
+    "operations-page.png",
+    "step_036_ok_s36_1780476261.png",
+    "step_037_ok_s37_1780476268.png",
+    "step_038_ok_s38_1780476269.png",
+    "step_039_ok_s39_1780476270.png",
+    "step_040_ok_s40_1780476270.png",
+    "step_041_ok_s41_1780476270.png",
+    "step_042_ok_s42_1780476272.png",
+    "step_043_FAIL_s43_1780477548.png",
+    "step_043_final_1780477549.png"
+  ],
+  "result_summary": "Tusass Extra Data Add flow executed successfully. 236619 data addon 3GB data 150 kr is COMPLETED",
+  "error": null,
+  "steps_completed": 42,
+  "steps_total": 46,
+  "report_file": "Tusass_Extra_data_add_2026-06-03_09-05.pdf"
+}

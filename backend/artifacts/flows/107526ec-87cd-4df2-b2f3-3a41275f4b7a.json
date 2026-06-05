@@ -1,0 +1,13 @@
+{
+  "id": "107526ec-87cd-4df2-b2f3-3a41275f4b7a",
+  "name": "sample",
+  "description": "Loaded from disk: json-flow/sample",
+  "format": "json",
+  "task": "{\n  \"name\": \" sample flow  \",\n  \"steps\": [\n    \"Navigate to ${MSITCOS_URL}\",\n    \"Wait 3000ms\",\n    \"Click escape button to show the - Login with password  - button\",\n    \"Click the - Login with password  - button\",\n    \"Enter Username in inuput box ${ADMIN_USER}\",\n    \"Enter Password in input box ${ADMIN_PASS}\",\n    \"Click the - Log in  - button\",\n    \"In Search box enter the ${ACCOUNT_NUMBER}\",\n    \"Wait 2000ms\",\n    \"Click on the customer ${MISTICOS_URL}\",\n    \"Click the first round button with a + symbol in the top-right corner above the Services table\",\n    \"Click mobil\"\n  ]\n}\n",
+  "tags": [
+    "disk-flow"
+  ],
+  "env_vars": {},
+  "created_at": "2026-06-04T07:46:47.227001+00:00",
+  "updated_at": "2026-06-04T07:46:47.227001+00:00"
+}

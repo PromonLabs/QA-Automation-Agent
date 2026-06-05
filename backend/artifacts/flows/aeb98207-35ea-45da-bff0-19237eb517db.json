@@ -1,0 +1,13 @@
+{
+  "id": "aeb98207-35ea-45da-bff0-19237eb517db",
+  "name": "New Account creation",
+  "description": "Loaded from disk: json-flow/New_Account_creation",
+  "format": "json",
+  "task": "{\n  \"name\": \" New Account creation  \",\n  \"steps\": [\n    \"Navigate to ${ICC_URL}\",\n    \"Enter Username in inuput box ${CSR_USER}\",\n    \"Enter Password in input box ${CSR_PASSWORD}\",\n    \"Click the - Log in  - button\",\n    \"Click Inventory Administration\",\n    \"Click Search/Update Inventory\",\n    \"Select ICCID from Inventory Type\",\n    \"Wait 2000ms\",\n    \"Select Available from Status\",\n    \"Click the Search button\",\n    \"Wait 2000ms\",\n    \"In the External Id column copy one ICCID\",\n    \"Wait 1000ms\",\n    \"Navigate to ${MSITCOS_URL}\",\n    \"Wait 3000ms\",\n    \"Click escape button to show the - Login with password  - button\",\n    \"Click the - Login with password  - button\",\n    \"Enter Username in inuput box ${ADMIN_USER}\",\n    \"Enter Password in input box ${ADMIN_PASS}\",\n    \"Click the - Log in  - button\",\n    \"In Search box enter the ${ACCOUNT_NUMBER}\",\n    \"Wait 2000ms\",\n    \"Click on the customer ${ACCOUNT_NUMBER}\",\n    \"Click xpath //*[@id='button-create-service']\",\n    \"Click mobil\",\n    \"Click Tusass\",\n    \"Wait 3000ms\",\n    \"Click the first number button\",\n    \"Wait 1000ms\",\n    \"Click the Continue button\",\n    \"Select the visible contact name displayed under Create contact\",\n    \"Wait 2000ms\",\n    \"Click the Continue button\",\n    \"In the ICC number field, enter ${ICC_ID}\",\n    \"Wait 1000ms\",\n    \"Click the Continue button\",\n    \"Type Test in the Example field\",\n    \"Click the Continue button\",\n    \"Wait 3000ms\",\n    \"Click submit button\"\n\n\n  ]\n}\n",
+  "tags": [
+    "disk-flow"
+  ],
+  "env_vars": {},
+  "created_at": "2026-06-05T07:18:59.223053+00:00",
+  "updated_at": "2026-06-05T07:18:59.223053+00:00"
+}

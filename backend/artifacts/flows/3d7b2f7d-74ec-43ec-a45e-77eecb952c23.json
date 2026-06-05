@@ -1,0 +1,13 @@
+{
+  "id": "3d7b2f7d-74ec-43ec-a45e-77eecb952c23",
+  "name": "New Account creation",
+  "description": "Loaded from disk: json-flow/New_Account_creation",
+  "format": "json",
+  "task": "{\n  \"name\": \" New Account creation  \",\n    \"steps\": [ \n\n    \"Navigate to ${ACCOUNT_CREATE_URL} \",\n    \" Enter Username in inuput box ${CSR_USER}\",\n      \" Enter Password in input box ${CSR_PASSWORD}\",\n      \"Click the - Log in  - button\"\n    ]       \n\n}",
+  "tags": [
+    "disk-flow"
+  ],
+  "env_vars": {},
+  "created_at": "2026-06-03T10:21:37.120302+00:00",
+  "updated_at": "2026-06-03T10:21:37.120302+00:00"
+}

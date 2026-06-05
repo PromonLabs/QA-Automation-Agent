@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -73,14 +74,19 @@ async def root():
 
 @app.get("/health")
 async def health():
-    from app.agents.llm_client import llm_client
-    llm_ok     = await llm_client.check_health()
+    from app.agents.llm_client import llm_client, vision_client
+    llm_ok, vision_ok = await asyncio.gather(
+        llm_client.check_health(),
+        vision_client.check_health(),
+    )
     browser_ok = _chromium_ok()
     import sys
     return {
         "status":           "healthy" if browser_ok else "degraded",
         "llm":              "connected" if llm_ok else "disconnected",
+        "vision":           "connected" if vision_ok else "disconnected",
         "model":            settings.LLM_MODEL,
+        "vision_model":     settings.VISION_MODEL,
         "ollama_host":      settings.OLLAMA_HOST,
         "browser":          "ready" if browser_ok else "not_installed",
         "browser_headless": settings.BROWSER_HEADLESS,

@@ -1,0 +1,13 @@
+{
+  "id": "b0d71854-8541-4862-aa87-273568b6e067",
+  "name": "sample",
+  "description": "Loaded from disk: json-flow/sample",
+  "format": "json",
+  "task": "{\n  \"name\": \" sample flow  \",\n  \"steps\": [\n    \"Navigate to ${MSITCOS_URL}\",\n    \"Wait 3000ms\",\n    \"Click escape button to show the - Login with password  - button\",\n    \"Click the - Login with password  - button\",\n    \"Enter Username in inuput box ${ADMIN_USER}\",\n    \"Enter Password in input box ${ADMIN_PASS}\",\n    \"Click the - Log in  - button\",\n    \"In Search box enter the ${ACCOUNT_NUMBER}\",\n    \"Wait 2000ms\",\n    \"Click on the customer ${ACCOUNT_NUMBER}\",\n    \"Click xpath //*[@id='button-create-service']\",\n    \"Click mobil\",\n    \"Click Tusass\",\n    \"Wait 3000ms\",\n    \"Click the first number button\",\n    \"Wait 1000ms\",\n    \"Click the Continue button\",\n    \"Select the visible contact name displayed under Create contact\",\n    \"Wait 2000ms\",\n    \"Click the Continue button\",\n    \"Enter ${ICCID} in the ICC number field\",\n    \"Wait 1000ms\",\n    \"Click the Continue button\"\n    \n  ]\n}\n",
+  "tags": [
+    "disk-flow"
+  ],
+  "env_vars": {},
+  "created_at": "2026-06-04T11:48:42.728476+00:00",
+  "updated_at": "2026-06-04T11:48:42.728476+00:00"
+}

@@ -1,0 +1,110 @@
+{
+  "id": "6b30f04c-dccb-4aa6-829e-f6f71f9783b3",
+  "flow_id": "2131ccb4-03e7-4e6b-9dc5-048475c1c7a3",
+  "flow_name": "Tusass TopUp Talk",
+  "status": "failed",
+  "started_at": "2026-06-04T04:22:13.613300+00:00",
+  "finished_at": "2026-06-04T04:24:15.615055+00:00",
+  "duration_seconds": 122.0,
+  "logs": [
+    {
+      "timestamp": "2026-06-04T04:22:13.669843+00:00",
+      "level": "info",
+      "message": "\ud83d\udcdd Task extracted: 30 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T04:22:13.685380+00:00",
+      "level": "info",
+      "message": "  Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T04:22:13.697618+00:00",
+      "level": "info",
+      "message": "  Step 30: Give the report - Tusass topup talk flow is executed successfully. ${SUBSCRIBER_",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T04:22:13.717709+00:00",
+      "level": "info",
+      "message": "\ud83e\udd16 Sending task to qwen2.5:14b\u2026",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T04:22:13.742873+00:00",
+      "level": "info",
+      "message": "\ud83d\udccb Plan ready: 29 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T04:22:13.758695+00:00",
+      "level": "info",
+      "message": "\ud83d\udcad Direct execution of 29 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T04:22:14.578660+00:00",
+      "level": "info",
+      "message": "\ud83d\ude80 Browser launched \u2014 29 steps",
+      "step": 0,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T04:22:14.578907+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T04:22:59.604054+00:00",
+      "level": "error",
+      "message": "  \u2717 STEP FAILED \u2014 Page.goto: Timeout 45000ms exceeded.\nCall log:\n  - navigating to \"https://msitcos.lab.gl/\", waiting until \"domcontentloaded\"\n",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T04:23:59.630048+00:00",
+      "level": "error",
+      "message": "\u274c STOPPED at step 1 \u2014 Navigate to https://msitcos.lab.gl/",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T04:24:15.025834+00:00",
+      "level": "info",
+      "message": "Final state captured",
+      "step": 1,
+      "screenshot": "step_001_final_1780547039.png"
+    },
+    {
+      "timestamp": "2026-06-04T04:24:15.616811+00:00",
+      "level": "error",
+      "message": "\u274c FAILED \u2014 0/29 steps in 122.0s",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T04:24:15.688182+00:00",
+      "level": "info",
+      "message": "\ud83d\udcc4 Report: Tusass_TopUp_Talk_2026-06-04_04-24.pdf",
+      "step": null,
+      "screenshot": null
+    }
+  ],
+  "screenshots": [
+    "step_001_final_1780547039.png"
+  ],
+  "result_summary": "Tusass topup talk flow is executed successfully. ${SUBSCRIBER_EXTERNAL_ID} is topped up with amount 50. Balance before: ${OLD_BALANCE} \u2014 Balance after: ${NEW_BALANCE}",
+  "error": null,
+  "steps_completed": 0,
+  "steps_total": 29,
+  "report_file": "Tusass_TopUp_Talk_2026-06-04_04-24.pdf"
+}

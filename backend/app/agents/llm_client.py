@@ -119,6 +119,23 @@ def _parse_step(raw_line: str) -> Dict[str, Any]:
     if url_m:
         return {"action": "navigate", "target": url_m.group(), "description": line}
 
+    # ── "Select/pick/choose one number" → click first phone-number button ──
+    if re.match(r"^(?:select|pick|choose)\s+(?:one\s+|a\s+|any\s+|random\s+)?number\b", lo):
+        return {"action": "click_first_row", "target": "phone number", "description": line}
+
+    # ── "Select/click the contact name / existing contact" ────────────────
+    if re.search(r'\bcontact\s+name\b|\bexisting\s+contact\b|\bvisible\s+contact\b', lo):
+        return {"action": "click_existing_contact", "target": "", "description": line}
+
+    # ── XPath / CSS selector click ────────────────────────────────────────
+    # "Click xpath //EXPR"  or  "Click #id"  or  "Click //*[...]"
+    m = re.match(r"^click\s+xpath\s+(.+)$", lo)
+    if m:
+        return {"action": "click", "target": m.group(1).strip(), "description": line}
+    m = re.match(r"^click\s+((?://|#|\[).+)$", line, re.IGNORECASE)
+    if m:
+        return {"action": "click", "target": m.group(1).strip(), "description": line}
+
     # ── Named screenshot (save as filename) ──────────────────────────────
     # e.g. "After X, screen shot that page and save it as - search-result.png -"
     m = re.search(
@@ -170,6 +187,11 @@ def _parse_step(raw_line: str) -> Dict[str, Any]:
         else:
             ms = 3000  # default wait
         return {"action": "wait", "target": str(ms), "description": line}
+
+    # ── ICC ID extraction (SIM card number copied from inventory table) ──────
+    # Must come before the generic external-id rule so "copy one ICCID" wins.
+    if re.search(r'\bicc(?:id)?\b', lo) and re.search(r'\bcopy\b|\bextract\b', lo):
+        return {"action": "extract", "target": "ICC_ID", "description": line}
 
     # ── Subscriber / external ID extraction ──────────────────────────────────
     if re.search(r'\bexternal\s+id\b|\bsubscriber\s+id\b|\bmsisdn\b', lo):
@@ -362,6 +384,14 @@ def _parse_step(raw_line: str) -> Dict[str, Any]:
     m = re.match(r"^select\s+(?:recharge\s+)?amount\s+(.+?)$", line, re.IGNORECASE)
     if m:
         return {"action": "select", "target": "amount", "value": _strip_quotes(m.group(1).strip()), "description": line}
+
+    # ── "Select X from Y" → dropdown select (e.g. "Select ICCID from Inventory Type") ──
+    m = re.match(r"^select\s+(.+?)\s+from\s+(.+?)$", line, re.IGNORECASE)
+    if m:
+        val    = _strip_quotes(m.group(1).strip())
+        target = _strip_quotes(m.group(2).strip())
+        return {"action": "select", "target": target, "value": val, "description": line}
+
     m = re.match(r"^select\s+(?:recharge\s+)?(?:amount\s+)?(.+?)$", line, re.IGNORECASE)
     if m:
         val = _strip_quotes(m.group(1).strip())
@@ -543,3 +573,71 @@ class LLMClient:
 
 
 llm_client = LLMClient()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Vision Client  —  qwen2.5vl:latest  (screen agent / element finder)
+# ─────────────────────────────────────────────────────────────────────────────
+
+_VISION_PROMPT = """You are a browser automation vision assistant.
+Look at the screenshot and locate the UI element described below.
+Return ONLY a valid JSON object — no markdown, no explanation:
+{
+  "found": true or false,
+  "element_text": "exact visible label/text on the element (empty string if input field)",
+  "element_type": "button | input | link | dropdown | other",
+  "x": integer center-x pixel coordinate,
+  "y": integer center-y pixel coordinate,
+  "css_hint": "any CSS id or class you can see near the element"
+}
+
+Element to find: """
+
+
+class VisionClient:
+    """Uses qwen2.5vl:latest to locate UI elements from a screenshot."""
+
+    def __init__(self):
+        self.host    = settings.OLLAMA_HOST
+        self.model   = settings.VISION_MODEL
+        self.timeout = 30   # vision calls must be fast
+
+    async def find_element(self, screenshot_b64: str, description: str) -> dict:
+        """
+        Send a screenshot + description to the vision model.
+        Returns parsed JSON with found/element_text/element_type/x/y/css_hint,
+        or {"found": False} on any error.
+        """
+        prompt = _VISION_PROMPT + description
+        payload = {
+            "model":   self.model,
+            "prompt":  prompt,
+            "images":  [screenshot_b64],
+            "stream":  False,
+            "options": {"temperature": 0.05, "num_predict": 300},
+        }
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                resp = await client.post(f"{self.host}/api/generate", json=payload)
+                resp.raise_for_status()
+                raw = resp.json().get("response", "")
+            result = _extract_json(raw)
+            if result and isinstance(result.get("found"), bool):
+                return result
+        except Exception:
+            pass
+        return {"found": False}
+
+    async def check_health(self) -> bool:
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.get(f"{self.host}/api/tags")
+                if resp.status_code == 200:
+                    models = resp.json().get("models", [])
+                    return any(self.model in m.get("name", "") for m in models)
+        except Exception:
+            pass
+        return False
+
+
+vision_client = VisionClient()

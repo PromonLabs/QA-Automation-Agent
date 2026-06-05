@@ -1,0 +1,13 @@
+{
+  "id": "e5426bb8-3f87-4a4e-b1b8-4c2c31a10d0c",
+  "name": "New Account creation",
+  "description": "Loaded from disk: json-flow/New_Account_creation",
+  "format": "json",
+  "task": "{\n  \"name\": \" New Account creation  \",\n    \"steps\": [ \n\n    \"Navigate to ${ACCOUNT_CREATE_URL} \",\n    \" Enter Username in inuput box ${CSR_USER}\",\n    \" Enter Password in input box ${CSR_PASSWORD}\",\n    \"Click the - Log in  - button\",\n    \"Click Inventory Administration\",\n    \"Click Search/Update Inventory\",\n    \" In the Inventory Type  click  dropdown  \",\n    \"click ICCID\",\n    \" In the Status click slect click  Available\",\n    \" Click Search button\"\n    \n    ]       \n\n}",
+  "tags": [
+    "disk-flow"
+  ],
+  "env_vars": {},
+  "created_at": "2026-06-03T10:35:19.909689+00:00",
+  "updated_at": "2026-06-03T10:35:19.909689+00:00"
+}

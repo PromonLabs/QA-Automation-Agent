@@ -1,0 +1,250 @@
+{
+  "id": "9e3a2b70-a6c7-420d-9c3a-61a5befae264",
+  "flow_id": "67c226cc-4256-4f93-966b-c975f9e8a15f",
+  "flow_name": "New Account creation",
+  "status": "failed",
+  "started_at": "2026-06-03T10:28:49.766969+00:00",
+  "finished_at": "2026-06-03T10:38:20.765231+00:00",
+  "duration_seconds": 571.0,
+  "logs": [
+    {
+      "timestamp": "2026-06-03T10:28:49.804052+00:00",
+      "level": "info",
+      "message": "\ud83d\udcdd Task extracted: 9 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:28:49.823295+00:00",
+      "level": "info",
+      "message": "  Step 1: Navigate to http://10.60.80.28:8001/myshapecsr/jfn?entry=home",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:28:49.845907+00:00",
+      "level": "info",
+      "message": "  Step 9: Click Search button",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:28:49.861790+00:00",
+      "level": "info",
+      "message": "\ud83e\udd16 Sending task to qwen2.5:14b\u2026",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:28:49.882002+00:00",
+      "level": "info",
+      "message": "\ud83d\udccb Plan ready: 9 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:28:49.904429+00:00",
+      "level": "info",
+      "message": "\ud83d\udcad Direct execution of 9 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:28:50.470064+00:00",
+      "level": "info",
+      "message": "\ud83d\ude80 Browser launched \u2014 9 steps",
+      "step": 0,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:28:50.470241+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 1: Navigate to http://10.60.80.28:8001/myshapecsr/jfn?entry=home",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:29:00.334640+00:00",
+      "level": "info",
+      "message": "  \u2192 http://10.60.80.28:8001/myshapecsr/jfn?entry=home",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:29:00.532122+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 1,
+      "screenshot": "step_001_ok_s01_1780482540.png"
+    },
+    {
+      "timestamp": "2026-06-03T10:29:00.532291+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 2: Enter Username in inuput box cssinv",
+      "step": 2,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:29:00.932824+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed 'cssinv' (first empty input)",
+      "step": 2,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:29:01.159370+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 2,
+      "screenshot": "step_002_ok_s02_1780482540.png"
+    },
+    {
+      "timestamp": "2026-06-03T10:29:01.159707+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 3: Enter Password in input box Pa$$w0rd",
+      "step": 3,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:29:01.711898+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed 'Pa$$w0rd' into 'Password'",
+      "step": 3,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:29:01.890522+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 3,
+      "screenshot": "step_003_ok_s03_1780482541.png"
+    },
+    {
+      "timestamp": "2026-06-03T10:29:01.890702+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 4: Click the - Log in  - button",
+      "step": 4,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:29:09.471678+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked '- Log in  -'",
+      "step": 4,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:29:11.668235+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 4,
+      "screenshot": "step_004_ok_s04_1780482549.png"
+    },
+    {
+      "timestamp": "2026-06-03T10:29:11.669130+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 5: Click Inventory Administration",
+      "step": 5,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:29:15.167195+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'Inventory Administration'",
+      "step": 5,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:29:15.328160+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 5,
+      "screenshot": "step_005_ok_s05_1780482555.png"
+    },
+    {
+      "timestamp": "2026-06-03T10:29:15.328393+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 6: Click Search/Update Inventory",
+      "step": 6,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:29:18.584377+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'Search/Update Inventory'",
+      "step": 6,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:29:18.725636+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 6,
+      "screenshot": "step_006_ok_s06_1780482558.png"
+    },
+    {
+      "timestamp": "2026-06-03T10:29:18.725862+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 7: Inventory Type select ICCID",
+      "step": 7,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:38:19.350360+00:00",
+      "level": "error",
+      "message": "  \u2717 STEP FAILED \u2014 'Inventory Type select ICCID' not found on page",
+      "step": 7,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:38:19.483657+00:00",
+      "level": "info",
+      "message": "  [fail] screenshot",
+      "step": 7,
+      "screenshot": "step_007_FAIL_s07_1780483099.png"
+    },
+    {
+      "timestamp": "2026-06-03T10:38:19.483844+00:00",
+      "level": "error",
+      "message": "\u274c STOPPED at step 7 \u2014 Inventory Type select ICCID",
+      "step": 7,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:38:19.616019+00:00",
+      "level": "info",
+      "message": "Final state captured",
+      "step": 7,
+      "screenshot": "step_007_final_1780483099.png"
+    },
+    {
+      "timestamp": "2026-06-03T10:38:20.769266+00:00",
+      "level": "error",
+      "message": "\u274c FAILED \u2014 6/9 steps in 571.0s",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:38:20.843242+00:00",
+      "level": "info",
+      "message": "\ud83d\udcc4 Report: New_Account_creation_2026-06-03_10-38.pdf",
+      "step": null,
+      "screenshot": null
+    }
+  ],
+  "screenshots": [
+    "step_001_ok_s01_1780482540.png",
+    "step_002_ok_s02_1780482540.png",
+    "step_003_ok_s03_1780482541.png",
+    "step_004_ok_s04_1780482549.png",
+    "step_005_ok_s05_1780482555.png",
+    "step_006_ok_s06_1780482558.png",
+    "step_007_FAIL_s07_1780483099.png",
+    "step_007_final_1780483099.png"
+  ],
+  "result_summary": "Step 7 failed: Inventory Type select ICCID",
+  "error": null,
+  "steps_completed": 6,
+  "steps_total": 9,
+  "report_file": "New_Account_creation_2026-06-03_10-38.pdf"
+}

@@ -250,15 +250,18 @@ def _clean_step_line(line: str) -> str:
 
 def _is_screenshot_step(step: str) -> bool:
     """
-    Return True only for PURE screenshot steps (no useful side-effects).
-    Steps that say "screenshot AND save as X.png" are kept because the
-    screenshot captures a meaningful moment and the filename is referenced
-    in the report.
+    Return True only for steps that do nothing useful beyond taking a screenshot
+    AND whose screenshot is NOT needed in the PDF report.
+    - "SS" bare steps → always keep (saved as ss_NNN.png for the PDF)
+    - "save as X.png" steps → always keep (named screenshot for the PDF)
+    - Generic "take a screenshot" with no filename → drop (redundant)
     """
     lo = step.lower().strip()
     lo_j = lo.replace("screen shot", "screenshot")
 
-    # If the step also saves with a specific filename, keep it (not pure)
+    # Always keep SS steps and named-save steps
+    if lo_j == "ss":
+        return False
     if "save" in lo_j and (".png" in lo_j or ".jpg" in lo_j):
         return False
 
@@ -329,7 +332,7 @@ def _extract_steps_from_task(raw_task: str, flow_env: Optional[dict] = None) -> 
         step = _substitute_env_vars(step, flow_env=flow_env)
         if _is_screenshot_step(step):
             continue   # dropped — no screenshots; final state captured automatically
-        if step and len(step) > 3:
+        if step and (len(step) > 3 or step.strip().upper() == "SS"):
             result.append(step)
 
     return result
@@ -478,6 +481,31 @@ class Orchestrator:
                 f"{icon} {'COMPLETED' if final_status == ExecutionStatus.SUCCESS else 'FAILED'}"
                 f" — {result['steps_completed']}/{result['steps_total']} steps in {duration:.1f}s",
             )
+
+            # ── Clean up captured vars from .env after successful run ─────────
+            # Variables like SUBSCRIBER_EXTERNAL_ID / ICC_ID are captured fresh
+            # each run — remove stale entries so they don't bleed into other flows.
+            if final_status == ExecutionStatus.SUCCESS:
+                captured = result.get("captured_vars", {})
+                if captured and _ENV_FILE.exists():
+                    try:
+                        lines = _ENV_FILE.read_text(encoding="utf-8").splitlines()
+                        cleaned = [
+                            ln for ln in lines
+                            if not any(
+                                ln.strip().upper().startswith(k.upper() + "=")
+                                for k in captured
+                            )
+                        ]
+                        if len(cleaned) != len(lines):
+                            _ENV_FILE.write_text("\n".join(cleaned) + "\n", encoding="utf-8")
+                            removed = [k for k in captured if any(
+                                ln.strip().upper().startswith(k.upper() + "=")
+                                for ln in lines
+                            )]
+                            await self._log("info", f"🧹 Removed from .env: {', '.join(removed)}")
+                    except Exception:
+                        pass
 
             # ── Record failures in flow memory ─────────────────────────────
             if final_status == ExecutionStatus.FAILED and exec_result:

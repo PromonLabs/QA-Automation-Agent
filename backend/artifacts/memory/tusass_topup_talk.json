@@ -1,36 +1,6 @@
 {
   "observed_failures": [
     {
-      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
-      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
-      "at": "2026-05-28T12:33:57.441133+00:00"
-    },
-    {
-      "step": "Step 5 failed: In the Username input enter admin@telepost.gl",
-      "error": "Step 5 failed: In the Username input enter admin@telepost.gl",
-      "at": "2026-05-28T12:37:20.819472+00:00"
-    },
-    {
-      "step": "Step 15 failed: choose the 50 to topup and click the continue button",
-      "error": "Step 15 failed: choose the 50 to topup and click the continue button",
-      "at": "2026-05-28T13:22:20.455935+00:00"
-    },
-    {
-      "step": "Step 15 failed: choose the 50 to topup and click the continue button",
-      "error": "Step 15 failed: choose the 50 to topup and click the continue button",
-      "at": "2026-05-29T04:37:43.831896+00:00"
-    },
-    {
-      "step": "Step 15 failed: Click the drop down  and  choose the 50 to topup and click the continue button",
-      "error": "Step 15 failed: Click the drop down  and  choose the 50 to topup and click the continue button",
-      "at": "2026-05-29T04:49:59.604312+00:00"
-    },
-    {
-      "step": "Step 15 failed: Click the 200 button  and  choose the 50 to topup and click the continue button",
-      "error": "Step 15 failed: Click the 200 button  and  choose the 50 to topup and click the continue button",
-      "at": "2026-05-29T04:54:57.726261+00:00"
-    },
-    {
       "step": "Step 15 failed: On the topup amount selection page, select the 50 amount option and click the Continue button",
       "error": "Step 15 failed: On the topup amount selection page, select the 50 amount option and click the Continue button",
       "at": "2026-05-29T05:02:14.748626+00:00"
@@ -99,8 +69,38 @@
       "step": "Step 7 failed: In Search box enter the 236619",
       "error": "Step 7 failed: In Search box enter the 236619",
       "at": "2026-06-02T10:10:55.808942+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-04T04:24:15.681483+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-04T04:26:13.332790+00:00"
+    },
+    {
+      "step": "Step 17 failed: Select amount 50",
+      "error": "Step 17 failed: Select amount 50",
+      "at": "2026-06-04T04:47:52.231571+00:00"
+    },
+    {
+      "step": "Step 17 failed: Select amount 50",
+      "error": "Step 17 failed: Select amount 50",
+      "at": "2026-06-04T04:54:44.641503+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-04T05:46:43.257584+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-05T07:41:46.550225+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk",
-  "updated_at": "2026-06-02T10:10:55.809626+00:00"
+  "updated_at": "2026-06-05T07:41:46.550471+00:00"
 }

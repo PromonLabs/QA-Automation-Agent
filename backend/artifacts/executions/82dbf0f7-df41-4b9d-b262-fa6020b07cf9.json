@@ -1,0 +1,485 @@
+{
+  "id": "82dbf0f7-df41-4b9d-b262-fa6020b07cf9",
+  "flow_id": "9ed853c0-e240-4b0a-948d-f6239b41a736",
+  "flow_name": "sample",
+  "status": "success",
+  "started_at": "2026-06-04T11:05:49.336953+00:00",
+  "finished_at": "2026-06-04T11:07:24.241132+00:00",
+  "duration_seconds": 94.9,
+  "logs": [
+    {
+      "timestamp": "2026-06-04T11:05:49.367148+00:00",
+      "level": "info",
+      "message": "\ud83d\udcdd Task extracted: 18 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:05:49.380176+00:00",
+      "level": "info",
+      "message": "  Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:05:49.392602+00:00",
+      "level": "info",
+      "message": "  Step 18: Click the Continue button",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:05:49.403849+00:00",
+      "level": "info",
+      "message": "\ud83e\udd16 Sending task to qwen2.5:14b\u2026",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:05:49.423658+00:00",
+      "level": "info",
+      "message": "\ud83d\udccb Plan ready: 18 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:05:49.436321+00:00",
+      "level": "info",
+      "message": "\ud83d\udcad Direct execution of 18 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:05:49.973582+00:00",
+      "level": "info",
+      "message": "\ud83d\ude80 Browser launched \u2014 18 steps",
+      "step": 0,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:05:49.973769+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:18.000319+00:00",
+      "level": "info",
+      "message": "  \u2192 https://msitcos.lab.gl/",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:18.084180+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 1,
+      "screenshot": "step_001_ok_s01_1780571178.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:06:18.084285+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 2: Wait 3000ms",
+      "step": 2,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:21.092959+00:00",
+      "level": "info",
+      "message": "  \u2192 Waited 3000ms",
+      "step": 2,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:21.188709+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 2,
+      "screenshot": "step_002_ok_s02_1780571181.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:06:21.189077+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 3: Click escape button to show the - Login with password  - button",
+      "step": 3,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:21.809858+00:00",
+      "level": "info",
+      "message": "  \u2192 Key: Escape",
+      "step": 3,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:21.895269+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 3,
+      "screenshot": "step_003_ok_s03_1780571181.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:06:21.895512+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 4: Click the - Login with password  - button",
+      "step": 4,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:24.679378+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked '- Login with password  -'",
+      "step": 4,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:24.773388+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 4,
+      "screenshot": "step_004_ok_s04_1780571184.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:06:24.773498+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 5: Enter Username in inuput box admin@telepost.gl",
+      "step": 5,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:25.649162+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed 'admin@telepost.gl' into 'Username'",
+      "step": 5,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:25.757298+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 5,
+      "screenshot": "step_005_ok_s05_1780571185.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:06:25.757526+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 6: Enter Password in input box test1234",
+      "step": 6,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:26.233953+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed 'test1234' into 'Password'",
+      "step": 6,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:26.344508+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 6,
+      "screenshot": "step_006_ok_s06_1780571186.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:06:26.344760+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 7: Click the - Log in  - button",
+      "step": 7,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:29.037544+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked '- Log in  -'",
+      "step": 7,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:29.252663+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 7,
+      "screenshot": "step_007_ok_s07_1780571189.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:06:29.252793+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 8: In Search box enter the 21015359",
+      "step": 8,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:30.861267+00:00",
+      "level": "success",
+      "message": "  \u2192 Searched for '21015359'",
+      "step": 8,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:31.115709+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 8,
+      "screenshot": "step_008_ok_s08_1780571190.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:06:31.115818+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 9: Wait 2000ms",
+      "step": 9,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:33.126739+00:00",
+      "level": "info",
+      "message": "  \u2192 Waited 2000ms",
+      "step": 9,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:33.364622+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 9,
+      "screenshot": "step_009_ok_s09_1780571193.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:06:33.364751+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 10: Click on the customer 21015359",
+      "step": 10,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:46.066417+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked '21015359'",
+      "step": 10,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:46.173394+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 10,
+      "screenshot": "step_010_ok_s10_1780571206.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:06:46.173622+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 11: Click xpath //*[@id='button-create-service']",
+      "step": 11,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:48.985951+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked '//*[@id='button-create-service']'",
+      "step": 11,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:49.102398+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 11,
+      "screenshot": "step_011_ok_s11_1780571208.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:06:49.102540+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 12: Click mobil",
+      "step": 12,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:51.786512+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'mobil'",
+      "step": 12,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:51.879928+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 12,
+      "screenshot": "step_012_ok_s12_1780571211.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:06:51.880171+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 13: Click Tusass",
+      "step": 13,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:54.605314+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'Tusass'",
+      "step": 13,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:54.712449+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 13,
+      "screenshot": "step_013_ok_s13_1780571214.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:06:54.712631+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 14: Click the first number button",
+      "step": 14,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:06:54.773414+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked first row via JS ('number button')",
+      "step": 14,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:07:00.005832+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 14,
+      "screenshot": "step_014_ok_s14_1780571219.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:07:00.006059+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 15: Click Select",
+      "step": 15,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:07:01.107464+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'Select' via JS full-DOM search",
+      "step": 15,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:07:06.327483+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 15,
+      "screenshot": "step_015_ok_s15_1780571226.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:07:06.327698+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 16: Select the visible contact name displayed under Create contact",
+      "step": 16,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:07:07.474849+00:00",
+      "level": "success",
+      "message": "  \u2192 Selected contact via keyboard: 'contact'",
+      "step": 16,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:07:09.096767+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 16,
+      "screenshot": "step_016_ok_s16_1780571228.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:07:09.096917+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 17: Wait 2000ms",
+      "step": 17,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:07:11.108543+00:00",
+      "level": "info",
+      "message": "  \u2192 Waited 2000ms",
+      "step": 17,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:07:11.201621+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 17,
+      "screenshot": "step_017_ok_s17_1780571231.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:07:11.201782+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 18: Click the Continue button",
+      "step": 18,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:07:23.901374+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'Continue'",
+      "step": 18,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:07:24.010882+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 18,
+      "screenshot": "step_018_ok_s18_1780571243.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:07:24.132492+00:00",
+      "level": "info",
+      "message": "Final state captured",
+      "step": 18,
+      "screenshot": "step_018_final_1780571244.png"
+    },
+    {
+      "timestamp": "2026-06-04T11:07:24.253394+00:00",
+      "level": "success",
+      "message": "\u2705 COMPLETED \u2014 18/18 steps in 94.9s",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-04T11:07:24.276280+00:00",
+      "level": "info",
+      "message": "\ud83d\udcc4 Report: sample_2026-06-04_11-07.pdf",
+      "step": null,
+      "screenshot": null
+    }
+  ],
+  "screenshots": [
+    "step_001_ok_s01_1780571178.png",
+    "step_002_ok_s02_1780571181.png",
+    "step_003_ok_s03_1780571181.png",
+    "step_004_ok_s04_1780571184.png",
+    "step_005_ok_s05_1780571185.png",
+    "step_006_ok_s06_1780571186.png",
+    "step_007_ok_s07_1780571189.png",
+    "step_008_ok_s08_1780571190.png",
+    "step_009_ok_s09_1780571193.png",
+    "step_010_ok_s10_1780571206.png",
+    "step_011_ok_s11_1780571208.png",
+    "step_012_ok_s12_1780571211.png",
+    "step_013_ok_s13_1780571214.png",
+    "step_014_ok_s14_1780571219.png",
+    "step_015_ok_s15_1780571226.png",
+    "step_016_ok_s16_1780571228.png",
+    "step_017_ok_s17_1780571231.png",
+    "step_018_ok_s18_1780571243.png",
+    "step_018_final_1780571244.png"
+  ],
+  "result_summary": "Complete all steps successfully",
+  "error": null,
+  "steps_completed": 18,
+  "steps_total": 18,
+  "report_file": "sample_2026-06-04_11-07.pdf"
+}

@@ -67,7 +67,10 @@
       "Bash(python3 -c \"import sys,re; body=sys.stdin.read\\(\\); paths=re.findall\\(r'\\\\\"\\(/[^\\\\\"]+?\\)\\\\\"', body\\); [print\\(p\\) for p in sorted\\(set\\(paths\\)\\) if '/api' in p or 'auth' in p or 'login' in p or 'flow' in p or 'exec' in p]\")",
       "Bash(python3 -c \"import sys,json; flows=json.load\\(sys.stdin\\); [print\\(f['id'], '|', f['name']\\) for f in flows]\")",
       "Bash(python3 -c ' *)",
-      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Sandhosh\\\\Desktop\\\\QA-App\\\\backend\\\\artifacts\\\\executions\\\\\" | Sort-Object LastWriteTime -Descending | Select-Object -First 3 | ForEach-Object { $_.Name; \\(Get-Content $_.FullName | Select-String \"flow_id|steps_total|Task extracted\" | Select-Object -First 3\\) })"
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Sandhosh\\\\Desktop\\\\QA-App\\\\backend\\\\artifacts\\\\executions\\\\\" | Sort-Object LastWriteTime -Descending | Select-Object -First 3 | ForEach-Object { $_.Name; \\(Get-Content $_.FullName | Select-String \"flow_id|steps_total|Task extracted\" | Select-Object -First 3\\) })",
+      "Bash(sort -t ' ' -k6,7)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Sandhosh\\\\Desktop\\\\QA-Automation-Application\\\\backend\\\\artifacts\\\\executions\\\\\" | Sort-Object LastWriteTime -Descending | Select-Object -First 3 | ForEach-Object { $_.FullName })",
+      "Bash(ollama list *)"
     ]
   }
 }

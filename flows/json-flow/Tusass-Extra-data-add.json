@@ -1,4 +1,4 @@
-﻿{
+{
   "name": " Tusass Extra data add ",
     "steps": [
       "Navigate to ${COS_URL}",
@@ -10,7 +10,7 @@
       "In Search box enter the ${MISTIN_ID}",
       "Click on the customer ${MISTIN_ID}",
       "Note the old Extra Data on this page",
-      "Take the screenshot of that page and save it as - search-result.png -", "SS",
+      "Take the screenshot of that page and save it as - search-result-before.png -",
       "Next Navigate to ${PORTAL_URL}",
       "Click the TopUp data button",
       "In the Phone Number field, enter ${PHONE_NUMBER}",
@@ -24,7 +24,7 @@
       "In CVV/CVD field, enter ${CARD_CVV}",
       "Click the Pay button",
       "Wait 4000ms",
-      "After payment is successful, it show the Recipt page, take the screenshot of that page and save it as - receipt.png -", "SS",
+      "After payment is successful, it show the Recipt page, take the screenshot of that page and save it as - receipt.png -",
       "Navigate to ${COS_OPERATION_URL}",
       "Wait 3000ms",
       "Click escape button",
@@ -36,17 +36,16 @@
       "Wait for the Process List table to load",
       "Click the first Operation Id number link",
       "Refresh the page until status is COMPLETED",
-      "Take the screenshot of that page and save it as - operations-page.png -", "SS",
+      "Take the screenshot of that page and save it as - operations-page.png -",
       "Give the report - Tusass Extra Data Add flow executed successfully. ${MISTIN_ID} data addon ${DATA_AMOUNT} is COMPLETED",
       "Navigate to ${COS_URL}",
-      "Click escape button to show the - Login with password  - button",
-      "Click the - Login with password  - button",
-      " Enter Username in inuput box ${ADMIN_USER}",
-      " Enter Password in input box ${ADMIN_PASS}",
-      "Click the - Log in  - button",
+      "Wait 3000ms",
+      "Press Escape key",
+      "Wait 1000ms",
       "In Search box enter the ${MISTIN_ID}",
+      "Wait 2000ms",
       "Click on the customer ${MISTIN_ID}",
-      "Note the old Extra Data on this page",
-      "Take the screenshot of that page and save it as - search-result.png -", "SS"
+      "Wait 3000ms",
+      "Take the screenshot of that page and save it as - search-result-after.png -"
     ]
 }

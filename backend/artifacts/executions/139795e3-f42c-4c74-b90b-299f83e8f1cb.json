@@ -1,0 +1,221 @@
+{
+  "id": "139795e3-f42c-4c74-b90b-299f83e8f1cb",
+  "flow_id": "81a138a8-24b4-4198-8076-fe7a5031b454",
+  "flow_name": "New Account creation",
+  "status": "success",
+  "started_at": "2026-06-03T10:25:26.404653+00:00",
+  "finished_at": "2026-06-03T10:25:56.302244+00:00",
+  "duration_seconds": 29.9,
+  "logs": [
+    {
+      "timestamp": "2026-06-03T10:25:26.482569+00:00",
+      "level": "info",
+      "message": "\ud83d\udcdd Task extracted: 6 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:26.508775+00:00",
+      "level": "info",
+      "message": "  Step 1: Navigate to http://10.60.80.28:8001/myshapecsr/jfn?entry=home",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:26.539994+00:00",
+      "level": "info",
+      "message": "  Step 6: Click Search/Update Inventory",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:26.562045+00:00",
+      "level": "info",
+      "message": "\ud83e\udd16 Sending task to qwen2.5:14b\u2026",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:26.587380+00:00",
+      "level": "info",
+      "message": "\ud83d\udccb Plan ready: 6 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:26.613640+00:00",
+      "level": "info",
+      "message": "\ud83d\udcad Direct execution of 6 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:27.176908+00:00",
+      "level": "info",
+      "message": "\ud83d\ude80 Browser launched \u2014 6 steps",
+      "step": 0,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:27.177090+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 1: Navigate to http://10.60.80.28:8001/myshapecsr/jfn?entry=home",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:38.911273+00:00",
+      "level": "info",
+      "message": "  \u2192 http://10.60.80.28:8001/myshapecsr/jfn?entry=home",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:39.110548+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 1,
+      "screenshot": "step_001_ok_s01_1780482338.png"
+    },
+    {
+      "timestamp": "2026-06-03T10:25:39.110715+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 2: Enter Username in inuput box cssinv",
+      "step": 2,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:39.421326+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed 'cssinv' (first empty input)",
+      "step": 2,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:39.590840+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 2,
+      "screenshot": "step_002_ok_s02_1780482339.png"
+    },
+    {
+      "timestamp": "2026-06-03T10:25:39.590963+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 3: Enter Password in input box Pa$$w0rd",
+      "step": 3,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:40.135621+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed 'Pa$$w0rd' into 'Password'",
+      "step": 3,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:40.321646+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 3,
+      "screenshot": "step_003_ok_s03_1780482340.png"
+    },
+    {
+      "timestamp": "2026-06-03T10:25:40.322422+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 4: Click the - Log in  - button",
+      "step": 4,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:47.941471+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked '- Log in  -'",
+      "step": 4,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:49.410448+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 4,
+      "screenshot": "step_004_ok_s04_1780482347.png"
+    },
+    {
+      "timestamp": "2026-06-03T10:25:49.410702+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 5: Click Inventory Administration",
+      "step": 5,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:52.432210+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'Inventory Administration'",
+      "step": 5,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:52.591466+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 5,
+      "screenshot": "step_005_ok_s05_1780482352.png"
+    },
+    {
+      "timestamp": "2026-06-03T10:25:52.591647+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 6: Click Search/Update Inventory",
+      "step": 6,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:55.701595+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'Search/Update Inventory'",
+      "step": 6,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:55.900156+00:00",
+      "level": "info",
+      "message": "  [ok] screenshot",
+      "step": 6,
+      "screenshot": "step_006_ok_s06_1780482355.png"
+    },
+    {
+      "timestamp": "2026-06-03T10:25:56.051306+00:00",
+      "level": "info",
+      "message": "Final state captured",
+      "step": 6,
+      "screenshot": "step_006_final_1780482355.png"
+    },
+    {
+      "timestamp": "2026-06-03T10:25:56.307294+00:00",
+      "level": "success",
+      "message": "\u2705 COMPLETED \u2014 6/6 steps in 29.9s",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-03T10:25:56.349944+00:00",
+      "level": "info",
+      "message": "\ud83d\udcc4 Report: New_Account_creation_2026-06-03_10-25.pdf",
+      "step": null,
+      "screenshot": null
+    }
+  ],
+  "screenshots": [
+    "step_001_ok_s01_1780482338.png",
+    "step_002_ok_s02_1780482339.png",
+    "step_003_ok_s03_1780482340.png",
+    "step_004_ok_s04_1780482347.png",
+    "step_005_ok_s05_1780482352.png",
+    "step_006_ok_s06_1780482355.png",
+    "step_006_final_1780482355.png"
+  ],
+  "result_summary": "Complete all steps successfully",
+  "error": null,
+  "steps_completed": 6,
+  "steps_total": 6,
+  "report_file": "New_Account_creation_2026-06-03_10-25.pdf"
+}

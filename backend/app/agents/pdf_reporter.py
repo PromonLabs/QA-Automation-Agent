@@ -217,14 +217,6 @@ def _write_pdf(result: ExecutionResult, output_path: Path) -> None:
     flow_name_lo = (result.flow_name or "").lower()
     is_extra_data = "extra" in flow_name_lo or "data" in flow_name_lo
 
-    # TopUp Talk: search-result / receipt / updated-balance
-    # Extra Data:  search-result / receipt / operations-page / operation-completed
-    before_shot    = _find_named_screenshot(result, "search-result.png")
-    receipt_shot   = _find_named_screenshot(result, "receipt.png")
-    after_shot     = _find_named_screenshot(result, "updated-balance.png")
-    ops_page       = _find_named_screenshot(result, "operations-page.png")
-    op_completed   = _find_named_screenshot(result, "operation-completed.png")
-
     def _add_shot(path, label, max_h=6 * cm):
         story.append(HR(thick=0.8, colour=DARK_GREY, space_before=4, space_after=4))
         story.append(Paragraph(label, s_shot_hd))
@@ -243,17 +235,23 @@ def _write_pdf(result: ExecutionResult, output_path: Path) -> None:
         story.append(gap(4))
 
     if is_extra_data:
+        # Extra Data Add: 4 screenshots
+        # 1. Before add  → search-result-before.png
+        # 2. Payment      → receipt.png
+        # 3. Ops COMPLETED → operations-page.png  (captured after refresh_until COMPLETED)
+        # 4. After add    → search-result-after.png
         shots = [
-            (before_shot,  "Before Extra Data Add"),
-            (receipt_shot, "Payment Receipt"),
-            (ops_page,     "Operations Page"),
-            (op_completed, "Operation Completed Status"),
+            (_find_named_screenshot(result, "search-result-before.png"), "Before Extra Data Add"),
+            (_find_named_screenshot(result, "receipt.png"),               "Payment Receipt"),
+            (_find_named_screenshot(result, "operations-page.png"),       "Operations Page — COMPLETED"),
+            (_find_named_screenshot(result, "search-result-after.png"),   "After Data Add"),
         ]
     else:
+        # TopUp Talk: 3 screenshots
         shots = [
-            (before_shot,  "Balance Before Top-Up"),
-            (receipt_shot, "Payment Receipt"),
-            (after_shot,   "Balance After Top-Up"),
+            (_find_named_screenshot(result, "search-result.png"),   "Balance Before Top-Up"),
+            (_find_named_screenshot(result, "receipt.png"),          "Payment Receipt"),
+            (_find_named_screenshot(result, "updated-balance.png"),  "Balance After Top-Up"),
         ]
 
     if any(p for p, _ in shots):
@@ -261,6 +259,22 @@ def _write_pdf(result: ExecutionResult, output_path: Path) -> None:
             if path:
                 _add_shot(path, label)
         story.append(HR(space_after=6))
+
+    # ── SS screenshots — included in every flow that has them ────────────────
+    # Any "SS" step in the flow saves a ss_NNN.png; collect and add them all.
+    try:
+        from app.core.config import settings as _s
+        ss_dir = _s.SCREENSHOTS_DIR / result.id
+        ss_files = sorted(ss_dir.glob("ss_*.png")) if ss_dir.exists() else []
+        if ss_files:
+            story.append(HR(thick=0.8, colour=DARK_GREY, space_before=4, space_after=4))
+            story.append(Paragraph("Screenshots", s_shot_hd))
+            story.append(HR(thick=0.5, colour=LIGHT_LINE, space_after=4))
+            for i, ss_path in enumerate(ss_files, 1):
+                _add_shot(ss_path, f"Screenshot {i}")
+            story.append(HR(space_after=6))
+    except Exception:
+        pass
 
     # ── Summary note ─────────────────────────────────────────────────────────
     summary_text = result.result_summary or result.error or ""

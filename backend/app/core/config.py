@@ -27,7 +27,8 @@ class Settings:
 
     # Ollama / LLM
     OLLAMA_HOST: str = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-    LLM_MODEL: str = os.getenv("LLM_MODEL", "qwen2.5:14b")
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "qwen2.5:14b")          # text: flow parsing
+    VISION_MODEL: str = os.getenv("VISION_MODEL", "qwen2.5vl:latest") # vision: screen agent
     LLM_TIMEOUT: int = int(os.getenv("LLM_TIMEOUT", "120"))
 
     # Browser — headless=true for speed (no visible window)
