@@ -246,14 +246,19 @@ class BrowserAgent:
                 except Exception:
                     continue
             # CSS fallbacks — match by name/id/placeholder/aria-label (full phrase)
+            # inputs require is_visible(); textareas skip it (Vuesax hides the raw <textarea>)
             tl = target.lower()
             for attr in ["name", "id", "placeholder", "aria-label"]:
                 try:
-                    loc = frame.locator(
-                        f"input[{attr}*='{tl}' i], textarea[{attr}*='{tl}' i]"
-                    ).first
-                    if await loc.count() > 0 and await loc.is_visible():
-                        return loc
+                    inp_loc = frame.locator(f"input[{attr}*='{tl}' i]").first
+                    if await inp_loc.count() > 0 and await inp_loc.is_visible():
+                        return inp_loc
+                except Exception:
+                    pass
+                try:
+                    ta_loc = frame.locator(f"textarea[{attr}*='{tl}' i]").first
+                    if await ta_loc.count() > 0:   # no visibility check for textarea
+                        return ta_loc
                 except Exception:
                     pass
             # Keyword fallback — try each word in target (≥4 chars) against placeholder/aria-label
@@ -261,11 +266,15 @@ class BrowserAgent:
             for word in words:
                 for attr in ["placeholder", "aria-label", "name"]:
                     try:
-                        loc = frame.locator(
-                            f"input[{attr}*='{word}' i], textarea[{attr}*='{word}' i]"
-                        ).first
-                        if await loc.count() > 0 and await loc.is_visible():
-                            return loc
+                        inp_loc = frame.locator(f"input[{attr}*='{word}' i]").first
+                        if await inp_loc.count() > 0 and await inp_loc.is_visible():
+                            return inp_loc
+                    except Exception:
+                        pass
+                    try:
+                        ta_loc = frame.locator(f"textarea[{attr}*='{word}' i]").first
+                        if await ta_loc.count() > 0:   # no visibility check for textarea
+                            return ta_loc
                     except Exception:
                         pass
 
@@ -1065,8 +1074,11 @@ class BrowserAgent:
                     self._context.remove_listener("page", _on_page)
 
                     if not switched:
+                        # Login submits need longer — the server validates credentials
+                        # and then redirects to the dashboard which may take several seconds.
+                        _wait_ms = 6000 if self._is_login_submit(clicked_name) else 4000
                         try:
-                            await self._page.wait_for_load_state("networkidle", timeout=4000)
+                            await self._page.wait_for_load_state("networkidle", timeout=_wait_ms)
                         except Exception:
                             pass
 
@@ -1320,7 +1332,7 @@ class BrowserAgent:
                                 await el.evaluate(
                                     "(el, v) => { "
                                     "const setter = Object.getOwnPropertyDescriptor("
-                                    "  window.HTMLInputElement.prototype, 'value').set; "
+                                    "  (el.tagName==='TEXTAREA'?window.HTMLTextAreaElement:window.HTMLInputElement).prototype, 'value').set; "
                                     "setter.call(el, v); "
                                     "el.dispatchEvent(new Event('input',{bubbles:true})); "
                                     "el.dispatchEvent(new Event('change',{bubbles:true})); }",
@@ -1347,7 +1359,8 @@ class BrowserAgent:
                         try:
                             inputs = await frame.locator(
                                 "input[type='text'],input[type='tel'],input[type='email'],"
-                                "input[type='number'],input[type='password'],input:not([type])"
+                                "input[type='number'],input[type='password'],input:not([type]),"
+                                "textarea"
                             ).all()
                             for inp in inputs:
                                 try:
@@ -1382,7 +1395,7 @@ class BrowserAgent:
                                             "(el, v) => { "
                                             "el.focus(); "
                                             "const setter = Object.getOwnPropertyDescriptor("
-                                            "  window.HTMLInputElement.prototype, 'value').set; "
+                                            "  (el.tagName==='TEXTAREA'?window.HTMLTextAreaElement:window.HTMLInputElement).prototype, 'value').set; "
                                             "setter.call(el, v); "
                                             "el.dispatchEvent(new Event('input',{bubbles:true})); "
                                             "el.dispatchEvent(new Event('change',{bubbles:true})); "
@@ -1968,7 +1981,7 @@ class BrowserAgent:
                 )
 
                 val = None
-                for _ in range(30):   # 30 × 0.5 s = 15 s max
+                for _ in range(20):   # 20 × 0.5 s = 10 s max
                     try:
                         body = await self._page.inner_text("body")
                         if is_subscriber_id:

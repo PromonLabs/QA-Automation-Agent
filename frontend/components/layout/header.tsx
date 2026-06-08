@@ -6,8 +6,10 @@ import { healthApi } from "@/lib/api"
 type AgentStatus = "connected" | "disconnected" | "checking"
 
 export function Header({ title }: { title: string }) {
-  const [llmStatus, setLlmStatus]       = useState<AgentStatus>("checking")
-  const [visionStatus, setVisionStatus] = useState<AgentStatus>("checking")
+  const [llmStatus,     setLlmStatus]     = useState<AgentStatus>("checking")
+  const [visionStatus,  setVisionStatus]  = useState<AgentStatus>("checking")
+  const [llmModel,      setLlmModel]      = useState("qwen2.5:14b")
+  const [visionModel,   setVisionModel]   = useState("qwen2.5vl")
 
   useEffect(() => {
     const check = async () => {
@@ -15,6 +17,8 @@ export function Header({ title }: { title: string }) {
         const { data } = await healthApi.check()
         setLlmStatus(data.llm === "connected" ? "connected" : "disconnected")
         setVisionStatus(data.vision === "connected" ? "connected" : "disconnected")
+        if (data.model)        setLlmModel(data.model)
+        if (data.vision_model) setVisionModel(data.vision_model.replace(":latest", ""))
       } catch {
         setLlmStatus("disconnected")
         setVisionStatus("disconnected")
@@ -30,28 +34,15 @@ export function Header({ title }: { title: string }) {
       <h1 className="text-white font-semibold text-lg">{title}</h1>
 
       <div className="flex items-center gap-4 text-xs">
-        {/* Flow Parser — qwen2.5:14b */}
-        <AgentBadge
-          label="qwen2.5:14b"
-          role="Flow Agent"
-          status={llmStatus}
-        />
-
-        {/* Screen Vision — qwen2.5vl */}
-        <AgentBadge
-          label="qwen2.5vl"
-          role="Vision Agent"
-          status={visionStatus}
-        />
+        <AgentBadge label={llmModel}    role="Flow Agent"   status={llmStatus} />
+        <AgentBadge label={visionModel} role="Vision Agent" status={visionStatus} />
       </div>
     </header>
   )
 }
 
 function AgentBadge({
-  label,
-  role,
-  status,
+  label, role, status,
 }: {
   label: string
   role: string

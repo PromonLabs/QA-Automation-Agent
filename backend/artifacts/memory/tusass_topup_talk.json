@@ -1,16 +1,6 @@
 {
   "observed_failures": [
     {
-      "step": "Step 15 failed: On the topup amount selection page, select the 50 amount option and click the Continue button",
-      "error": "Step 15 failed: On the topup amount selection page, select the 50 amount option and click the Continue button",
-      "at": "2026-05-29T05:02:14.748626+00:00"
-    },
-    {
-      "step": "Step 15 failed: On the 'Choose the amount' page, click the dropdown currently showing '200', select '50' from the dropdown options, then click the Continue button",
-      "error": "Step 15 failed: On the 'Choose the amount' page, click the dropdown currently showing '200', select '50' from the dropdown options, then click the Continue button",
-      "at": "2026-05-29T05:14:18.418777+00:00"
-    },
-    {
       "step": "Step 17 failed: Next page  was payment page , it ask card details, 1000000000000008 , 11/28 , 121  enter those details in respective input box and click the pay button",
       "error": "Step 17 failed: Next page  was payment page , it ask card details, 1000000000000008 , 11/28 , 121  enter those details in respective input box and click the pay button",
       "at": "2026-05-29T05:20:01.322918+00:00"
@@ -99,8 +89,18 @@
       "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
       "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
       "at": "2026-06-05T07:41:46.550225+00:00"
+    },
+    {
+      "step": "Step 4 failed: Enter Username in inuput box admin@telepost.gl",
+      "error": "Step 4 failed: Enter Username in inuput box admin@telepost.gl",
+      "at": "2026-06-05T10:05:13.423820+00:00"
+    },
+    {
+      "step": "Step 8 failed: Click on the customer 236619",
+      "error": "Step 8 failed: Click on the customer 236619",
+      "at": "2026-06-05T10:10:26.948775+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk",
-  "updated_at": "2026-06-05T07:41:46.550471+00:00"
+  "updated_at": "2026-06-05T10:10:26.950962+00:00"
 }

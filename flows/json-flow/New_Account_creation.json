@@ -5,6 +5,7 @@
     "Enter Username in inuput box ${CSR_USER}",
     "Enter Password in input box ${CSR_PASSWORD}",
     "Click the - Log in  - button",
+    "Wait 4000ms",
     "Click Inventory Administration",
     "Click Search/Update Inventory",
     "Select ICCID from Inventory Type",
@@ -37,12 +38,15 @@
     "In the ICC number field, enter ${ICC_ID}",
     "Wait 1000ms",
     "Click the Continue button",
-    "Type Test in the Example field",
+    "Wait 1000ms",
     "Click the Continue button",
-    "Wait 3000ms",
-    "SS",
-    "Click Submit or Create or Confirm or Finish button",
+    "Wait 1000ms",
+    "Type Test in the service description field",
+    "Click the Continue button",
     "Wait 2000ms",
+    "SS",
+    "Click Submit button",
+    "Wait 3000ms",
     "SS"
 
 

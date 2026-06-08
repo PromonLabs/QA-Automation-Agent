@@ -1,0 +1,157 @@
+{
+  "id": "d08a50f3-895e-4a42-b583-4351a3825a5e",
+  "flow_id": "9087026f-297a-4756-b2d9-a06794a3b646",
+  "flow_name": "New Account creation",
+  "status": "failed",
+  "started_at": "2026-06-05T10:02:40.618477+00:00",
+  "finished_at": "2026-06-05T10:03:39.203005+00:00",
+  "duration_seconds": 58.58,
+  "logs": [
+    {
+      "timestamp": "2026-06-05T10:02:40.676408+00:00",
+      "level": "info",
+      "message": "\ud83d\udcdd Task extracted: 43 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:02:40.688891+00:00",
+      "level": "info",
+      "message": "  Step 1: Navigate to http://10.60.80.28:8001/myshapecsr/jfn?entry=home",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:02:40.704085+00:00",
+      "level": "info",
+      "message": "  Step 43: SS",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:02:40.716206+00:00",
+      "level": "info",
+      "message": "\ud83e\udd16 Sending task to qa-bot\u2026",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:02:41.722122+00:00",
+      "level": "info",
+      "message": "\ud83d\udccb Plan ready: 43 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:02:41.724287+00:00",
+      "level": "info",
+      "message": "\ud83d\udcad Direct execution of 43 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:02:42.691041+00:00",
+      "level": "info",
+      "message": "\ud83d\ude80 Browser launched \u2014 43 steps",
+      "step": 0,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:02:42.691400+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 1: Navigate to http://10.60.80.28:8001/myshapecsr/jfn?entry=home",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:02:55.088661+00:00",
+      "level": "info",
+      "message": "  \u2192 http://10.60.80.28:8001/myshapecsr/jfn?entry=home",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:02:55.088980+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 2: Enter Username in inuput box cssinv",
+      "step": 2,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:02:55.655898+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed 'cssinv' (first empty input)",
+      "step": 2,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:02:55.958027+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 3: Enter Password in input box Pa$$w0rd",
+      "step": 3,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:02:56.434275+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed 'Pa$$w0rd' into 'Password'",
+      "step": 3,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:02:56.741147+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 4: Click the - Log in  - button",
+      "step": 4,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:03:04.211381+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked '- Log in  -'",
+      "step": 4,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:03:04.214447+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 5: Click Inventory Administration",
+      "step": 5,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:03:37.859191+00:00",
+      "level": "error",
+      "message": "  \u2717 STEP FAILED \u2014 'Inventory Administration' not found on page",
+      "step": 5,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:03:37.867570+00:00",
+      "level": "error",
+      "message": "\u274c STOPPED at step 5 \u2014 Click Inventory Administration",
+      "step": 5,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:03:39.205713+00:00",
+      "level": "error",
+      "message": "\u274c FAILED \u2014 4/43 steps in 58.6s",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-05T10:03:39.272747+00:00",
+      "level": "info",
+      "message": "\ud83d\udcc4 Report: New_Account_creation_2026-06-05_10-03.pdf",
+      "step": null,
+      "screenshot": null
+    }
+  ],
+  "screenshots": [],
+  "result_summary": "Step 5 failed: Click Inventory Administration",
+  "error": null,
+  "steps_completed": 4,
+  "steps_total": 43,
+  "report_file": "New_Account_creation_2026-06-05_10-03.pdf"
+}
