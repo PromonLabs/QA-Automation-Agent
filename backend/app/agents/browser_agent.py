@@ -59,6 +59,7 @@ class BrowserAgent:
         self._captured_vars: dict = {}   # values extracted from pages during the run
         self._login_sequence_skipped = False
         self._authenticated_domains: set = set()  # domains where login succeeded this run
+        self._last_idle_url: str = ""   # URL we last waited networkidle for (skip re-wait)
 
     # ── Thread-safe callback dispatch ────────────────────────────────────────
     def _dispatch(self, coro) -> None:
@@ -423,10 +424,10 @@ class BrowserAgent:
                     async def clear(self_): pass
                     async def press_sequentially(self_, val, **kw):
                         await self_.page.mouse.click(self_.px, self_.py)
-                        await self_.page.keyboard.type(val, delay=30)
+                        await self_.page.keyboard.type(val, delay=15)
                     async def fill(self_, val):
                         await self_.page.mouse.click(self_.px, self_.py)
-                        await self_.page.keyboard.type(val, delay=30)
+                        await self_.page.keyboard.type(val, delay=15)
                 return _CoordLocator(x, y, self._page)
         except Exception:
             pass
@@ -618,17 +619,17 @@ class BrowserAgent:
                 pw = self._page.locator("input[type='password']").first
                 if await em.count() > 0 and await pw.count() > 0:
                     await em.clear()
-                    await em.press_sequentially(user, delay=30)
+                    await em.press_sequentially(user, delay=15)
                     await em.evaluate("e => e.dispatchEvent(new Event('input',{bubbles:true}))")
                     await em.evaluate("e => e.dispatchEvent(new Event('blur',{bubbles:true}))")
                     await asyncio.sleep(0.5)
                     await pw.clear()
-                    await pw.press_sequentially(pwd, delay=30)
+                    await pw.press_sequentially(pwd, delay=15)
                     await pw.evaluate("e => e.dispatchEvent(new Event('input',{bubbles:true}))")
                     await pw.evaluate("e => e.dispatchEvent(new Event('blur',{bubbles:true}))")
                     await asyncio.sleep(0.5)
                     await self._page.keyboard.press("Enter")
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(3)
                     shot = await self._screenshot("relogin-direct")
                     await self._log("info", "  🔑 Re-login: direct form submitted", screenshot=shot)
                     return True
@@ -701,7 +702,7 @@ class BrowserAgent:
                         "input[type='submit']", "button[type='submit']",
                         "input[value='Sign in']", "input[id='idSIButton9']",
                     ])
-                    await asyncio.sleep(4)
+                    await asyncio.sleep(2)
                     continue
 
                 # ── Microsoft: email field ────────────────────────────────────
@@ -716,23 +717,23 @@ class BrowserAgent:
                         "input[type='submit']", "button[type='submit']",
                         "input[value='Next']", "input[id='idSIButton9']",
                     ])
-                    await asyncio.sleep(4)
+                    await asyncio.sleep(2)
                     continue
 
                 await asyncio.sleep(0.5)
 
             # Wait for the app to fully settle after login
             try:
-                await self._page.wait_for_load_state("networkidle", timeout=12000)
+                await self._page.wait_for_load_state("networkidle", timeout=5000)
             except Exception:
                 pass
-            await asyncio.sleep(2)
+            await asyncio.sleep(1)
 
             # Navigate back to the operation detail page
             current = self._page.url
             if current != return_url:
                 await self._page.goto(return_url, wait_until="domcontentloaded", timeout=20000)
-                await asyncio.sleep(3)
+                await asyncio.sleep(1.5)
 
             shot = await self._screenshot("ms-relogin-final")
             await self._log("info", "   Re-login: returned to operation page", screenshot=shot)
@@ -938,14 +939,14 @@ class BrowserAgent:
                         else:
                             raise
                     try:
-                        await self._page.wait_for_load_state("networkidle", timeout=8000)
+                        await self._page.wait_for_load_state("networkidle", timeout=4000)
                     except Exception:
                         pass
-                    # Poll up to 60 s for ANY interactive element to appear.
+                    # Poll up to 30 s for ANY interactive element to appear.
                     # This handles SSO redirect chains (e.g. Microsoft login) where
                     # the page shows a loading spinner for many seconds before the
                     # actual login form renders.
-                    for _ in range(120):   # 120 × 0.5 s = 60 s max
+                    for _ in range(60):    # 60 × 0.5 s = 30 s max
                         try:
                             n = await self._page.locator(
                                 "button:visible, input:visible, "
@@ -965,7 +966,7 @@ class BrowserAgent:
                     except Exception:
                         pass
                     # Poll up to 8 s for a text/tel input to appear
-                    for _ in range(16):
+                    for _ in range(8):
                         try:
                             inp = self._page.locator(
                                 "input[type='text']:visible, input[type='tel']:visible, "
@@ -977,6 +978,7 @@ class BrowserAgent:
                             pass
                         await asyncio.sleep(0.5)
 
+                self._last_idle_url = ""   # new page — reset idle cache
                 await self._log("info", f"  → {url}")
                 await step_shot("ok")
 
@@ -996,10 +998,10 @@ class BrowserAgent:
                         if await self._already_authenticated():
                             await self._log("info", f"  → Already logged in — skipping '{target}'")
                             try:
-                                await self._page.wait_for_load_state("networkidle", timeout=8000)
+                                await self._page.wait_for_load_state("networkidle", timeout=3000)
                             except Exception:
                                 pass
-                            await asyncio.sleep(1)
+                            await asyncio.sleep(0.5)
                             await step_shot("ok")
                             self._login_sequence_skipped = True
                             return True
@@ -1076,7 +1078,7 @@ class BrowserAgent:
                     if not switched:
                         # Login submits need longer — the server validates credentials
                         # and then redirects to the dashboard which may take several seconds.
-                        _wait_ms = 6000 if self._is_login_submit(clicked_name) else 4000
+                        _wait_ms = 4000 if self._is_login_submit(clicked_name) else 2000
                         try:
                             await self._page.wait_for_load_state("networkidle", timeout=_wait_ms)
                         except Exception:
@@ -1292,7 +1294,7 @@ class BrowserAgent:
                                 if focused:
                                     await asyncio.sleep(0.3)
                                     await el.evaluate("el => { el.value = ''; }")
-                                    await self._page.keyboard.type(str(fill_val), delay=30)
+                                    await self._page.keyboard.type(str(fill_val), delay=15)
                                     try:
                                         await el.evaluate(
                                             "(el, v) => { "
@@ -1321,7 +1323,7 @@ class BrowserAgent:
                         typed = False
                         try:
                             await el.clear()
-                            await el.press_sequentially(str(fill_val), delay=30)
+                            await el.press_sequentially(str(fill_val), delay=15)
                             typed = True
                         except Exception:
                             pass
@@ -1369,7 +1371,7 @@ class BrowserAgent:
                                         if not cur_val:
                                             await inp.click(timeout=3000)
                                             await inp.clear()
-                                            await inp.press_sequentially(str(fill_val), delay=30)
+                                            await inp.press_sequentially(str(fill_val), delay=15)
                                             try:
                                                 await inp.evaluate(
                                                     "e => { e.dispatchEvent(new Event('input',{bubbles:true})); "
@@ -1570,8 +1572,8 @@ class BrowserAgent:
                         # starts at the subscriber list (not the last customer detail).
                         base_url = "/".join(self._page.url.split("/")[:3])
                         await self._page.goto(base_url, wait_until="domcontentloaded", timeout=20000)
-                        await self._page.wait_for_load_state("networkidle", timeout=8000)
-                        await asyncio.sleep(2)
+                        await self._page.wait_for_load_state("networkidle", timeout=4000)
+                        await asyncio.sleep(1)
                         # COS shows a login overlay on every page load — dismiss it.
                         # Pressing Escape reveals the "Login with password" button.
                         await self._page.keyboard.press("Escape")
@@ -1654,21 +1656,23 @@ class BrowserAgent:
                 await step_shot("ok")
 
             elif action == "screenshot":
-                # Wait for page to fully settle before capturing
-                try:
-                    await self._page.wait_for_load_state("networkidle", timeout=8000)
-                except Exception:
-                    pass
-                # Wait for skeleton/loading placeholders to disappear
-                try:
-                    await self._page.wait_for_function(
-                        """() => document.querySelectorAll(
-                            '[class*="skeleton"], [class*="loading"], [class*="placeholder"], [class*="shimmer"]'
-                        ).length === 0""",
-                        timeout=6000,
-                    )
-                except Exception:
-                    pass
+                # Skip networkidle + skeleton waits when already settled on this URL
+                current_url = self._page.url if self._page else ""
+                if current_url != self._last_idle_url:
+                    try:
+                        await self._page.wait_for_load_state("networkidle", timeout=3000)
+                    except Exception:
+                        pass
+                    try:
+                        await self._page.wait_for_function(
+                            """() => document.querySelectorAll(
+                                '[class*="skeleton"], [class*="loading"], [class*="placeholder"], [class*="shimmer"]'
+                            ).length === 0""",
+                            timeout=2000,
+                        )
+                    except Exception:
+                        pass
+                    self._last_idle_url = current_url
                 # Named screenshot (e.g. "save as receipt.png")
                 if target and target.lower().endswith((".png", ".jpg")):
                     safe_name = re.sub(r"[^\w\-.]", "_", target)
