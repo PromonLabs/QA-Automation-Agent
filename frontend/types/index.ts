@@ -55,6 +55,31 @@ export interface Report {
   ext: string
 }
 
+export interface BulkItem {
+  number: string
+  execution_id: string | null
+  status: "pending" | "running" | "success" | "failed"
+  started_at: string | null
+  finished_at: string | null
+  duration_seconds: number | null
+  error: string | null
+}
+
+export interface BulkRun {
+  id: string
+  flow_id: string
+  flow_name: string
+  variable_names: string[]
+  total: number
+  completed: number
+  success: number
+  failed: number
+  status: "running" | "completed"
+  started_at: string
+  finished_at: string | null
+  items: BulkItem[]
+}
+
 export interface WSMessage {
   type: "log" | "screenshot" | "status" | "complete" | "live_frame"
   data: Record<string, unknown>

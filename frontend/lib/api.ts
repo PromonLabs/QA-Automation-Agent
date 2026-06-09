@@ -81,6 +81,18 @@ export const executionApi = {
   reportUrl: (execId: string) => `${API_URL}/api/execution/report/${execId}`,
 }
 
+// ── Bulk ──────────────────────────────────
+export const bulkApi = {
+  run: (data: {
+    flow_id: string
+    numbers: string[]
+    variable_names: string[]
+    max_parallel: number
+  }) => api.post("/bulk/run", data),
+  list: () => api.get("/bulk"),
+  get: (id: string) => api.get(`/bulk/${id}`),
+}
+
 // ── Health ────────────────────────────────
 export const healthApi = {
   check: () => axios.get(`${API_URL}/health`),

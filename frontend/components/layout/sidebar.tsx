@@ -13,6 +13,7 @@ import {
   FileBadge,
   PenLine,
   KeyRound,
+  Layers,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -21,6 +22,7 @@ const nav = [
   { href: "/flows",      label: "Flows",         icon: Play },
   { href: "/flows/new",  label: "Write Flow",    icon: PenLine },
   { href: "/execution",  label: "Executions",    icon: Activity },
+  { href: "/bulk",       label: "Bulk Run",      icon: Layers },
   { href: "/reports",    label: "Reports",       icon: FileBadge },
   { href: "/env",        label: "Environment",   icon: KeyRound },
   { href: "/settings",   label: "Settings",      icon: Settings },

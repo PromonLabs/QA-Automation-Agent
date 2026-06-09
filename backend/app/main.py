@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
-from app.api.routes import auth, flows, execution, disk_flows
+from app.api.routes import auth, flows, execution, disk_flows, bulk
 from app.api.deps import get_current_user
 
 
@@ -26,6 +26,7 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(flows.router, prefix="/api")
 app.include_router(execution.router, prefix="/api")
 app.include_router(disk_flows.router, prefix="/api")
+app.include_router(bulk.router, prefix="/api")
 
 app.mount(
     "/screenshots",
