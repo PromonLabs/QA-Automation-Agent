@@ -522,12 +522,18 @@ class LLMClient:
         payload = {
             "model": self.model,
             "prompt": (
-                f"Create a browser automation plan for this task:\n{task[:2000]}\n\n"
+                f"Create a browser automation plan for this task:\n{task[:800]}\n\n"
                 "Respond with ONLY the JSON object."
             ),
             "system": SYSTEM_PROMPT,
             "stream": False,
-            "options": {"temperature": 0.05, "top_p": 0.9, "num_predict": 3000},
+            "options": {
+                "temperature": 0.05,
+                "top_p": 0.9,
+                "num_predict": 1000,
+                "num_ctx": 2048,
+                "num_thread": 8,
+            },
         }
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             resp = await client.post(url, json=payload)
