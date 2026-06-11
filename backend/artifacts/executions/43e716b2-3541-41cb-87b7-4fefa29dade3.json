@@ -1,0 +1,79 @@
+{
+  "id": "43e716b2-3541-41cb-87b7-4fefa29dade3",
+  "flow_id": "efcaa57e-6846-4b98-8947-94927a8e7926",
+  "flow_name": "Tusass TopUp Talk [580447]",
+  "status": "running",
+  "started_at": "2026-06-11T10:31:40.771128+00:00",
+  "finished_at": null,
+  "duration_seconds": null,
+  "logs": [
+    {
+      "timestamp": "2026-06-11T10:31:40.790578+00:00",
+      "level": "info",
+      "message": "\ud83d\udd11 Using flow-level credentials (4 var(s))",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-11T10:31:40.849058+00:00",
+      "level": "info",
+      "message": "\ud83d\udcdd Task extracted: 33 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-11T10:31:40.862222+00:00",
+      "level": "info",
+      "message": "  Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-11T10:31:40.880162+00:00",
+      "level": "info",
+      "message": "  Step 33: Give the report - Tusass topup talk flow is executed successfully. ${SUBSCRIBER_",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-11T10:31:40.895389+00:00",
+      "level": "info",
+      "message": "\ud83e\udd16 Sending task to qwen2.5:0.5b\u2026",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-11T10:31:41.433776+00:00",
+      "level": "info",
+      "message": "\ud83d\udccb Plan ready: 32 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-11T10:31:41.452993+00:00",
+      "level": "info",
+      "message": "\ud83d\udcad Direct execution of 32 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-11T10:31:41.625195+00:00",
+      "level": "info",
+      "message": "\ud83d\udd04 Session reused \u2014 32 steps (login skipped)",
+      "step": 0,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-11T10:31:41.649256+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": 1,
+      "screenshot": null
+    }
+  ],
+  "screenshots": [],
+  "result_summary": null,
+  "error": null,
+  "steps_completed": 1,
+  "steps_total": 32
+}
