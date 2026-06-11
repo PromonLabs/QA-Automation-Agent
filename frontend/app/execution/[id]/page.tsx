@@ -10,7 +10,7 @@ import { formatDate, formatDuration, statusColor, logColor } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import {
   Loader2, Ban, RefreshCw, Camera, Terminal,
-  Monitor, Image as ImageIcon, Maximize2, X
+  Monitor, Image as ImageIcon, Maximize2, X, CheckCircle2, XCircle
 } from "lucide-react"
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000"
@@ -224,6 +224,36 @@ export default function ExecutionViewerPage() {
               </div>
             </div>
           </div>
+
+          {/* ── Flow Result Banner ── */}
+          {!isRunning && exec.status === "success" && exec.steps_completed === exec.steps_total && (
+            <div className="flex items-center gap-4 bg-white/[0.04] border border-white/20 rounded-xl px-5 py-4">
+              <CheckCircle2 className="w-6 h-6 text-white shrink-0" />
+              <div className="flex-1">
+                <div className="text-white font-semibold text-sm">Flow Success</div>
+                <div className="text-white/40 text-xs mt-0.5">
+                  All {exec.steps_total} steps completed successfully
+                </div>
+              </div>
+              <span className="text-xs text-white/50 border border-white/10 px-2.5 py-1 rounded-lg">
+                {exec.steps_completed}/{exec.steps_total} steps
+              </span>
+            </div>
+          )}
+          {!isRunning && exec.status === "failed" && (
+            <div className="flex items-center gap-4 bg-white/[0.02] border border-white/10 rounded-xl px-5 py-4">
+              <XCircle className="w-6 h-6 text-white/40 shrink-0" />
+              <div className="flex-1">
+                <div className="text-white/60 font-semibold text-sm">Flow Failed</div>
+                <div className="text-white/30 text-xs mt-0.5">
+                  {exec.steps_completed} of {exec.steps_total} steps completed
+                </div>
+              </div>
+              <span className="text-xs text-white/30 border border-white/10 px-2.5 py-1 rounded-lg">
+                {exec.steps_completed}/{exec.steps_total} steps
+              </span>
+            </div>
+          )}
 
           {/* ── Tabs ── */}
           <div className="flex gap-2">

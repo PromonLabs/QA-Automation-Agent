@@ -22,7 +22,7 @@ export const flowsApi = {
   create: (data: {
     name: string
     description?: string
-    format: "natural" | "json"
+    format: "normal" | "json"
     task: string
     tags?: string[]
     env_vars?: Record<string, string>
@@ -85,12 +85,16 @@ export const executionApi = {
 export const bulkApi = {
   run: (data: {
     flow_id: string
-    numbers: string[]
-    variable_names: string[]
+    numbers?: string[]
+    subscribers?: { env_vars: Record<string, string>; label: string }[]
+    variable_name?: string
     max_parallel: number
   }) => api.post("/bulk/run", data),
   list: () => api.get("/bulk"),
   get: (id: string) => api.get(`/bulk/${id}`),
+  subscribers: () => api.get<import("@/types").Subscriber[]>("/bulk/subscribers"),
+  getEnv: () => api.get<Record<string, string>>("/bulk/env"),
+  saveEnv: (env_vars: Record<string, string>) => api.put("/bulk/env", { env_vars }),
 }
 
 // ── Health ────────────────────────────────

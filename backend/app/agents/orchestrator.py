@@ -345,8 +345,14 @@ class Orchestrator:
         exec_id: str,
         headless: Optional[bool] = None,
         ws_broadcast: Optional[Callable] = None,
+        shared_browser=None,
+        shared_context=None,
+        already_in_proactor_loop: bool = False,
     ):
         self.flow = flow
+        self.shared_browser = shared_browser
+        self.shared_context = shared_context
+        self.already_in_proactor_loop = already_in_proactor_loop
         self.exec_id = exec_id
         self.headless = headless
         self.ws_broadcast = ws_broadcast
@@ -457,6 +463,9 @@ class Orchestrator:
                 log_callback=on_log,
                 frame_callback=on_frame,
             )
+            agent._shared_browser = self.shared_browser
+            agent._shared_context = self.shared_context
+            agent._already_in_proactor_loop = self.already_in_proactor_loop
             result = await agent.run(plan)
 
             # ── Finalize ──────────────────────────────────────────────

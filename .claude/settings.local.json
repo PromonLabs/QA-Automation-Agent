@@ -72,7 +72,13 @@
       "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Sandhosh\\\\Desktop\\\\QA-Automation-Application\\\\backend\\\\artifacts\\\\executions\\\\\" | Sort-Object LastWriteTime -Descending | Select-Object -First 3 | ForEach-Object { $_.FullName })",
       "Bash(ollama list *)",
       "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(m['name']\\) for m in d.get\\('models',[]\\)]\")",
-      "Bash(dir *)"
+      "Bash(dir *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\" -File -Force | Where-Object { $_.Extension -match '\\\\.\\(txt|html|md|json|yml|yaml|ps1|bat\\)$' })",
+      "PowerShell(\\(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\\\\backend\\\\venv\" -Recurse -Force 2>$null | Measure-Object\\).Count)",
+      "PowerShell([int]\\(\\(\\(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\" -Recurse -Force | Measure-Object -Property Length -Sum\\).Sum\\) / 1MB\\))",
+      "Bash(Select-Object Name)"
     ]
   }
 }

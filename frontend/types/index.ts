@@ -1,5 +1,5 @@
 export type ExecutionStatus = "pending" | "running" | "success" | "failed" | "cancelled"
-export type FlowFormat = "natural" | "json"
+export type FlowFormat = "normal" | "json"
 export type LogLevel = "info" | "warning" | "error" | "success"
 
 export interface Flow {
@@ -55,8 +55,16 @@ export interface Report {
   ext: string
 }
 
+export interface Subscriber {
+  ACCOUNT_NUMBER: string
+  PHONE_NUMBER: string
+  MOBILE_NUMBER: string
+  plan: string
+}
+
 export interface BulkItem {
   number: string
+  label: string
   execution_id: string | null
   status: "pending" | "running" | "success" | "failed"
   started_at: string | null

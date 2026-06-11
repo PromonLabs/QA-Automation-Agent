@@ -14,7 +14,7 @@ export default function NewFlowPage() {
 
   const [name, setName]             = useState("")
   const [task, setTask]             = useState("")
-  const [format, setFormat]         = useState<"natural" | "json">("json")
+  const [format, setFormat]         = useState<"normal" | "json">("json")
   const [saving, setSaving]         = useState(false)
   const [error, setError]           = useState("")
   const [uploadedFile, setUploadedFile] = useState<string | null>(null)

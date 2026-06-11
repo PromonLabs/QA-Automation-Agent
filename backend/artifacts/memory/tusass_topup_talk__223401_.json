@@ -1,0 +1,11 @@
+{
+  "observed_failures": [
+    {
+      "step": "Step 8 failed: Click on the customer 299223401",
+      "error": "Step 8 failed: Click on the customer 299223401",
+      "at": "2026-06-11T06:02:45.344655+00:00"
+    }
+  ],
+  "flow_name": "Tusass TopUp Talk [223401]",
+  "updated_at": "2026-06-11T06:02:45.344708+00:00"
+}

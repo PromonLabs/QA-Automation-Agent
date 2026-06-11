@@ -60,6 +60,9 @@ class BrowserAgent:
         self._login_sequence_skipped = False
         self._authenticated_domains: set = set()  # domains where login succeeded this run
         self._last_idle_url: str = ""   # URL we last waited networkidle for (skip re-wait)
+        self._shared_browser: Optional[Browser] = None   # set by bulk sequential runner
+        self._shared_context: Optional[BrowserContext] = None  # reuse login session across sequential runs
+        self._already_in_proactor_loop: bool = False     # skip thread spawn when already in right loop
 
     # ── Thread-safe callback dispatch ────────────────────────────────────────
     def _dispatch(self, coro) -> None:
@@ -1099,8 +1102,8 @@ class BrowserAgent:
                     if await self._select_option(target):
                         await self._log("success", f"  → Selected option '{target}' from dropdown")
                         await step_shot("ok")
-                    elif re.search(r'\bid\b', target, re.IGNORECASE):
-                        # Target looks like an ID column — click first table row link
+                    elif re.search(r'\bid\b', target, re.IGNORECASE) or re.match(r'^\+?\d[\d\s\-\.]{5,}$', target.strip()):
+                        # Target looks like an ID or phone/subscriber number — click first table row link
                         clicked_row = False
                         # Pass 1: Playwright CSS/role selectors
                         for frame in self._page.frames:
@@ -1204,6 +1207,33 @@ class BrowserAgent:
                                 await self._log("info", f"  → Already logged in — skipping '{target}'")
                                 await step_shot("ok")
                             else:
+                                # Phone/subscriber number — click first search result row
+                                if re.match(r'^\+?\d[\d\s\-\.]{5,}$', target.strip()):
+                                    for _frame in self._page.frames:
+                                        _row_clicked = False
+                                        for _sel in [
+                                            "table tbody tr:first-child td a",
+                                            "table tbody tr:first-child a",
+                                            "table tr:nth-child(2) td a",
+                                            "tbody tr:first-child td:first-child",
+                                            "[role='row']:nth-child(2) [role='cell']:first-child",
+                                        ]:
+                                            try:
+                                                _loc = _frame.locator(_sel).first
+                                                if await _loc.count() > 0 and await _loc.is_visible():
+                                                    await _loc.click(timeout=8000)
+                                                    await self._log("success", f"  → Clicked first search result row for '{target}'")
+                                                    _row_clicked = True
+                                                    break
+                                            except Exception:
+                                                pass
+                                        if _row_clicked:
+                                            try:
+                                                await self._page.wait_for_load_state("networkidle", timeout=5000)
+                                            except Exception:
+                                                pass
+                                            await step_shot("ok")
+                                            return True
                                 # Submit-type step: try clicking the primary action button
                                 _SUBMIT_WORDS = ("submit", "create", "confirm", "finish",
                                                  "order", "activate", "save", "done", "complete")
@@ -1505,7 +1535,10 @@ class BrowserAgent:
                     if not el:
                         el = await self._find("search")
                     if el:
-                        await el.click()
+                        try:
+                            await el.click(timeout=3000)
+                        except Exception:
+                            pass
                         await el.fill(fill_val)
                         await self._page.keyboard.press("Enter")
                         await asyncio.sleep(1.5)
@@ -1524,10 +1557,6 @@ class BrowserAgent:
                     except Exception:
                         pass
                     # ── Pass 2: broad fallback — first visible text/tel input ──
-                    # Handles portals where the search box is a plain Vue/React input
-                    # with no search-related label, placeholder or name attribute.
-                    # Also handles the case where the input already contains a previous
-                    # search value (e.g. COS sidebar retains the last search term).
                     for frame in self._page.frames:
                         try:
                             inputs = await frame.locator(
@@ -1537,11 +1566,13 @@ class BrowserAgent:
                             for inp in inputs:
                                 try:
                                     cur = await inp.input_value()
-                                    # Try: empty inputs OR inputs already showing our search term
                                     if cur == "" or cur == fill_val:
-                                        await inp.click()
+                                        try:
+                                            await inp.click(timeout=3000)
+                                        except Exception:
+                                            pass
                                         await asyncio.sleep(0.2)
-                                        await inp.fill(fill_val)   # fill() clears then types
+                                        await inp.fill(fill_val)
                                         await asyncio.sleep(0.3)
                                         await self._page.keyboard.press("Enter")
                                         await asyncio.sleep(1.5)
@@ -2187,16 +2218,127 @@ class BrowserAgent:
             return False
 
     # ── Core Playwright execution ─────────────────────────────────────────────
-    async def _execute(self, plan: dict) -> dict:
-        """Playwright session — must run in ProactorEventLoop on Windows."""
-        steps     = plan.get("steps", [])
-        completed = 0
-        failed    = []
+    async def _run_steps(self, steps: list) -> dict:
+        """Run steps against self._context / self._page (already set up)."""
+        completed  = 0
+        failed: list = []
         self._running = True
 
+        live_task = None
+        if not self.headless and self.frame_callback:
+            live_task = asyncio.create_task(self._live_stream_loop())
+
+        stop_reason = None
+        try:
+            for step in steps:
+                if not self._running:
+                    stop_reason = "cancelled"
+                    break
+                ok = await self.execute_step(step)
+                if ok:
+                    completed += 1
+                else:
+                    step_n = step.get("step_number", completed + 1)
+                    failed.append(step_n)
+                    stop_reason = (
+                        f"Step {step_n} failed: {step.get('description', step.get('target',''))}"
+                    )
+                    await self._log(
+                        "error",
+                        f"❌ STOPPED at step {step_n} — "
+                        f"{step.get('description', step.get('target',''))}"
+                    )
+                    break
+        finally:
+            self._running = False
+            if live_task:
+                live_task.cancel()
+                try:
+                    await live_task
+                except asyncio.CancelledError:
+                    pass
+
+        if self._screenshot_mode not in ("none", "named_only"):
+            shot = await self._screenshot("final")
+            if shot:
+                await self._log("info", "Final state captured", screenshot=shot)
+
+        rate   = (completed / len(steps) * 100) if steps else 0
+        all_ok = (completed == len(steps) and not failed)
+        status = "success" if all_ok else ("failed" if completed == 0 else "partial")
+        return {
+            "status": status,
+            "steps_completed": completed,
+            "steps_total": len(steps),
+            "failed_steps": failed,
+            "stop_reason": stop_reason or "all steps completed",
+            "success_rate": rate,
+            "captured_vars": self._captured_vars,
+        }
+
+    async def _execute(self, plan: dict) -> dict:
+        """Playwright session — must run in ProactorEventLoop on Windows."""
+        steps = plan.get("steps", [])
+        expected_outcome = plan.get("expected_outcome", "")
+
+        def _wrap(result: dict) -> dict:
+            result["summary"] = (
+                expected_outcome if result["status"] == "success"
+                else (result.get("stop_reason") or f"{result['steps_completed']}/{result['steps_total']} steps completed")
+            )
+            return result
+
+        # ── Shared browser path: reuse session context or create new one ──────────
+        if self._shared_browser:
+            self._browser = self._shared_browser
+            context_alive = False
+            if self._shared_context:
+                try:
+                    _ = self._shared_context.pages   # raises if context is closed
+                    context_alive = True
+                except Exception:
+                    pass
+            if context_alive:
+                # Reuse existing context — login session stays alive, skip re-login
+                self._context = self._shared_context
+                # Close leftover pages from the previous run
+                for old_pg in list(self._context.pages):
+                    try:
+                        await old_pg.close()
+                    except Exception:
+                        pass
+                self._page = await self._context.new_page()
+                # Pre-mark known domains as authenticated so login steps are skipped
+                for env_key in ("COS_URL", "PORTAL_URL", "MSITCOS_URL"):
+                    url = os.environ.get(env_key, "")
+                    if url:
+                        try:
+                            from urllib.parse import urlparse as _up
+                            self._authenticated_domains.add(_up(url).netloc)
+                        except Exception:
+                            pass
+                await self._log("info", f"🔄 Session reused — {len(steps)} steps (login skipped)")
+            else:
+                self._context = await self._shared_browser.new_context(
+                    viewport={"width": 1280, "height": 800},
+                    user_agent=(
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+                    ),
+                    ignore_https_errors=True,
+                )
+                self._page = await self._context.new_page()
+                await self._log("info", f"🚀 Browser context ready — {len(steps)} steps")
+            result = await self._run_steps(steps)
+            try:
+                await self._page.close()   # close page but keep context + session alive
+            except Exception:
+                pass
+            return _wrap(result)
+
+        # ── Own browser path: existing behavior ─────────────────────────────────
         async with async_playwright() as pw:
-            self._pw = pw   # store for browser-relaunch recovery
-            # Launch browser
+            self._pw = pw
             try:
                 self._browser = await pw.chromium.launch(
                     headless=self.headless,
@@ -2230,70 +2372,13 @@ class BrowserAgent:
             )
             self._page = await self._context.new_page()
             await self._log("info", f"🚀 Browser launched — {len(steps)} steps")
-
-            # Only stream live frames when NOT headless (visible browser mode)
-            live_task = None
-            if not self.headless and self.frame_callback:
-                live_task = asyncio.create_task(self._live_stream_loop())
-
-            stop_reason = None
-            try:
-                for step in steps:
-                    if not self._running:
-                        stop_reason = "cancelled"
-                        break
-                    ok = await self.execute_step(step)
-                    if ok:
-                        completed += 1
-                    else:
-                        # Step failed — record and STOP immediately
-                        step_n = step.get("step_number", completed + 1)
-                        failed.append(step_n)
-                        stop_reason = (
-                            f"Step {step_n} failed: {step.get('description', step.get('target',''))}"
-                        )
-                        await self._log(
-                            "error",
-                            f"❌ STOPPED at step {step_n} — "
-                            f"{step.get('description', step.get('target',''))}"
-                        )
-                        break   # ← hard stop, no next step
-            finally:
-                self._running = False
-                if live_task:
-                    live_task.cancel()
-                    try:
-                        await live_task
-                    except asyncio.CancelledError:
-                        pass
-
-            # Final screenshot — skipped in none / named_only modes
-            if self._screenshot_mode not in ("none", "named_only"):
-                shot = await self._screenshot("final")
-                if shot:
-                    await self._log("info", "Final state captured", screenshot=shot)
+            result = await self._run_steps(steps)
             try:
                 await self._browser.close()
             except Exception:
                 pass
 
-        rate   = (completed / len(steps) * 100) if steps else 0
-        all_ok = (completed == len(steps) and not failed)
-        status = "success" if all_ok else ("failed" if completed == 0 else "partial")
-        return {
-            "status": status,
-            "steps_completed": completed,
-            "steps_total": len(steps),
-            "failed_steps": failed,
-            "stop_reason": stop_reason or "all steps completed",
-            "success_rate": rate,
-            "captured_vars": self._captured_vars,
-            "summary": (
-                plan.get("expected_outcome", "")
-                if all_ok
-                else (stop_reason or f"{completed}/{len(steps)} steps completed")
-            ),
-        }
+        return _wrap(result)
 
     # ── Public entry point ────────────────────────────────────────────────────
     async def run(self, plan: dict) -> dict:
@@ -2301,8 +2386,10 @@ class BrowserAgent:
         On Windows: Playwright needs ProactorEventLoop for subprocess support.
         We spin up a dedicated thread with its own ProactorEventLoop and dispatch
         all log/frame callbacks back to the caller's loop via run_coroutine_threadsafe.
+        When already_in_proactor_loop=True (bulk sequential runner) we skip the
+        thread spawn because the caller already runs inside a ProactorEventLoop.
         """
-        if sys.platform == "win32":
+        if sys.platform == "win32" and not self._already_in_proactor_loop:
             return await self._run_via_proactor_thread(plan)
         return await self._execute(plan)
 

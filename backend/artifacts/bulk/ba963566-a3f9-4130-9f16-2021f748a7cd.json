@@ -1,0 +1,128 @@
+{
+  "id": "ba963566-a3f9-4130-9f16-2021f748a7cd",
+  "flow_id": "json-flow/Tusass-TopUp-Talk",
+  "flow_name": "Tusass TopUp Talk",
+  "variable_name": "ACCOUNT_NUMBER",
+  "max_parallel": 1,
+  "total": 7,
+  "completed": 7,
+  "success": 6,
+  "failed": 1,
+  "status": "completed",
+  "started_at": "2026-06-11T06:57:09.499338+00:00",
+  "finished_at": "2026-06-11T07:10:51.407397+00:00",
+  "items": [
+    {
+      "number": "580447",
+      "label": "580447",
+      "env_vars": {
+        "MISTIN_ID": "299580447",
+        "ACCOUNT_NUMBER": "580447",
+        "PHONE_NUMBER": "580447",
+        "MOBILE_NUMBER": "580447"
+      },
+      "execution_id": "31c1489b-367e-406f-8fcf-410092f33856",
+      "status": "success",
+      "started_at": "2026-06-11T06:57:09.901301+00:00",
+      "finished_at": "2026-06-11T06:58:45.599817+00:00",
+      "duration_seconds": 95.31,
+      "error": null
+    },
+    {
+      "number": "596909",
+      "label": "596909",
+      "env_vars": {
+        "MISTIN_ID": "299596909",
+        "ACCOUNT_NUMBER": "596909",
+        "PHONE_NUMBER": "596909",
+        "MOBILE_NUMBER": "596909"
+      },
+      "execution_id": "828ff887-939f-4176-9137-2f18d5adabb6",
+      "status": "failed",
+      "started_at": "2026-06-11T06:58:45.609490+00:00",
+      "finished_at": "2026-06-11T07:00:56.359314+00:00",
+      "duration_seconds": 130.34,
+      "error": null
+    },
+    {
+      "number": "562617",
+      "label": "562617",
+      "env_vars": {
+        "MISTIN_ID": "299562617",
+        "ACCOUNT_NUMBER": "562617",
+        "PHONE_NUMBER": "562617",
+        "MOBILE_NUMBER": "562617"
+      },
+      "execution_id": "b0a74fae-2e30-413d-a740-f33e92a96562",
+      "status": "success",
+      "started_at": "2026-06-11T07:00:56.377742+00:00",
+      "finished_at": "2026-06-11T07:02:59.332674+00:00",
+      "duration_seconds": 122.57,
+      "error": null
+    },
+    {
+      "number": "562617",
+      "label": "562617",
+      "env_vars": {
+        "MISTIN_ID": "299562617",
+        "ACCOUNT_NUMBER": "562617",
+        "PHONE_NUMBER": "562617",
+        "MOBILE_NUMBER": "562617"
+      },
+      "execution_id": "4144b914-9e74-444f-96b7-8d017f081f05",
+      "status": "success",
+      "started_at": "2026-06-11T07:02:59.349018+00:00",
+      "finished_at": "2026-06-11T07:04:58.154692+00:00",
+      "duration_seconds": 118.43,
+      "error": null
+    },
+    {
+      "number": "223401",
+      "label": "223401",
+      "env_vars": {
+        "MISTIN_ID": "299223401",
+        "ACCOUNT_NUMBER": "223401",
+        "PHONE_NUMBER": "223401",
+        "MOBILE_NUMBER": "223401"
+      },
+      "execution_id": "5ad7ee40-b13f-447c-8b7d-6b5c27b9a975",
+      "status": "success",
+      "started_at": "2026-06-11T07:04:58.177721+00:00",
+      "finished_at": "2026-06-11T07:06:56.359115+00:00",
+      "duration_seconds": 117.75,
+      "error": null
+    },
+    {
+      "number": "230026",
+      "label": "230026",
+      "env_vars": {
+        "MISTIN_ID": "299230026",
+        "ACCOUNT_NUMBER": "230026",
+        "PHONE_NUMBER": "230026",
+        "MOBILE_NUMBER": "230026"
+      },
+      "execution_id": "1b675563-37c9-48d6-ae19-49bf3a6b68ea",
+      "status": "success",
+      "started_at": "2026-06-11T07:06:56.381014+00:00",
+      "finished_at": "2026-06-11T07:08:53.142227+00:00",
+      "duration_seconds": 116.37,
+      "error": null
+    },
+    {
+      "number": "223016",
+      "label": "223016",
+      "env_vars": {
+        "MISTIN_ID": "299223016",
+        "ACCOUNT_NUMBER": "223016",
+        "PHONE_NUMBER": "223016",
+        "MOBILE_NUMBER": "223016"
+      },
+      "execution_id": "fc53b09d-34cc-4ead-8e96-10c96e222d89",
+      "status": "success",
+      "started_at": "2026-06-11T07:08:53.173842+00:00",
+      "finished_at": "2026-06-11T07:10:51.174033+00:00",
+      "duration_seconds": 117.64,
+      "error": null
+    }
+  ]
+}
