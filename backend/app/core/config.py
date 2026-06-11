@@ -48,14 +48,17 @@ class Settings:
     FLOWS_DIR: Path = ARTIFACTS_DIR / "flows"
     REPORTS_DIR: Path = ARTIFACTS_DIR / "reports"
     MEMORY_DIR: Path = ARTIFACTS_DIR / "memory"
-    # Disk flows folder (QA-App/flows/) — pre-built flows loaded directly
-    DISK_FLOWS_DIR: Path = BASE_DIR.parent / "flows"
+    # Disk flows folder — override with DISK_FLOWS_DIR env var for production
+    DISK_FLOWS_DIR: Path = Path(os.getenv("DISK_FLOWS_DIR", str(Path(__file__).parent.parent.parent.parent / "flows")))
 
-    # CORS
+    # CORS — comma-separated origins via ALLOWED_ORIGINS env var
     ALLOWED_ORIGINS: list = [
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3000",
+        o.strip()
+        for o in os.getenv(
+            "ALLOWED_ORIGINS",
+            "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000"
+        ).split(",")
+        if o.strip()
     ]
 
     def __init__(self):
