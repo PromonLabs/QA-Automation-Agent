@@ -48,8 +48,9 @@ class Settings:
     FLOWS_DIR: Path = ARTIFACTS_DIR / "flows"
     REPORTS_DIR: Path = ARTIFACTS_DIR / "reports"
     MEMORY_DIR: Path = ARTIFACTS_DIR / "memory"
-    # Disk flows folder — override with DISK_FLOWS_DIR env var for production
-    DISK_FLOWS_DIR: Path = Path(os.getenv("DISK_FLOWS_DIR", str(Path(__file__).parent.parent.parent.parent / "flows")))
+    # Disk flows folder — lives inside backend/flows/ so it deploys with the code
+    # Override with DISK_FLOWS_DIR env var if needed
+    DISK_FLOWS_DIR: Path = Path(os.getenv("DISK_FLOWS_DIR", str(Path(__file__).parent.parent.parent / "flows")))
 
     # CORS — comma-separated origins via ALLOWED_ORIGINS env var
     ALLOWED_ORIGINS: list = [
