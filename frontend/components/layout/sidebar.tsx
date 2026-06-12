@@ -14,6 +14,7 @@ import {
   PenLine,
   KeyRound,
   Layers,
+  BarChart2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -23,6 +24,7 @@ const nav = [
   { href: "/flows/new",  label: "Write Flow",    icon: PenLine },
   { href: "/execution",  label: "Executions",    icon: Activity },
   { href: "/bulk",       label: "Bulk Run",      icon: Layers },
+  { href: "/bulk/results", label: "Bulk Results", icon: BarChart2 },
   { href: "/reports",    label: "Reports",       icon: FileBadge },
   { href: "/env",        label: "Environment",   icon: KeyRound },
   { href: "/settings",   label: "Settings",      icon: Settings },
@@ -53,12 +55,15 @@ export function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5">
         {nav.map(({ href, label, icon: Icon }) => {
-          // Exact match for /flows/new so it doesn't activate for /flows
           const active =
             href === "/flows/new"
               ? pathname === "/flows/new"
               : href === "/flows"
               ? pathname === "/flows" || pathname.startsWith("/flows/edit")
+              : href === "/bulk"
+              ? pathname === "/bulk" || (pathname.startsWith("/bulk/") && !pathname.startsWith("/bulk/results"))
+              : href === "/bulk/results"
+              ? pathname === "/bulk/results"
               : pathname === href || (href !== "/dashboard" && pathname.startsWith(href))
           return (
             <Link

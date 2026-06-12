@@ -1,0 +1,16 @@
+{
+  "observed_failures": [
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-11T11:36:54.316180+00:00"
+    },
+    {
+      "step": "Step 8 failed: Click on the customer 299562617",
+      "error": "Step 8 failed: Click on the customer 299562617",
+      "at": "2026-06-11T11:40:04.333839+00:00"
+    }
+  ],
+  "flow_name": "Tusass TopUp Talk [562617]",
+  "updated_at": "2026-06-11T11:40:04.334242+00:00"
+}

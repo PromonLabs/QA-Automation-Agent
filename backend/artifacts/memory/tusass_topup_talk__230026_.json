@@ -4,8 +4,23 @@
       "step": "Step 8 failed: Click on the customer 299230026",
       "error": "Step 8 failed: Click on the customer 299230026",
       "at": "2026-06-11T06:03:33.413019+00:00"
+    },
+    {
+      "step": "Step 8 failed: Click on the customer 299230026",
+      "error": "Step 8 failed: Click on the customer 299230026",
+      "at": "2026-06-11T11:32:23.428377+00:00"
+    },
+    {
+      "step": "Step 8 failed: Click on the customer 299230026",
+      "error": "Step 8 failed: Click on the customer 299230026",
+      "at": "2026-06-11T11:37:25.002315+00:00"
+    },
+    {
+      "step": "Step 8 failed: Click on the customer 299230026",
+      "error": "Step 8 failed: Click on the customer 299230026",
+      "at": "2026-06-11T11:41:24.150524+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk [230026]",
-  "updated_at": "2026-06-11T06:03:33.413134+00:00"
+  "updated_at": "2026-06-11T11:41:24.150733+00:00"
 }

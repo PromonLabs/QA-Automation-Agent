@@ -4,8 +4,13 @@
       "step": "Step 8 failed: Click on the customer 299223401",
       "error": "Step 8 failed: Click on the customer 299223401",
       "at": "2026-06-11T06:02:45.344655+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-11T11:37:05.079734+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk [223401]",
-  "updated_at": "2026-06-11T06:02:45.344708+00:00"
+  "updated_at": "2026-06-11T11:37:05.079956+00:00"
 }

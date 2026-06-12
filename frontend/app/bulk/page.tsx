@@ -10,7 +10,7 @@ import { formatDuration } from "@/lib/utils"
 import {
   Play, CheckCircle2, XCircle, Loader2, Clock,
   ChevronRight, Layers, Settings2, Plus, Trash2,
-  Save, ChevronDown, ChevronUp,
+  Save, ChevronDown, ChevronUp, BarChart2,
 } from "lucide-react"
 
 export default function BulkPage() {
@@ -293,14 +293,22 @@ export default function BulkPage() {
                 <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 space-y-2">
                   <h3 className="text-white/40 text-xs uppercase tracking-widest">History</h3>
                   {history.slice(0, 5).map(h => (
-                    <button
-                      key={h.id}
-                      onClick={() => setActiveBulk(h)}
-                      className="w-full flex items-center justify-between py-2 border-b border-white/5 last:border-0 hover:text-white text-white/50 text-xs transition-colors"
-                    >
-                      <span className="truncate max-w-[120px]">{h.flow_name}</span>
-                      <span>{h.success}/{h.total} ok</span>
-                    </button>
+                    <div key={h.id} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+                      <button
+                        onClick={() => setActiveBulk(h)}
+                        className="flex-1 flex items-center gap-2 text-left hover:text-white text-white/50 text-xs transition-colors min-w-0"
+                      >
+                        <span className="truncate max-w-[110px]">{h.flow_name}</span>
+                        <span className="shrink-0 text-white/30">{h.success}/{h.total} ok</span>
+                      </button>
+                      <Link
+                        href={`/bulk/${h.id}`}
+                        className="shrink-0 ml-2 text-white/20 hover:text-white transition-colors"
+                        title="View full results"
+                      >
+                        <BarChart2 className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
                   ))}
                 </div>
               )}
@@ -326,15 +334,23 @@ export default function BulkPage() {
                         · {activeBulk.success} success · {activeBulk.failed} failed
                       </div>
                     </div>
-                    <span className={`text-xs px-2 py-0.5 rounded border ${
-                      activeBulk.status === "completed"
-                        ? "text-green-400 border-green-400/30 bg-green-400/10"
-                        : "text-white/60 border-white/20 bg-white/5"
-                    }`}>
-                      {activeBulk.status === "running"
-                        ? `Running ${activeBulk.completed}/${activeBulk.total}`
-                        : "Completed"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/bulk/${activeBulk.id}`}
+                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                      >
+                        <BarChart2 className="w-3.5 h-3.5" /> View Results
+                      </Link>
+                      <span className={`text-xs px-2 py-0.5 rounded border ${
+                        activeBulk.status === "completed"
+                          ? "text-green-400 border-green-400/30 bg-green-400/10"
+                          : "text-white/60 border-white/20 bg-white/5"
+                      }`}>
+                        {activeBulk.status === "running"
+                          ? `Running ${activeBulk.completed}/${activeBulk.total}`
+                          : "Completed"}
+                      </span>
+                    </div>
                   </div>
 
                   {activeBulk.status === "running" && (

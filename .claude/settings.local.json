@@ -78,7 +78,12 @@
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\" -File -Force | Where-Object { $_.Extension -match '\\\\.\\(txt|html|md|json|yml|yaml|ps1|bat\\)$' })",
       "PowerShell(\\(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\\\\backend\\\\venv\" -Recurse -Force 2>$null | Measure-Object\\).Count)",
       "PowerShell([int]\\(\\(\\(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\" -Recurse -Force | Measure-Object -Property Length -Sum\\).Sum\\) / 1MB\\))",
-      "Bash(Select-Object Name)"
+      "Bash(Select-Object Name)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\\\\frontend\" -Recurse -Directory | Where-Object {$_.Name -eq \"app\" -or $_.Name -eq \"components\" -or $_.Name -eq \"pages\"})",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\\\\frontend\\\\app\" -Recurse | Where-Object {$_.Extension -in @\\('.tsx', '.ts', '.jsx', '.js'\\)} | Select-Object -Property FullName)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\\\\frontend\\\\components\" -Recurse | Where-Object {$_.Extension -in @\\('.tsx', '.ts', '.jsx', '.js'\\)} | Select-Object -Property FullName)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\\\\frontend\" -Recurse -File -Name | Where-Object {$_ -match \"\\(lib|types|api\\)\" -and $_ -match \"\\\\.\\(ts|tsx\\)$\"} | Select-Object -First 20)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\\\\frontend\\\\components\" -Recurse | Where-Object {$_.Extension -in @\\('.tsx', '.ts'\\)} | Select-Object -ExpandProperty FullName)"
     ]
   }
 }

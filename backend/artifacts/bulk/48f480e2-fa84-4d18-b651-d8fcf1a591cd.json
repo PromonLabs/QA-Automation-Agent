@@ -5,12 +5,12 @@
   "variable_name": "ACCOUNT_NUMBER",
   "max_parallel": 1,
   "total": 7,
-  "completed": 0,
-  "success": 0,
+  "completed": 7,
+  "success": 7,
   "failed": 0,
-  "status": "running",
+  "status": "completed",
   "started_at": "2026-06-11T10:31:39.942633+00:00",
-  "finished_at": null,
+  "finished_at": "2026-06-11T10:46:38.335950+00:00",
   "items": [
     {
       "number": "580447",
@@ -22,10 +22,10 @@
         "MOBILE_NUMBER": "580447"
       },
       "execution_id": "43e716b2-3541-41cb-87b7-4fefa29dade3",
-      "status": "running",
+      "status": "success",
       "started_at": "2026-06-11T10:31:40.744418+00:00",
-      "finished_at": null,
-      "duration_seconds": null,
+      "finished_at": "2026-06-11T10:33:19.045733+00:00",
+      "duration_seconds": 97.59,
       "error": null
     },
     {
@@ -37,11 +37,11 @@
         "PHONE_NUMBER": "596909",
         "MOBILE_NUMBER": "596909"
       },
-      "execution_id": null,
-      "status": "pending",
-      "started_at": null,
-      "finished_at": null,
-      "duration_seconds": null,
+      "execution_id": "77104213-f43b-4e87-b0e1-a611492b4fe2",
+      "status": "success",
+      "started_at": "2026-06-11T10:33:19.066271+00:00",
+      "finished_at": "2026-06-11T10:35:34.391639+00:00",
+      "duration_seconds": 134.95,
       "error": null
     },
     {
@@ -53,11 +53,11 @@
         "PHONE_NUMBER": "562617",
         "MOBILE_NUMBER": "562617"
       },
-      "execution_id": null,
-      "status": "pending",
-      "started_at": null,
-      "finished_at": null,
-      "duration_seconds": null,
+      "execution_id": "5701e222-384c-4a6d-87a4-758ffbccaeef",
+      "status": "success",
+      "started_at": "2026-06-11T10:35:34.407233+00:00",
+      "finished_at": "2026-06-11T10:37:48.623848+00:00",
+      "duration_seconds": 133.82,
       "error": null
     },
     {
@@ -69,11 +69,11 @@
         "PHONE_NUMBER": "562617",
         "MOBILE_NUMBER": "562617"
       },
-      "execution_id": null,
-      "status": "pending",
-      "started_at": null,
-      "finished_at": null,
-      "duration_seconds": null,
+      "execution_id": "8445f6d8-87ce-4f80-99cd-a0af5f50db09",
+      "status": "success",
+      "started_at": "2026-06-11T10:37:48.640672+00:00",
+      "finished_at": "2026-06-11T10:40:01.908663+00:00",
+      "duration_seconds": 132.88,
       "error": null
     },
     {
@@ -85,11 +85,11 @@
         "PHONE_NUMBER": "223401",
         "MOBILE_NUMBER": "223401"
       },
-      "execution_id": null,
-      "status": "pending",
-      "started_at": null,
-      "finished_at": null,
-      "duration_seconds": null,
+      "execution_id": "04776cc2-9618-4af9-b019-9d86e5cccb91",
+      "status": "success",
+      "started_at": "2026-06-11T10:40:01.928656+00:00",
+      "finished_at": "2026-06-11T10:42:13.754106+00:00",
+      "duration_seconds": 131.46,
       "error": null
     },
     {
@@ -101,11 +101,11 @@
         "PHONE_NUMBER": "230026",
         "MOBILE_NUMBER": "230026"
       },
-      "execution_id": null,
-      "status": "pending",
-      "started_at": null,
-      "finished_at": null,
-      "duration_seconds": null,
+      "execution_id": "e9fb9c02-4044-42cd-9924-b14c29c9b71a",
+      "status": "success",
+      "started_at": "2026-06-11T10:42:13.766759+00:00",
+      "finished_at": "2026-06-11T10:44:25.026326+00:00",
+      "duration_seconds": 131.02,
       "error": null
     },
     {
@@ -117,11 +117,11 @@
         "PHONE_NUMBER": "223016",
         "MOBILE_NUMBER": "223016"
       },
-      "execution_id": null,
-      "status": "pending",
-      "started_at": null,
-      "finished_at": null,
-      "duration_seconds": null,
+      "execution_id": "9fa94e39-8981-43fa-a04d-1d49ba61bacd",
+      "status": "success",
+      "started_at": "2026-06-11T10:44:25.038769+00:00",
+      "finished_at": "2026-06-11T10:46:37.861383+00:00",
+      "duration_seconds": 132.43,
       "error": null
     }
   ]
