@@ -203,6 +203,15 @@ def _parse_step(raw_line: str) -> Dict[str, Any]:
     if re.search(r'\bold\s+balance\b', lo) and any(w in lo for w in ["note", "read", "get", "check"]):
         return {"action": "extract", "target": "OLD_BALANCE", "description": line}
 
+    # ── Extra Data / data amount extraction (must come before generic note rule) ──
+    if re.search(r'\bnew\s+extra\s+data\b|\bnew\s+data\b', lo) and any(w in lo for w in ["note", "read", "get", "check"]):
+        return {"action": "extract", "target": "NEW_DATA", "description": line}
+    if re.search(r'\bold\s+extra\s+data\b|\bold\s+data\b', lo) and any(w in lo for w in ["note", "read", "get", "check"]):
+        return {"action": "extract", "target": "OLD_DATA", "description": line}
+    # Handle bare "Note the Extra Data on this page" (no old/new qualifier)
+    if re.search(r'\bextra\s+data\b', lo) and "note" in lo:
+        return {"action": "extract", "target": "OLD_DATA", "description": line}
+
     # ── "Note the X on this page" → screenshot to record current state ──────
     # Catches any "Note the ..." step regardless of what X is
     if ("note" in lo and ("variable" in lo or "save" in lo)) or \

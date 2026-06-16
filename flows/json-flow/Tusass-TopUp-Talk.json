@@ -21,11 +21,19 @@
       "Select amount ${TOPUP_AMOUNT}",
       "Click the continue button",
       "In Card number field, enter ${CARD_NUMBER}",
-      "In MM field, enter ${CARD_MONTH}",
-      "In YY field, enter ${CARD_YEAR}",
-      "In CVV/CVD field, enter ${CARD_CVV}",
+      "Press Enter",
+      "Wait 1000ms",
+      "In MM field, enter 02",
+      "Press Enter",
+      "Wait 1000ms",
+      "In YY field, enter 11",
+      "Press Enter",
+      "Wait 1000ms",
+      "In CVV/CVD field, enter 121",
+      "Press Enter",
+      "Wait 2000ms",
       "Click the Pay button",
-      "Wait 4000ms",
+      "Wait 6000ms",
       "After payment is successful, it show the Recipt page, take the screenshot of that page and save it as - receipt.png -", "SS",
       " Next Navigate to ${COS_URL}  ",
       "Wait 4000ms",
@@ -34,7 +42,6 @@
       "Wait 4000ms",
       "Verify the balance is updated by comparing the current balance with previous balance and topup amount - ${TOPUP_AMOUNT} -",
       "Give the report - Tusass topup talk flow is executed successfully. ${SUBSCRIBER_EXTERNAL_ID} is topped up with amount ${TOPUP_AMOUNT}. Balance before: ${OLD_BALANCE} — Balance after: ${NEW_BALANCE}"
-       
+
     ]
 }
- 

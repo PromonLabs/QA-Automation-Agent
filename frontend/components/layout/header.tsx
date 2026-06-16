@@ -8,8 +8,8 @@ type AgentStatus = "connected" | "disconnected" | "checking"
 export function Header({ title }: { title: string }) {
   const [llmStatus,     setLlmStatus]     = useState<AgentStatus>("checking")
   const [visionStatus,  setVisionStatus]  = useState<AgentStatus>("checking")
-  const [llmModel,      setLlmModel]      = useState("qwen2.5:14b")
-  const [visionModel,   setVisionModel]   = useState("qwen2.5vl")
+  const [llmModel,      setLlmModel]      = useState("moondream")
+  const [visionModel,   setVisionModel]   = useState("moondream")
 
   useEffect(() => {
     const check = async () => {

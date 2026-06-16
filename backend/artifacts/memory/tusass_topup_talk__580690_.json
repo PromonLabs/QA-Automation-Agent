@@ -1,0 +1,16 @@
+{
+  "observed_failures": [
+    {
+      "step": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "error": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "at": "2026-06-16T11:35:15.028370+00:00"
+    },
+    {
+      "step": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "error": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "at": "2026-06-16T12:29:43.978870+00:00"
+    }
+  ],
+  "flow_name": "Tusass TopUp Talk [580690]",
+  "updated_at": "2026-06-16T12:29:43.979228+00:00"
+}

@@ -1987,76 +1987,50 @@ class BrowserAgent:
 
                     if old_num is not None and topup_num is not None:
                         new_num = _parse_num(new_raw)
-                        for _retry in range(12):
-                            if new_num is not None and abs(new_num - old_num) > 0.01:
-                                break   # balance changed — proceed to math check
+                        expected = old_num + topup_num
 
-                            if _retry > 0:
-                                await self._log("info", f"  🔄 Balance unchanged (attempt {_retry}/12) — waiting 20s for COS to propagate")
-                                await asyncio.sleep(20)
-
-                            # On every retry: navigate directly to subscriber page
-                            sub_url = self._captured_vars.get("SUBSCRIBER_PAGE_URL", "")
-                            sub_id  = await _best_subscriber_id()
-                            if sub_url and _retry > 0:
-                                # Direct URL navigation — fastest and most reliable
+                        # Balance-update retry loop: COS can take 15–30 s to propagate.
+                        # Attempt 0: wait 3 s; attempts 1-3: reload page and wait 15 s each.
+                        # Attempt 2+: also re-navigate to the subscriber's detail page.
+                        _RETRY_WAITS = [3, 15, 15, 15]
+                        for _attempt, _wait in enumerate(_RETRY_WAITS):
+                            if new_num is not None and abs(new_num - expected) <= 1.0:
+                                break
+                            await asyncio.sleep(_wait)
+                            # Reload the page so we get the server-side committed balance
+                            try:
+                                await self._page.reload(wait_until="domcontentloaded", timeout=20000)
                                 try:
-                                    await self._page.goto(sub_url, wait_until="domcontentloaded", timeout=25000)
-                                    await asyncio.sleep(3)
+                                    await self._page.wait_for_load_state("networkidle", timeout=5000)
+                                except Exception:
+                                    pass
+                                await asyncio.sleep(2)
+                            except Exception:
+                                pass
+                            # On attempt 2+, re-navigate directly to subscriber detail page
+                            if _attempt >= 1:
+                                _sid = await _best_subscriber_id()
+                                if _sid:
                                     try:
-                                        await self._page.wait_for_load_state("networkidle", timeout=6000)
+                                        _cur_url = self._page.url
+                                        _base = re.sub(r'/customers?/\d+.*', '', _cur_url)
+                                        _detail_url = f"{_base}/customers/{_sid}"
+                                        await self._page.goto(_detail_url, wait_until="domcontentloaded", timeout=20000)
+                                        try:
+                                            await self._page.wait_for_load_state("networkidle", timeout=5000)
+                                        except Exception:
+                                            pass
+                                        await asyncio.sleep(2)
                                     except Exception:
                                         pass
-                                except Exception:
-                                    pass
-                            elif sub_id and _retry > 0:
-                                # Fallback: search + click the subscriber card
-                                await self._log("info", f"  🔍 Re-navigating to subscriber {sub_id}")
-                                try:
-                                    await self._page.keyboard.press("Escape")
-                                    await asyncio.sleep(0.5)
-                                    search_el = await self._find_input("search")
-                                    if search_el:
-                                        await search_el.fill(sub_id)
-                                        await self._page.keyboard.press("Enter")
-                                        await asyncio.sleep(5)
-                                        for _sel in [
-                                            f"a:has-text('{sub_id}')",
-                                            "table tbody tr:first-child td a",
-                                            "table tbody tr:first-child a",
-                                            "[role='row']:nth-child(2) [role='cell']:first-child a",
-                                        ]:
-                                            try:
-                                                _loc = self._page.locator(_sel).first
-                                                if await _loc.count() > 0 and await _loc.is_visible():
-                                                    await _loc.click(timeout=5000)
-                                                    await asyncio.sleep(4)
-                                                    break
-                                            except Exception:
-                                                pass
-                                except Exception:
-                                    pass
-                            else:
-                                # Last resort: reload current page
-                                try:
-                                    await self._page.reload(wait_until="domcontentloaded", timeout=20000)
-                                    await asyncio.sleep(5)
-                                    try:
-                                        await self._page.wait_for_load_state("networkidle", timeout=5000)
-                                    except Exception:
-                                        pass
-                                except Exception:
-                                    pass
-
                             fresh = await _extract_balance_from_page()
                             if fresh:
                                 new_raw = fresh
                                 self._captured_vars["NEW_BALANCE"] = fresh
                                 new_num = _parse_num(fresh)
-                                await self._log("info", f"  📊 Re-captured NEW_BALANCE = {fresh}")
+                                await self._log("info", f"  📊 Re-captured NEW_BALANCE = {fresh} (attempt {_attempt + 1})")
 
                         if new_num is not None:
-                            expected = old_num + topup_num
                             if abs(new_num - expected) <= 1.0:
                                 await self._log(
                                     "success",
@@ -2410,13 +2384,27 @@ class BrowserAgent:
                                 val = str(js_val).strip()
                                 break
                         else:
-                            bal_m = re.search(
-                                r'(?:Balance|Saldo)\s*[:\s]+([0-9][0-9\s\.,]+\s*(?:kr\.?|DKK)?)',
-                                body, re.IGNORECASE,
+                            is_data_target = any(
+                                k in target.upper() for k in ("DATA", "GB", "MB")
                             )
-                            if bal_m:
-                                val = re.sub(r'\s+', ' ', bal_m.group(1).strip())
-                                break
+                            if is_data_target:
+                                # Extract Extra Data / data addon amount (GB or MB)
+                                data_m = re.search(
+                                    r'(?:Extra\s+Data|Data\s+Add(?:on)?|Data\s+Balance|Data)\s*[:\s]+'
+                                    r'([0-9][0-9\s\.,]*\s*(?:GB|MB|TB)?)',
+                                    body, re.IGNORECASE,
+                                )
+                                if data_m:
+                                    val = re.sub(r'\s+', ' ', data_m.group(1).strip())
+                                    break
+                            else:
+                                bal_m = re.search(
+                                    r'(?:Balance|Saldo)\s*[:\s]+([0-9][0-9\s\.,]+\s*(?:kr\.?|DKK)?)',
+                                    body, re.IGNORECASE,
+                                )
+                                if bal_m:
+                                    val = re.sub(r'\s+', ' ', bal_m.group(1).strip())
+                                    break
                     except Exception:
                         pass
                     await asyncio.sleep(0.5)
@@ -2450,7 +2438,11 @@ class BrowserAgent:
                         else:
                             await self._log("info", f"  ⚠ Could not find external ID on page after 10s")
                     else:
-                        await self._log("info", f"  ⚠ Could not find balance on page after 10s")
+                        is_data_target = any(k in target.upper() for k in ("DATA", "GB", "MB"))
+                        if is_data_target:
+                            await self._log("info", f"  ⚠ Could not find Extra Data amount on page after 10s")
+                        else:
+                            await self._log("info", f"  ⚠ Could not find balance on page after 10s")
                 await step_shot("ok")
 
             elif action == "click_existing_contact":
