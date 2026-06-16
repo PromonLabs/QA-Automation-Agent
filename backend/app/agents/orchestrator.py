@@ -47,7 +47,7 @@ def _reload_dotenv() -> None:
         settings.BROWSER_HEADLESS            = os.environ.get("BROWSER_HEADLESS", "true").lower() == "true"
         settings.BROWSER_SLOW_MO             = int(os.environ.get("BROWSER_SLOW_MO", "0"))
         settings.SCREENSHOT_MODE             = os.environ.get("SCREENSHOT_MODE", "none").lower()
-        settings.BROWSER_NAVIGATION_TIMEOUT  = int(os.environ.get("BROWSER_NAVIGATION_TIMEOUT", "60000"))
+        settings.BROWSER_NAVIGATION_TIMEOUT  = int(os.environ.get("BROWSER_NAVIGATION_TIMEOUT", "180000"))
     except Exception:
         pass
 

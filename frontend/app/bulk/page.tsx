@@ -211,7 +211,7 @@ export default function BulkPage() {
                     </p>
                   ) : (
                     <p className="text-white/30 text-xs">
-                      {maxParallel} browsers, each starting 10s apart
+                      {maxParallel} browsers, each starting 5s apart
                     </p>
                   )}
                 </div>

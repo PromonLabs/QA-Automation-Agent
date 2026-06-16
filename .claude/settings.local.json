@@ -83,7 +83,19 @@
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\\\\frontend\\\\app\" -Recurse | Where-Object {$_.Extension -in @\\('.tsx', '.ts', '.jsx', '.js'\\)} | Select-Object -Property FullName)",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\\\\frontend\\\\components\" -Recurse | Where-Object {$_.Extension -in @\\('.tsx', '.ts', '.jsx', '.js'\\)} | Select-Object -Property FullName)",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\\\\frontend\" -Recurse -File -Name | Where-Object {$_ -match \"\\(lib|types|api\\)\" -and $_ -match \"\\\\.\\(ts|tsx\\)$\"} | Select-Object -First 20)",
-      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\\\\frontend\\\\components\" -Recurse | Where-Object {$_.Extension -in @\\('.tsx', '.ts'\\)} | Select-Object -ExpandProperty FullName)"
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\\\\frontend\\\\components\" -Recurse | Where-Object {$_.Extension -in @\\('.tsx', '.ts'\\)} | Select-Object -ExpandProperty FullName)",
+      "PowerShell(Get-ChildItem -Recurse -File -Path frontend -Exclude node_modules | Where-Object { $_.FullName -notmatch 'node_modules|\\\\.next' } | Select-Object FullName, Length | Format-Table -AutoSize | Out-String -Width 200; Get-ChildItem tools, sample-image -Force | Select-Object FullName)",
+      "PowerShell(& \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\\\\backend\\\\venv\\\\Scripts\\\\python.exe\" -c \"import reportlab; print\\(reportlab.Version\\)\")",
+      "PowerShell(git *)",
+      "PowerShell(& \"C:\\\\Users\\\\Sandhosh\\\\Downloads\\\\QA-Automation-Agent\\\\backend\\\\venv\\\\Scripts\\\\python.exe\" \"C:\\\\Users\\\\Sandhosh\\\\AppData\\\\Local\\\\Temp\\\\gen_project_report.py\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('name:', d.get\\('name',''\\)\\); print\\('screenshots:', d.get\\('screenshots',[]\\)\\); print\\('status:', d.get\\('status',''\\)\\)\")",
+      "Bash(python *)",
+      "PowerShell($resp = Invoke-RestMethod -Uri \"http://localhost:8000/api/auth/login\" -Method Post -ContentType \"application/json\" -Body '{\"username\":\"admin\",\"password\":\"admin123\"}'; $resp.access_token)",
+      "PowerShell($resp = Invoke-RestMethod -Uri \"http://localhost:8000/api/auth/login\" -Method Post -ContentType \"application/json\" -Body '{\"username\":\"admin\",\"password\":\"test1234\"}'; $resp.access_token)",
+      "Bash(sort -t'/' -k1)",
+      "Bash(sort -t' ' -k6 -r)",
+      "Bash(Measure-Object)",
+      "Bash(Select-Object -ExpandProperty Count)"
     ]
   }
 }

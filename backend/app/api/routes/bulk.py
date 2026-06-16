@@ -225,6 +225,15 @@ async def _run_one_item(bulk_id: str, idx: int, shared_browser=None, shared_cont
         status = final.status.value if final else "failed"
         duration = final.duration_seconds if final else None
 
+        # Extract the most informative error message from the execution logs
+        if status == "failed" and final and final.logs:
+            for log in reversed(final.logs):
+                msg = log.get("message", "") if isinstance(log, dict) else getattr(log, "message", "")
+                if "STEP FAILED" in msg or "STOPPED at step" in msg:
+                    # Pull just the first line — the step description is most useful
+                    error = msg.split("\n")[0].strip().lstrip("✗ ").lstrip("→ ")
+                    break
+
     except Exception as e:
         error = str(e)
 
@@ -267,6 +276,10 @@ async def _execute_bulk(bulk_id: str):
                             "--disable-blink-features=AutomationControlled",
                             "--disable-web-security",
                             "--allow-running-insecure-content",
+                            "--disable-background-timer-throttling",
+                            "--disable-renderer-backgrounding",
+                            "--no-first-run",
+                            "--ignore-certificate-errors",
                         ],
                     )
                     # One shared context — login once, session reused for all runs
@@ -292,8 +305,8 @@ async def _execute_bulk(bulk_id: str):
         t.join()
 
     else:
-        # Parallel: each item gets its own browser, staggered to avoid simultaneous connections
-        _STAGGER_SECONDS = 10   # gap between each browser launch (mimics manual open timing)
+        # Parallel: each item gets its own browser, staggered to spread the load.
+        _STAGGER_SECONDS = 5   # gap between each browser launch
         sem = asyncio.Semaphore(max_parallel)
 
         async def run_one(idx: int):

@@ -351,11 +351,30 @@ export default function ExecutionViewerPage() {
                   <div className="text-white/20 text-sm">Waiting for logs…</div>
                 )}
                 {logs.map((log, i) => (
-                  <div key={i} className={cn("flex gap-3 mb-0.5 animate-fade-in text-xs leading-relaxed", logColor(log.level))}>
-                    <span className="text-white/20 shrink-0 select-none tabular-nums">
-                      {new Date(log.timestamp).toLocaleTimeString()}
-                    </span>
-                    <span className="break-all">{log.message}</span>
+                  <div key={i} className="mb-0.5 animate-fade-in">
+                    <div className={cn("flex gap-3 text-xs leading-relaxed", logColor(log.level))}>
+                      <span className="text-white/20 shrink-0 select-none tabular-nums">
+                        {new Date(log.timestamp).toLocaleTimeString()}
+                      </span>
+                      <span className="break-all">{log.message}</span>
+                    </div>
+                    {log.screenshot && /^step_\d+_error_/i.test(log.screenshot) && (
+                      <div className="mt-2 ml-[72px] mb-2">
+                        <button
+                          onClick={() => setSelectedShot(log.screenshot!)}
+                          className="block w-48 aspect-video rounded-lg overflow-hidden border border-red-500/40 hover:border-red-500/70 ring-1 ring-red-500/20 transition-all group relative"
+                        >
+                          <img
+                            src={executionApi.screenshotUrl(exec.id, log.screenshot)}
+                            alt="Error screenshot"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                          <div className="absolute top-1 left-1 bg-red-600/90 rounded px-1.5 py-0.5 text-white text-[10px] font-semibold">
+                            ✕ Failed here
+                          </div>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
                 {isRunning && (
@@ -376,20 +395,36 @@ export default function ExecutionViewerPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-3 xl:grid-cols-4 gap-3">
-                  {screenshots.map((shot, i) => (
-                    <button key={i} onClick={() => setSelectedShot(shot)}
-                      className="relative aspect-video bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:border-white/30 transition-all group">
-                      <img
-                        src={executionApi.screenshotUrl(exec.id, shot)}
-                        alt={`Step ${i + 1}`}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                      <div className="absolute bottom-1.5 left-1.5 text-white/60 text-[10px] font-mono bg-black/70 px-1.5 py-0.5 rounded">
-                        {i + 1}
-                      </div>
-                    </button>
-                  ))}
+                  {screenshots.map((shot, i) => {
+                    const isErrShot = /^step_\d+_error_/i.test(shot)
+                    const stepM = shot.match(/^step_(\d+)_/i)
+                    const stepLabel = stepM ? `Step ${parseInt(stepM[1], 10)}` : `${i + 1}`
+                    return (
+                      <button key={i} onClick={() => setSelectedShot(shot)}
+                        className={`relative aspect-video bg-white/5 rounded-lg overflow-hidden transition-all group ${
+                          isErrShot
+                            ? "border border-red-500/40 hover:border-red-500/70 ring-1 ring-red-500/20"
+                            : "border border-white/10 hover:border-white/30"
+                        }`}>
+                        <img
+                          src={executionApi.screenshotUrl(exec.id, shot)}
+                          alt={stepLabel}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                        {isErrShot && (
+                          <div className="absolute top-1.5 left-1.5 flex items-center gap-1 bg-red-600/90 rounded px-1.5 py-0.5">
+                            <span className="text-white text-[10px] font-semibold">✕ Failed</span>
+                          </div>
+                        )}
+                        <div className={`absolute bottom-1.5 left-1.5 text-[10px] font-mono px-1.5 py-0.5 rounded ${
+                          isErrShot ? "text-red-300 bg-red-900/80" : "text-white/60 bg-black/70"
+                        }`}>
+                          {stepLabel}
+                        </div>
+                      </button>
+                    )
+                  })}
                 </div>
               )}
             </div>

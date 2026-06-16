@@ -34,7 +34,7 @@ class Settings:
     # Browser — headless=true for speed (no visible window)
     BROWSER_HEADLESS: bool = os.getenv("BROWSER_HEADLESS", "true").lower() == "true"
     BROWSER_SLOW_MO: int = int(os.getenv("BROWSER_SLOW_MO", "0"))
-    BROWSER_NAVIGATION_TIMEOUT: int = int(os.getenv("BROWSER_NAVIGATION_TIMEOUT", "60000"))
+    BROWSER_NAVIGATION_TIMEOUT: int = int(os.getenv("BROWSER_NAVIGATION_TIMEOUT", "180000"))
 
     # Screenshot mode: "fail_only" (only on failure) | "final" (one at end) | "all" (every step)
     # Default: "fail_only" — fastest, captures failures for debugging

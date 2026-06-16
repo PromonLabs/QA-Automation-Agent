@@ -219,7 +219,23 @@ def _parse_step(raw_line: str) -> Dict[str, Any]:
         ).strip()
         # Shorten: "balance field shows an updated amount after TopUp" → "balance"
         subject = re.split(r"\s+(?:field|shows|was|is|has|were)\b", subject)[0].strip()
-        return {"action": "verify", "target": subject, "description": line}
+        # For balance-update verify steps, extract the topup amount into value
+        _bal_val = ""
+        if any(w in lo for w in ("balance", "topup", "top-up", "top up")):
+            _amt_m = re.search(
+                r'(?:topup|top[.\-\s]?up|amount)\s*[\-–\s]*(\d+(?:[.,]\d+)?)',
+                line, re.IGNORECASE,
+            )
+            if _amt_m:
+                _bal_val = _amt_m.group(1)
+            else:
+                _nums = re.findall(r'\b(\d+(?:[.,]\d+)?)\b', line)
+                if _nums:
+                    _bal_val = _nums[-1]
+        step_d: Dict[str, Any] = {"action": "verify", "target": subject, "description": line}
+        if _bal_val:
+            step_d["value"] = _bal_val
+        return step_d
 
     # ── Select amount: value (LLM colon format) ──────────────────────────
     m = re.match(r"^select\s+(?:recharge\s+)?amount\s*:\s*(.+)$", line, re.IGNORECASE)
@@ -600,20 +616,28 @@ Return ONLY a valid JSON object — no markdown, no explanation:
 Element to find: """
 
 
+_VISION_CAPABLE_KEYWORDS = ("vl", "vision", "llava", "moondream", "bakllava", "minicpm", "phi3-vision", "cogvlm")
+
+
 class VisionClient:
-    """Uses qwen2.5vl:latest to locate UI elements from a screenshot."""
+    """Locates UI elements from a screenshot using a vision-capable model."""
 
     def __init__(self):
         self.host    = settings.OLLAMA_HOST
         self.model   = settings.VISION_MODEL
         self.timeout = 30   # vision calls must be fast
+        model_lo = self.model.lower()
+        self._capable = any(k in model_lo for k in _VISION_CAPABLE_KEYWORDS)
 
     async def find_element(self, screenshot_b64: str, description: str) -> dict:
         """
         Send a screenshot + description to the vision model.
         Returns parsed JSON with found/element_text/element_type/x/y/css_hint,
-        or {"found": False} on any error.
+        or {"found": False} on any error or when no vision model is configured.
         """
+        if not self._capable:
+            # Text-only model — cannot process images; skip silently
+            return {"found": False}
         prompt = _VISION_PROMPT + description
         payload = {
             "model":   self.model,
@@ -635,6 +659,8 @@ class VisionClient:
         return {"found": False}
 
     async def check_health(self) -> bool:
+        if not self._capable:
+            return True  # text-only model configured — vision is intentionally disabled
         try:
             async with httpx.AsyncClient(timeout=10) as client:
                 resp = await client.get(f"{self.host}/api/tags")

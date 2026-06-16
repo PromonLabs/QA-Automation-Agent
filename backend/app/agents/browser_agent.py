@@ -86,7 +86,7 @@ class BrowserAgent:
         return log
 
     # ── Screenshots ──────────────────────────────────────────────────────────
-    async def _screenshot(self, label: str = "") -> str:
+    async def _screenshot(self, label: str = "", timeout_ms: int = 8000) -> str:
         if not self._page:
             return ""
         filename = f"step_{self._step_count:03d}_{label}_{int(time.time())}.png"
@@ -95,12 +95,15 @@ class BrowserAgent:
                 path=str(self.screenshot_dir / filename),
                 full_page=True,
                 animations="disabled",
+                timeout=timeout_ms,
             )
         except Exception:
             try:
-                # Fallback: viewport-only screenshot
+                # Fallback: viewport-only screenshot with tighter timeout
                 await self._page.screenshot(
-                    path=str(self.screenshot_dir / filename), full_page=False
+                    path=str(self.screenshot_dir / filename),
+                    full_page=False,
+                    timeout=timeout_ms,
                 )
             except Exception:
                 return ""
@@ -547,7 +550,7 @@ class BrowserAgent:
     @staticmethod
     def _is_credential_field(target: str) -> bool:
         lo = target.lower()
-        return any(k in lo for k in ("username", "password", "email field", "email address"))
+        return any(k in lo for k in ("username", "password", "email field", "email address", "email", "log in", "login"))
 
     async def _already_authenticated(self) -> bool:
         """Return True if the current page looks like an authenticated app (not a login page)."""
@@ -803,20 +806,34 @@ class BrowserAgent:
               fail_only   — only capture on failure
               final       — skip here (one final is taken at end of run)
               all         — capture every step (debug only)
+            Failure screenshots (error_step_NNN.png) are ALWAYS captured regardless
+            of mode so the bulk results grid can show where the flow broke.
             """
             mode = self._screenshot_mode
+            if status == "FAIL":
+                # Always capture on failure — named error_step_NNN.png so the UI
+                # can detect it and show a red "Error" badge in the results grid.
+                # Use a tight 3-second timeout: a page that failed to load won't
+                # render a useful screenshot and the call would otherwise hang.
+                lbl = f"error_step_{self._step_count:03d}"
+                try:
+                    shot = await self._screenshot(lbl, timeout_ms=3000)
+                    if shot:
+                        await self._log("info", f"  [fail] screenshot", screenshot=shot)
+                except Exception:
+                    pass
+                return
             if mode in ("none", "named_only"):
                 return   # only explicit screenshots allowed
             if mode == "final":
                 return   # handled at end of _execute
-            if mode == "fail_only" and status != "FAIL":
-                return   # success shots skipped
-            lbl = f"{'ok' if status == 'ok' else 'FAIL'}_s{self._step_count:02d}"
+            if mode == "fail_only":
+                return   # success shots skipped in fail_only mode
+            lbl = f"ok_s{self._step_count:02d}"
             try:
                 shot = await self._screenshot(lbl)
                 if shot:
-                    icon = "fail" if status == "FAIL" else "ok"
-                    await self._log("info", f"  [{icon}] screenshot", screenshot=shot)
+                    await self._log("info", f"  [ok] screenshot", screenshot=shot)
             except Exception:
                 pass
 
@@ -866,9 +883,13 @@ class BrowserAgent:
                             pass
                 else:
                     nav_timeout = settings.BROWSER_NAVIGATION_TIMEOUT
-                    try:
+                    _nav_done = False
+                    for _nav_attempt in range(3):
+                      try:
                         await self._page.goto(url, wait_until="domcontentloaded", timeout=nav_timeout)
-                    except Exception as nav_err:
+                        _nav_done = True
+                        break
+                      except Exception as nav_err:
                         nav_err_s = str(nav_err)
                         # Payment gateways often close/kill the tab or context after success.
                         # Four-level recovery:
@@ -913,33 +934,57 @@ class BrowserAgent:
                                     await self._browser.close()
                                 except Exception:
                                     pass
-                                self._browser = await self._pw.chromium.launch(
-                                    headless=self.headless,
-                                    slow_mo=settings.BROWSER_SLOW_MO,
-                                    args=[
-                                        "--no-sandbox",
-                                        "--disable-dev-shm-usage",
-                                        "--disable-blink-features=AutomationControlled",
-                                        "--disable-web-security",
-                                        "--allow-running-insecure-content",
-                                        "--start-maximized",
-                                    ],
-                                )
-                                self._context = await self._browser.new_context(
-                                    viewport={"width": 1280, "height": 800},
-                                    user_agent=(
-                                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                                        "AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
-                                    ),
-                                    ignore_https_errors=True,
-                                )
-                                self._page = await self._context.new_page()
-                                await self._page.goto(url, wait_until="domcontentloaded", timeout=nav_timeout)
-                                recovered = True
+                                _launch_args = [
+                                    "--no-sandbox",
+                                    "--disable-dev-shm-usage",
+                                    "--disable-blink-features=AutomationControlled",
+                                    "--disable-web-security",
+                                    "--allow-running-insecure-content",
+                                    "--start-maximized",
+                                ]
+                                for _launch_attempt in range(2):
+                                    try:
+                                        if _launch_attempt > 0:
+                                            await self._log("info", "  ⚠ Retrying browser relaunch…")
+                                            await asyncio.sleep(3)
+                                        self._browser = await self._pw.chromium.launch(
+                                            headless=self.headless,
+                                            slow_mo=settings.BROWSER_SLOW_MO,
+                                            args=_launch_args,
+                                        )
+                                        self._context = await self._browser.new_context(
+                                            viewport={"width": 1280, "height": 800},
+                                            user_agent=(
+                                                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                                "AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+                                            ),
+                                            ignore_https_errors=True,
+                                        )
+                                        self._page = await self._context.new_page()
+                                        await self._page.goto(url, wait_until="domcontentloaded", timeout=nav_timeout)
+                                        recovered = True
+                                        break
+                                    except Exception as _relaunch_err:
+                                        await self._log("info", f"  ⚠ Browser relaunch attempt {_launch_attempt + 1} failed: {_relaunch_err}")
+                                        if _launch_attempt == 0:
+                                            continue
+                                        # Both attempts failed — leave recovered=False so outer code re-raises
 
                             if not recovered:
                                 raise
+                            _nav_done = True
+                            break
                         else:
+                            # Transient failure (timeout, connection refused, etc.) — retry
+                            if _nav_attempt < 2:
+                                await self._log("info", f"  ⚠ Navigation attempt {_nav_attempt + 1} failed ({nav_err_s[:80]}…) — retrying in 3s")
+                                await asyncio.sleep(3)
+                                # Open a fresh page so the stale tab doesn't block the retry
+                                try:
+                                    self._page = await self._context.new_page()
+                                except Exception:
+                                    pass
+                                continue
                             raise
                     try:
                         await self._page.wait_for_load_state("networkidle", timeout=4000)
@@ -1060,9 +1105,12 @@ class BrowserAgent:
                             self._context.remove_listener("page", _on_page)
                             raise
 
-                    # Wait up to 2.5 s for new tab (poll every 250 ms)
+                    # Wait up to 5 s for new tab (poll every 250 ms)
+                    # Increased from 2.5s — slow servers (tusass.lab.gl under parallel load)
+                    # can open the tab after >2.5s, causing the agent to miss the new tab.
                     switched = False
-                    for _ in range(10):
+                    _url_before_click = self._page.url
+                    for _ in range(20):
                         await asyncio.sleep(0.25)
                         if new_page_holder:
                             new_page = new_page_holder[-1]
@@ -1103,13 +1151,57 @@ class BrowserAgent:
                         await self._log("success", f"  → Selected option '{target}' from dropdown")
                         await step_shot("ok")
                     elif re.search(r'\bid\b', target, re.IGNORECASE) or re.match(r'^\+?\d[\d\s\-\.]{5,}$', target.strip()):
-                        # Target looks like an ID or phone/subscriber number — click first table row link
+                        # Target looks like an ID or phone/subscriber number — click first table row link.
+                        # Wait up to 60 s for search results to appear (COS can be slow under parallel load).
+                        # Also breaks early if a card-style link result appears (COS search uses card UI).
+                        for _tbl_wait in range(120):
+                            try:
+                                tbl_loc = self._page.locator(
+                                    "table tbody tr, [role='row']:nth-child(2), "
+                                    "tbody tr:not(:first-child)"
+                                ).first
+                                if await tbl_loc.count() > 0 and await tbl_loc.is_visible():
+                                    break
+                                # Card-style results (e.g. COS global search)
+                                card_loc = self._page.get_by_role("link", name=re.compile(re.escape(target), re.I)).first
+                                if await card_loc.count() > 0 and await card_loc.is_visible():
+                                    break
+                            except Exception:
+                                pass
+                            await asyncio.sleep(0.5)
+
                         clicked_row = False
-                        # Pass 1: Playwright CSS/role selectors
+                        # Pass 0: direct click on the card link found during the wait loop.
+                        # Playwright .click() often fails on Vue/Vuesax card links because the
+                        # navigation event destroys the execution context mid-click. JS evaluate()
+                        # fires the click synchronously and returns before any navigation, so it
+                        # never errors out. Try Playwright first, fall back to JS.
+                        if not clicked_row:
+                            try:
+                                card_direct = self._page.get_by_role(
+                                    "link", name=re.compile(re.escape(target), re.I)
+                                ).first
+                                if await card_direct.count() > 0 and await card_direct.is_visible():
+                                    try:
+                                        await card_direct.click(timeout=5000)
+                                    except Exception:
+                                        await card_direct.evaluate("el => el.click()")
+                                    await self._log("success", f"  → Clicked card link ('{target}')")
+                                    clicked_row = True
+                            except Exception:
+                                pass
+
+                        # Pass 1: Playwright CSS/role selectors — covers both table rows
+                        # and card-style results (e.g. COS global search uses cards not tables)
+                        _safe_target = target.replace("'", "\\'")
                         for frame in self._page.frames:
                             if clicked_row:
                                 break
                             for sel in [
+                                # Card-style search results: link whose text contains the ID
+                                f"a:has-text('{_safe_target}')",
+                                f"[role='link']:has-text('{_safe_target}')",
+                                # Table row results
                                 "table tbody tr:first-child td a",
                                 "table tbody tr:first-child a",
                                 "table tr:nth-child(2) td a",
@@ -1132,7 +1224,13 @@ class BrowserAgent:
                         if not clicked_row:
                             try:
                                 clicked_row = await self._page.evaluate("""
-                                    () => {
+                                    (tgt) => {
+                                        // Card-style: any visible link whose text contains the target ID
+                                        const byText = [...document.querySelectorAll('a, [role="link"]')].find(el => {
+                                            const r = el.getBoundingClientRect();
+                                            return r.width > 0 && r.height > 0 && el.textContent.trim().includes(tgt);
+                                        });
+                                        if (byText) { byText.click(); return true; }
                                         // Try links inside table data cells
                                         const tdLinks = document.querySelectorAll('td a, td button');
                                         if (tdLinks.length > 0) { tdLinks[0].click(); return true; }
@@ -1147,15 +1245,38 @@ class BrowserAgent:
                                         const roleRows = document.querySelectorAll('[role="row"]');
                                         for (const row of roleRows) {
                                             const cells = row.querySelectorAll('[role="cell"], [role="gridcell"]');
-                                            if (cells.length > 0) { cells[0].click(); return true; }
+                                            if (cells.length > 0) {
+                                                const link = cells[0].querySelector('a') || cells[0];
+                                                link.click(); return true;
+                                            }
                                         }
+                                        // Any visible anchor with a numeric ID as its text
+                                        const idLink = [...document.querySelectorAll('a')].find(a => {
+                                            const r = a.getBoundingClientRect();
+                                            return r.width > 0 && r.height > 0 && /^\\d{4,}$/.test(a.textContent.trim());
+                                        });
+                                        if (idLink) { idLink.click(); return true; }
                                         return false;
                                     }
-                                """)
+                                """, target)
                                 if clicked_row:
                                     await self._log("success", f"  → Clicked first row via JS ('{target}')")
                             except Exception:
                                 pass
+                        # Pass 3: card/link result — use JS evaluate to avoid navigation errors
+                        if not clicked_row:
+                            try:
+                                el_retry = await self._find(target)
+                                if el_retry:
+                                    try:
+                                        await el_retry.click(timeout=5000)
+                                    except Exception:
+                                        await el_retry.evaluate("el => el.click()")
+                                    clicked_row = True
+                                    await self._log("success", f"  → Clicked search result card ('{target}')")
+                            except Exception:
+                                pass
+
                         if clicked_row:
                             try:
                                 await self._page.wait_for_load_state("networkidle", timeout=5000)
@@ -1169,6 +1290,7 @@ class BrowserAgent:
                         elif self._is_login_button(target) and await self._already_authenticated():
                             await self._log("info", f"  → Already logged in — skipping '{target}'")
                             await step_shot("ok")
+                            self._login_sequence_skipped = True
                         else:
                             await self._log("error", f"  ✗ STEP FAILED — '{target}' not found on page")
                             await step_shot("FAIL")
@@ -1206,6 +1328,7 @@ class BrowserAgent:
                             elif self._is_login_button(target) and await self._already_authenticated():
                                 await self._log("info", f"  → Already logged in — skipping '{target}'")
                                 await step_shot("ok")
+                                self._login_sequence_skipped = True
                             else:
                                 # Phone/subscriber number — click first search result row
                                 if re.match(r'^\+?\d[\d\s\-\.]{5,}$', target.strip()):
@@ -1260,6 +1383,7 @@ class BrowserAgent:
                             if self._is_login_button(target) and await self._already_authenticated():
                                 await self._log("info", f"  → Already logged in — skipping '{target}'")
                                 await step_shot("ok")
+                                self._login_sequence_skipped = True
                             else:
                                 _SUBMIT_WORDS = ("submit", "create", "confirm", "finish",
                                                  "order", "activate", "save", "done", "complete")
@@ -1296,6 +1420,14 @@ class BrowserAgent:
                 if "${" in fill_val:
                     for k, v in self._captured_vars.items():
                         fill_val = fill_val.replace(f"${{{k}}}", str(v))
+
+                # If the LLM produced a descriptive phrase instead of a bare value
+                # (e.g. "your phone number 547643 in the input box" instead of "547643"),
+                # extract just the numeric token so the form gets the right input.
+                if " " in fill_val and re.search(r'\d{4,}', fill_val):
+                    _extracted = re.search(r'\b(\d{4,})\b', fill_val)
+                    if _extracted:
+                        fill_val = _extracted.group(1)
 
                 async def _do_type() -> bool:
                     """Try to type fill_val into the target field. Returns True on success."""
@@ -1445,9 +1577,9 @@ class BrowserAgent:
                 # First attempt
                 filled = await _do_type()
                 if not filled:
-                    # SPA may still be rendering — wait up to 10 s and retry
+                    # SPA may still be rendering — wait up to 45 s and retry
                     await self._log("info", f"  ⏳ Waiting for '{target}' input to appear…")
-                    for _ in range(20):
+                    for _ in range(90):
                         await asyncio.sleep(0.5)
                         filled = await _do_type()
                         if filled:
@@ -1471,6 +1603,13 @@ class BrowserAgent:
                     return False
 
             elif action == "select":
+                # Wait 4s for the page to settle before attempting to select
+                # (amount-selection pages often render after a short SPA delay)
+                await asyncio.sleep(4)
+                try:
+                    await self._page.wait_for_load_state("networkidle", timeout=4000)
+                except Exception:
+                    pass
                 # target = field label (e.g. "Inventory Type"), value = option to pick (e.g. "ICCID")
                 sel_val = value if value else target
                 label_hint = target if value else ""
@@ -1531,15 +1670,19 @@ class BrowserAgent:
 
                 async def _do_search() -> bool:
                     # ── Pass 1: semantic search selectors ─────────────────
+                    # Note: _find("search") is intentionally NOT used here because it
+                    # matches non-input elements like <span class="title">Search…</span>
+                    # which crashes .fill(). Only _find_input() guarantees an actual input.
                     el = await self._find_input("search")
-                    if not el:
-                        el = await self._find("search")
                     if el:
                         try:
                             await el.click(timeout=3000)
                         except Exception:
                             pass
-                        await el.fill(fill_val)
+                        try:
+                            await el.fill(fill_val)
+                        except Exception:
+                            return False
                         await self._page.keyboard.press("Enter")
                         await asyncio.sleep(1.5)
                         return True
@@ -1732,6 +1875,206 @@ class BrowserAgent:
                 await step_shot("ok")
 
             elif action == "verify":
+                # Wait 4s for the page to fully settle before verifying
+                await asyncio.sleep(4)
+                try:
+                    await self._page.wait_for_load_state("networkidle", timeout=4000)
+                except Exception:
+                    pass
+                # ── Balance math verification ──────────────────────────────────
+                # When the step is about verifying a balance update, do real math
+                # instead of a text search that will never match "OLD + TOPUP = NEW".
+                _desc_lo = description.lower()
+                _is_balance_check = any(
+                    w in _desc_lo for w in ("balance", "topup", "top-up", "top up", "topped")
+                )
+                if _is_balance_check:
+                    def _parse_num(s: str) -> Optional[float]:
+                        """
+                        Parse a balance string that may use European format.
+                        Examples:
+                          "50,00 kr."  → 50.0
+                          "100,00 kr." → 100.0
+                          "1.234,56"   → 1234.56
+                          "50"         → 50.0
+                        """
+                        if not s:
+                            return None
+                        # Strip currency suffix and whitespace
+                        s = re.sub(r'\s*(kr\.?|dkk|usd|eur|gbp)\s*', '', s, flags=re.IGNORECASE).strip().rstrip('.')
+                        if not s:
+                            return None
+                        # European format: comma before exactly 2 digits at end → decimal comma
+                        if re.search(r',\d{2}$', s):
+                            # e.g. "1.234,56" → remove thousand-dot → "1234.56"
+                            s = s.replace('.', '').replace(',', '.')
+                        else:
+                            # Standard or already-dotted decimal — just remove stray commas
+                            s = s.replace(',', '')
+                        try:
+                            return float(s) if s else None
+                        except Exception:
+                            return None
+
+                    async def _extract_balance_from_page() -> Optional[str]:
+                        """Re-read the current page balance (same regex as the extract action)."""
+                        try:
+                            body = await self._page.inner_text("body")
+                            m = re.search(
+                                r'(?:Balance|Saldo)\s*[:\s]+([0-9][0-9\s,\.]+\s*(?:kr\.?|DKK)?)',
+                                body, re.IGNORECASE,
+                            )
+                            if m:
+                                return re.sub(r'\s+', ' ', m.group(1).strip())
+                        except Exception:
+                            pass
+                        return None
+
+                    old_raw = self._captured_vars.get("OLD_BALANCE", "")
+                    new_raw = self._captured_vars.get("NEW_BALANCE", "")
+
+                    # Topup amount: check value field first, then description, then target
+                    topup_raw = value
+                    if not topup_raw:
+                        _amt_m = re.search(
+                            r'(?:topup|top[.\-\s]?up|amount)\s*[\-–\s]*(\d+(?:[.,]\d+)?)',
+                            description, re.IGNORECASE,
+                        )
+                        if _amt_m:
+                            topup_raw = _amt_m.group(1)
+                        else:
+                            _nums = re.findall(r'\b(\d+(?:[.,]\d+)?)\b', description)
+                            if _nums:
+                                topup_raw = _nums[-1]
+
+                    old_num   = _parse_num(old_raw)
+                    topup_num = _parse_num(str(topup_raw) if topup_raw else "")
+
+                    # Balance-update retry loop.
+                    # On every attempt: reload the page and wait 15s for COS to propagate.
+                    # On attempt 2: also re-navigate to the subscriber's detail page so we
+                    #   read the correct balance (not a stale home-page value).
+                    # Subscriber ID priority (avoids contaminated MISTIN_ID env var):
+                    #   1. SUBSCRIBER_EXTERNAL_ID captured this run
+                    #   2. ID parsed from the current page URL  (e.g. /customers/299223016)
+                    #   3. Short subscriber number extracted from exec_id or current URL
+                    async def _best_subscriber_id() -> str:
+                        # 1. captured var set during this run (most reliable)
+                        sid = self._captured_vars.get("SUBSCRIBER_EXTERNAL_ID", "")
+                        if sid:
+                            return sid
+                        # 2. subscriber ID embedded in the current page URL
+                        try:
+                            url = self._page.url
+                            m = re.search(r'/(?:customers?|subscribers?)/(\d+)', url, re.IGNORECASE)
+                            if m:
+                                return m.group(1)
+                        except Exception:
+                            pass
+                        # 3. Read subscriber ID from the page body (detail page shows it)
+                        try:
+                            body = await self._page.inner_text("body")
+                            m = re.search(
+                                r'(?:External\s+ID|Subscriber\s+ID|MSISDN|Account\s+(?:No\.?|Number))'
+                                r'\s*[:\s]+(\d{6,})',
+                                body, re.IGNORECASE,
+                            )
+                            if m:
+                                return m.group(1)
+                        except Exception:
+                            pass
+                        return ""
+
+                    if old_num is not None and topup_num is not None:
+                        new_num = _parse_num(new_raw)
+                        for _retry in range(12):
+                            if new_num is not None and abs(new_num - old_num) > 0.01:
+                                break   # balance changed — proceed to math check
+
+                            if _retry > 0:
+                                await self._log("info", f"  🔄 Balance unchanged (attempt {_retry}/12) — waiting 20s for COS to propagate")
+                                await asyncio.sleep(20)
+
+                            # On every retry: navigate directly to subscriber page
+                            sub_url = self._captured_vars.get("SUBSCRIBER_PAGE_URL", "")
+                            sub_id  = await _best_subscriber_id()
+                            if sub_url and _retry > 0:
+                                # Direct URL navigation — fastest and most reliable
+                                try:
+                                    await self._page.goto(sub_url, wait_until="domcontentloaded", timeout=25000)
+                                    await asyncio.sleep(3)
+                                    try:
+                                        await self._page.wait_for_load_state("networkidle", timeout=6000)
+                                    except Exception:
+                                        pass
+                                except Exception:
+                                    pass
+                            elif sub_id and _retry > 0:
+                                # Fallback: search + click the subscriber card
+                                await self._log("info", f"  🔍 Re-navigating to subscriber {sub_id}")
+                                try:
+                                    await self._page.keyboard.press("Escape")
+                                    await asyncio.sleep(0.5)
+                                    search_el = await self._find_input("search")
+                                    if search_el:
+                                        await search_el.fill(sub_id)
+                                        await self._page.keyboard.press("Enter")
+                                        await asyncio.sleep(5)
+                                        for _sel in [
+                                            f"a:has-text('{sub_id}')",
+                                            "table tbody tr:first-child td a",
+                                            "table tbody tr:first-child a",
+                                            "[role='row']:nth-child(2) [role='cell']:first-child a",
+                                        ]:
+                                            try:
+                                                _loc = self._page.locator(_sel).first
+                                                if await _loc.count() > 0 and await _loc.is_visible():
+                                                    await _loc.click(timeout=5000)
+                                                    await asyncio.sleep(4)
+                                                    break
+                                            except Exception:
+                                                pass
+                                except Exception:
+                                    pass
+                            else:
+                                # Last resort: reload current page
+                                try:
+                                    await self._page.reload(wait_until="domcontentloaded", timeout=20000)
+                                    await asyncio.sleep(5)
+                                    try:
+                                        await self._page.wait_for_load_state("networkidle", timeout=5000)
+                                    except Exception:
+                                        pass
+                                except Exception:
+                                    pass
+
+                            fresh = await _extract_balance_from_page()
+                            if fresh:
+                                new_raw = fresh
+                                self._captured_vars["NEW_BALANCE"] = fresh
+                                new_num = _parse_num(fresh)
+                                await self._log("info", f"  📊 Re-captured NEW_BALANCE = {fresh}")
+
+                        if new_num is not None:
+                            expected = old_num + topup_num
+                            if abs(new_num - expected) <= 1.0:
+                                await self._log(
+                                    "success",
+                                    f"  ✓ Balance verified: {old_num} + {topup_num} = {new_num} ✔"
+                                )
+                                await step_shot("ok")
+                                return True
+                            else:
+                                await self._log(
+                                    "error",
+                                    f"  ✗ STEP FAILED — Balance mismatch: {old_num} + {topup_num} "
+                                    f"≠ {new_num} (expected {expected:.2f})"
+                                )
+                                await step_shot("FAIL")
+                                return False
+                    # If we couldn't parse the captured vars, fall through to text search
+
+                # ── Standard text search ───────────────────────────────────────
                 try:
                     body = await self._page.inner_text("body")
                     if target.lower() in body.lower():
@@ -2081,6 +2424,12 @@ class BrowserAgent:
                 if val:
                     self._captured_vars[target] = val
                     await self._log("success", f"  📊 Captured {target} = {val}")
+                    if is_subscriber_id:
+                        # Store the current subscriber page URL for reliable re-navigation later
+                        try:
+                            self._captured_vars["SUBSCRIBER_PAGE_URL"] = self._page.url
+                        except Exception:
+                            pass
                 else:
                     if is_subscriber_id:
                         # ICC_ID must come from the page — phone/MSISDN vars are wrong fallbacks
@@ -2350,6 +2699,14 @@ class BrowserAgent:
                         "--disable-web-security",
                         "--allow-running-insecure-content",
                         "--start-maximized",
+                        # Parallel-run stability: prevent background throttling and
+                        # reduce per-instance memory pressure when 7+ browsers run together.
+                        "--disable-background-timer-throttling",
+                        "--disable-renderer-backgrounding",
+                        "--disable-backgrounding-occluded-windows",
+                        "--no-first-run",
+                        "--disable-default-apps",
+                        "--ignore-certificate-errors",
                     ],
                 )
             except Exception as e:

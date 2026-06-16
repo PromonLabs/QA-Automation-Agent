@@ -18,27 +18,57 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
 const SHOT_LABELS = ["Before Data", "Payment", "After Data"]
 
+// step_015_error_step_015_1781510269.png  → true
+const isErrorShot = (filename: string) => /^step_\d+_error_/i.test(filename)
+
+// Extract step number from error screenshot name: step_015_error_... → "Step 15"
+function errorStepLabel(filename: string): string {
+  const m = filename.match(/^step_(\d+)_error_/i)
+  return m ? `Error at Step ${parseInt(m[1], 10)}` : "Error"
+}
+
 function ScreenshotThumb({
   url,
   label,
+  isError = false,
   onClick,
 }: {
   url: string
   label: string
+  isError?: boolean
   onClick: () => void
 }) {
   return (
     <div className="space-y-1.5">
-      <div className="text-white/40 text-xs text-center font-medium">{label}</div>
+      <div className="flex items-center justify-center gap-1.5">
+        <span className={`text-xs text-center font-medium ${isError ? "text-red-400" : "text-white/40"}`}>
+          {label}
+        </span>
+        {isError && (
+          <span className="flex items-center gap-0.5 text-[10px] text-red-400 bg-red-500/10 border border-red-500/25 rounded px-1.5 py-0.5 font-medium">
+            <XCircle className="w-2.5 h-2.5" /> Error
+          </span>
+        )}
+      </div>
       <button
         onClick={onClick}
-        className="relative w-full aspect-video bg-white/5 rounded-lg overflow-hidden group hover:ring-2 hover:ring-white/30 transition-all"
+        className={`relative w-full aspect-video bg-white/5 rounded-lg overflow-hidden group transition-all ${
+          isError
+            ? "ring-1 ring-red-500/40 hover:ring-red-500/60"
+            : "hover:ring-2 hover:ring-white/30"
+        }`}
       >
         <img
           src={url}
           alt={label}
           className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
         />
+        {isError && (
+          <div className="absolute top-1.5 left-1.5 flex items-center gap-1 bg-red-600/90 rounded px-1.5 py-0.5">
+            <XCircle className="w-2.5 h-2.5 text-white" />
+            <span className="text-white text-[10px] font-semibold">Step failed here</span>
+          </div>
+        )}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
           <ZoomIn className="w-6 h-6 text-white drop-shadow-lg" />
         </div>
@@ -96,7 +126,16 @@ function ItemCard({ item }: { item: BulkItem }) {
     if (item.status !== "success" && item.status !== "failed") return
     setLoadingShots(true)
     executionApi.screenshots(item.execution_id)
-      .then(r => setShots(r.data.screenshots ?? []))
+      .then(r => {
+        const all: string[] = r.data.screenshots ?? []
+        // ss_NNN.png are auto-duplicates of the named screenshots taken in the same step.
+        // Filter them out so the 3 columns map to the meaningful named captures:
+        //   Before Data → search-result.png
+        //   Payment     → receipt.png
+        //   After Data  → updated-balance.png
+        const named = all.filter(s => !/^ss_\d+\.png$/i.test(s))
+        setShots(named.length > 0 ? named : all)
+      })
       .catch(() => {})
       .finally(() => setLoadingShots(false))
   }, [item.execution_id, item.status])
@@ -178,57 +217,81 @@ function ItemCard({ item }: { item: BulkItem }) {
           </div>
         </div>
 
-        {/* SUCCESS: 3 screenshots */}
-        {item.status === "success" && (
-          <div className="p-5">
-            {loadingShots ? (
-              <div className="flex items-center justify-center py-10 gap-2 text-white/20 text-xs">
-                <Loader2 className="w-4 h-4 animate-spin" /> Loading screenshots…
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-4">
-                {SHOT_LABELS.map((label, i) => {
-                  const shot = shots[i]
-                  return shot ? (
-                    <ScreenshotThumb
-                      key={shot}
-                      url={shotUrl(shot)}
-                      label={label}
-                      onClick={() => setLightbox(shotUrl(shot))}
-                    />
-                  ) : (
-                    <EmptyThumb key={label} label={label} />
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* FAILED: error + last screenshot */}
-        {item.status === "failed" && (
+        {/* SUCCESS / FAILED: same 3-column screenshot grid */}
+        {(item.status === "success" || item.status === "failed") && (
           <div className="p-5 space-y-3">
-            {item.error && (
+            {/* Error message banner */}
+            {item.status === "failed" && item.error && (
               <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">
                 <XCircle className="w-3.5 h-3.5 text-red-400/70 mt-0.5 shrink-0" />
                 <p className="text-red-400/70 text-xs font-mono leading-relaxed">{item.error}</p>
               </div>
             )}
+
             {loadingShots ? (
-              <div className="flex items-center gap-2 text-white/20 text-xs py-4">
-                <Loader2 className="w-4 h-4 animate-spin" /> Loading screenshot…
+              <div className="flex items-center justify-center py-10 gap-2 text-white/20 text-xs">
+                <Loader2 className="w-4 h-4 animate-spin" /> Loading screenshots…
               </div>
-            ) : shots.length > 0 ? (
-              <div className="max-w-xs">
-                <ScreenshotThumb
-                  url={shotUrl(shots[shots.length - 1])}
-                  label="Failure Screenshot"
-                  onClick={() => setLightbox(shotUrl(shots[shots.length - 1]))}
-                />
-              </div>
-            ) : item.execution_id ? (
-              <p className="text-white/20 text-xs">No screenshot captured</p>
-            ) : null}
+            ) : (() => {
+              // Split screenshots into named (success checkpoints) and error shots
+              const namedShots = shots.filter(s => !isErrorShot(s))
+              const errorShots = shots.filter(s => isErrorShot(s))
+
+              return (
+                <div className="space-y-4">
+                  {/* Error screenshots — shown first with red styling for immediate visibility */}
+                  {errorShots.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-red-400/60 text-[10px] uppercase tracking-widest font-semibold">
+                        Failure Screenshot
+                      </p>
+                      <div className={`grid gap-4 ${errorShots.length === 1 ? "grid-cols-1 max-w-sm" : "grid-cols-2"}`}>
+                        {errorShots.map(shot => (
+                          <ScreenshotThumb
+                            key={shot}
+                            url={shotUrl(shot)}
+                            label={errorStepLabel(shot)}
+                            isError
+                            onClick={() => setLightbox(shotUrl(shot))}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Named checkpoint screenshots (search-result, receipt, updated-balance) */}
+                  {namedShots.length > 0 && (
+                    <div className="space-y-2">
+                      {errorShots.length > 0 && (
+                        <p className="text-white/20 text-[10px] uppercase tracking-widest font-semibold">
+                          Progress Screenshots
+                        </p>
+                      )}
+                      <div className="grid grid-cols-3 gap-4">
+                        {SHOT_LABELS.map((label, i) => {
+                          const shot = namedShots[i]
+                          return shot ? (
+                            <ScreenshotThumb
+                              key={shot}
+                              url={shotUrl(shot)}
+                              label={label}
+                              onClick={() => setLightbox(shotUrl(shot))}
+                            />
+                          ) : (
+                            <EmptyThumb key={label} label={label} />
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* No screenshots at all */}
+                  {shots.length === 0 && item.status === "failed" && (
+                    <p className="text-white/20 text-xs">No screenshot captured</p>
+                  )}
+                </div>
+              )
+            })()}
           </div>
         )}
 
