@@ -1,0 +1,586 @@
+{
+  "id": "389ac031-1544-4664-a762-d08025416f65",
+  "flow_id": "e5ba9c6f-3ba7-483c-975c-e2356c8099a4",
+  "flow_name": "Tusass TopUp Talk [223401]",
+  "status": "failed",
+  "started_at": "2026-06-17T07:32:18.595121+00:00",
+  "finished_at": "2026-06-17T07:40:25.796330+00:00",
+  "duration_seconds": 487.2,
+  "logs": [
+    {
+      "timestamp": "2026-06-17T07:32:18.615430+00:00",
+      "level": "info",
+      "message": "\ud83d\udd11 Using flow-level credentials (4 var(s))",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:18.669860+00:00",
+      "level": "info",
+      "message": "\ud83d\udcdd Task extracted: 34 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:18.685988+00:00",
+      "level": "info",
+      "message": "  Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:18.704567+00:00",
+      "level": "info",
+      "message": "  Step 34: Give the report - Tusass topup talk flow is executed successfully. ${SUBSCRIBER_",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:18.716547+00:00",
+      "level": "info",
+      "message": "\ud83e\udd16 Sending task to moondream:latest\u2026",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:18.725015+00:00",
+      "level": "info",
+      "message": "\ud83d\udccb Plan ready: 33 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:18.745485+00:00",
+      "level": "info",
+      "message": "\ud83d\udcad Direct execution of 33 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:19.481602+00:00",
+      "level": "info",
+      "message": "\ud83d\ude80 Browser launched \u2014 33 steps",
+      "step": 0,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:19.481918+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:35:19.493532+00:00",
+      "level": "info",
+      "message": "  \u26a0 Navigation attempt 1 failed (Page.goto: Timeout 180000ms exceeded.\nCall log:\n  - navigating to \"https://msitc\u2026) \u2014 retrying in 3s",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:09.539693+00:00",
+      "level": "info",
+      "message": "  \u2192 https://msitcos.lab.gl/",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:09.539825+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 2: Click escape button to show the - Login with password  - button",
+      "step": 2,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:10.153983+00:00",
+      "level": "info",
+      "message": "  \u2192 Key: Escape",
+      "step": 2,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:10.154304+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 3: Click the - Login with password  - button",
+      "step": 3,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:15.584474+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked '- Login with password  -'",
+      "step": 3,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:15.584717+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 4: Enter Username in inuput box admin@telepost.gl",
+      "step": 4,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:16.224306+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed 'admin@telepost.gl' into 'Username'",
+      "step": 4,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:16.529772+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 5: Enter Password in input box test1234",
+      "step": 5,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:16.876468+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed 'test1234' into 'Password'",
+      "step": 5,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:17.178549+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 6: Click the - Log in  - button",
+      "step": 6,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:22.531159+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked '- Log in  -'",
+      "step": 6,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:22.531402+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 7: In Search box enter the 299223401",
+      "step": 7,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:24.384845+00:00",
+      "level": "success",
+      "message": "  \u2192 Searched for '299223401'",
+      "step": 7,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:24.385018+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 8: Click on the customer 299223401",
+      "step": 8,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:30.563454+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked card link ('299223401')",
+      "step": 8,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:30.573827+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 9: Extract the external id from this customer page",
+      "step": 9,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:41.029985+00:00",
+      "level": "info",
+      "message": "  \u26a0 SUBSCRIBER_EXTERNAL_ID not found on page \u2014 using env fallback: 230026",
+      "step": 9,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:41.030496+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 10: Note the old balance on this page",
+      "step": 10,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:43.103391+00:00",
+      "level": "success",
+      "message": "  \ud83d\udcca Captured OLD_BALANCE = 1.650,00 kr.",
+      "step": 10,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:43.103737+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 11: Take the screenshot of that page and save it as - search-result.png -",
+      "step": 11,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:44.157607+00:00",
+      "level": "info",
+      "message": "  \ud83d\udcf8 Screenshot saved: search-result.png",
+      "step": 11,
+      "screenshot": "search-result.png"
+    },
+    {
+      "timestamp": "2026-06-17T07:37:44.157722+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 12: SS \u2014 take screenshot",
+      "step": 12,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:44.244975+00:00",
+      "level": "info",
+      "message": "  \ud83d\udcf8 SS screenshot saved: ss_001.png",
+      "step": 12,
+      "screenshot": "ss_001.png"
+    },
+    {
+      "timestamp": "2026-06-17T07:37:44.245213+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 13: Next Navigate to https://test.tusass.lab.gl/test",
+      "step": 13,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:51.660977+00:00",
+      "level": "info",
+      "message": "  \u2192 https://test.tusass.lab.gl/test",
+      "step": 13,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:51.661112+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 14: Click the TopUp talk button",
+      "step": 14,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:55.260907+00:00",
+      "level": "info",
+      "message": "  \u2192 Switched to new tab: https://test.tusass.lab.gl/en/",
+      "step": 14,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:55.261105+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'TopUp talk'",
+      "step": 14,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:55.261204+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 15: Enter phone number in input box 223401",
+      "step": 15,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:55.389312+00:00",
+      "level": "info",
+      "message": "  \u23f3 Waiting for 'phone number' input to appear\u2026",
+      "step": 15,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:56.880970+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed '223401' (first empty input)",
+      "step": 15,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:57.186005+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 16: Enter mobile number in input box 223401",
+      "step": 16,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:57.510512+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed '223401' (first empty input)",
+      "step": 16,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:37:57.812181+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 17: Take the screenshot of that page and save it as - number-fill.png -",
+      "step": 17,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:00.924231+00:00",
+      "level": "info",
+      "message": "  \ud83d\udcf8 Screenshot saved: number-fill.png",
+      "step": 17,
+      "screenshot": "number-fill.png"
+    },
+    {
+      "timestamp": "2026-06-17T07:38:00.924326+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 18: Click the Continue button",
+      "step": 18,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:08.142939+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'Continue'",
+      "step": 18,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:08.143150+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 19: SS \u2014 take screenshot",
+      "step": 19,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:08.241188+00:00",
+      "level": "info",
+      "message": "  \ud83d\udcf8 SS screenshot saved: ss_002.png",
+      "step": 19,
+      "screenshot": "ss_002.png"
+    },
+    {
+      "timestamp": "2026-06-17T07:38:08.241339+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 20: Select amount 200",
+      "step": 20,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:16.349044+00:00",
+      "level": "success",
+      "message": "  \u2192 Selected '200'",
+      "step": 20,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:16.349322+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 21: Click the continue button",
+      "step": 21,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:21.593743+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'continue'",
+      "step": 21,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:21.594009+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 22: In Card number field, enter 1000000000000008",
+      "step": 22,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:22.164717+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed '1000000000000008' into 'Card number'",
+      "step": 22,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:22.471918+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 23: In MM field, enter 12",
+      "step": 23,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:22.611371+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed '12' into 'MM'",
+      "step": 23,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:22.927661+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 24: In YY field, enter 28",
+      "step": 24,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:23.042976+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed '28' into 'YY'",
+      "step": 24,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:23.357782+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 25: In CVV/CVD field, enter 121",
+      "step": 25,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:23.511039+00:00",
+      "level": "success",
+      "message": "  \u2192 Typed '121' into 'CVV/CVD'",
+      "step": 25,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:23.824697+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 26: Click the Pay button",
+      "step": 26,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:31.880268+00:00",
+      "level": "success",
+      "message": "  \u2192 Clicked 'Pay'",
+      "step": 26,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:31.880643+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 27: After payment is successful, it show the Recipt page, take the screenshot of that page and save it as - receipt.png -",
+      "step": 27,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:44.234225+00:00",
+      "level": "info",
+      "message": "  \ud83d\udcf8 Screenshot saved: receipt.png",
+      "step": 27,
+      "screenshot": "receipt.png"
+    },
+    {
+      "timestamp": "2026-06-17T07:38:44.234457+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 28: SS \u2014 take screenshot",
+      "step": 28,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:44.341589+00:00",
+      "level": "info",
+      "message": "  \ud83d\udcf8 SS screenshot saved: ss_003.png",
+      "step": 28,
+      "screenshot": "ss_003.png"
+    },
+    {
+      "timestamp": "2026-06-17T07:38:44.341770+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 29: Next Navigate to https://msitcos.lab.gl/",
+      "step": 29,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:49.023733+00:00",
+      "level": "info",
+      "message": "  \u2192 https://msitcos.lab.gl/",
+      "step": 29,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:49.023856+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 30: IN that page current balance should be updated with topup amount, take the screenshot of that page and save it as - updated-balance.png -",
+      "step": 30,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:54.221040+00:00",
+      "level": "info",
+      "message": "  \ud83d\udcf8 Screenshot saved: updated-balance.png",
+      "step": 30,
+      "screenshot": "updated-balance.png"
+    },
+    {
+      "timestamp": "2026-06-17T07:38:54.221454+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 31: SS \u2014 take screenshot",
+      "step": 31,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:38:54.303246+00:00",
+      "level": "info",
+      "message": "  \ud83d\udcf8 SS screenshot saved: ss_004.png",
+      "step": 31,
+      "screenshot": "ss_004.png"
+    },
+    {
+      "timestamp": "2026-06-17T07:38:54.303395+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 32: Note the new balance on this page after topup",
+      "step": 32,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:39:03.086690+00:00",
+      "level": "success",
+      "message": "  \ud83d\udcca Captured NEW_BALANCE = 1.650,00 kr.",
+      "step": 32,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:39:03.087088+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 33: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "step": 33,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:40:25.422349+00:00",
+      "level": "error",
+      "message": "  \u2717 STEP FAILED \u2014 Balance mismatch: 1650.0 + 200.0 \u2260 1650.0 (expected 1850.00)",
+      "step": 33,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:40:25.425945+00:00",
+      "level": "error",
+      "message": "\u274c STOPPED at step 33 \u2014 Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "step": 33,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:40:25.809316+00:00",
+      "level": "error",
+      "message": "\u274c FAILED \u2014 32/33 steps in 487.2s",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:40:25.968806+00:00",
+      "level": "info",
+      "message": "\ud83d\udcc4 Report: Tusass_TopUp_Talk_223401_2026-06-17_07-40.pdf",
+      "step": null,
+      "screenshot": null
+    }
+  ],
+  "screenshots": [
+    "search-result.png",
+    "ss_001.png",
+    "number-fill.png",
+    "ss_002.png",
+    "receipt.png",
+    "ss_003.png",
+    "updated-balance.png",
+    "ss_004.png"
+  ],
+  "result_summary": "Tusass topup talk flow is executed successfully. 230026 is topped up with amount 200. Balance before: 1.650,00 kr. \u2014 Balance after: 1.650,00 kr.",
+  "error": null,
+  "steps_completed": 32,
+  "steps_total": 33,
+  "report_file": "Tusass_TopUp_Talk_223401_2026-06-17_07-40.pdf"
+}

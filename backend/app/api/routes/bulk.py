@@ -211,7 +211,7 @@ async def _run_one_item(bulk_id: str, idx: int, shared_browser=None, shared_cont
             orch = Orchestrator(
                 flow=flow,
                 exec_id=exec_id,
-                headless=True,
+                headless=settings.BROWSER_HEADLESS,
                 ws_broadcast=manager.broadcast,
                 shared_browser=shared_browser,
                 shared_context=shared_context,
@@ -269,7 +269,7 @@ async def _execute_bulk(bulk_id: str):
             async def _run():
                 async with async_playwright() as pw:
                     browser = await pw.chromium.launch(
-                        headless=True,
+                        headless=settings.BROWSER_HEADLESS,
                         args=[
                             "--no-sandbox",
                             "--disable-dev-shm-usage",
@@ -306,7 +306,7 @@ async def _execute_bulk(bulk_id: str):
 
     else:
         # Parallel: each item gets its own browser, staggered to spread the load.
-        _STAGGER_SECONDS = 5   # gap between each browser launch
+        _STAGGER_SECONDS = 2   # gap between each browser launch
         sem = asyncio.Semaphore(max_parallel)
 
         async def run_one(idx: int):
@@ -314,7 +314,7 @@ async def _execute_bulk(bulk_id: str):
             async with sem:
                 await _run_one_item(bulk_id, idx, shared_browser=None)
 
-        await asyncio.gather(*[run_one(i) for i in range(n_items)])
+        await asyncio.gather(*[run_one(i) for i in range(n_items)], return_exceptions=True)
 
     run = _load(bulk_id)
     run["status"] = "completed"

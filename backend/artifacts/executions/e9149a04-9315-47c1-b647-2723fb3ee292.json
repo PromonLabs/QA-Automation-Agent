@@ -1,0 +1,199 @@
+{
+  "id": "e9149a04-9315-47c1-b647-2723fb3ee292",
+  "flow_id": "8a1620e3-55ec-4cca-8dc3-558460004170",
+  "flow_name": "Tusass TopUp Talk [222341]",
+  "status": "failed",
+  "started_at": "2026-06-17T07:32:24.595299+00:00",
+  "finished_at": "2026-06-17T07:36:02.093311+00:00",
+  "duration_seconds": 217.5,
+  "logs": [
+    {
+      "timestamp": "2026-06-17T07:32:24.615973+00:00",
+      "level": "info",
+      "message": "\ud83d\udd11 Using flow-level credentials (4 var(s))",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:24.653322+00:00",
+      "level": "info",
+      "message": "\ud83d\udcdd Task extracted: 34 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:24.674668+00:00",
+      "level": "info",
+      "message": "  Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:24.689166+00:00",
+      "level": "info",
+      "message": "  Step 34: Give the report - Tusass topup talk flow is executed successfully. ${SUBSCRIBER_",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:24.704343+00:00",
+      "level": "info",
+      "message": "\ud83e\udd16 Sending task to moondream:latest\u2026",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:24.724472+00:00",
+      "level": "info",
+      "message": "\ud83d\udccb Plan ready: 33 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:24.744052+00:00",
+      "level": "info",
+      "message": "\ud83d\udcad Direct execution of 33 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:25.596060+00:00",
+      "level": "info",
+      "message": "\ud83d\ude80 Browser launched \u2014 33 steps",
+      "step": 0,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:32:25.596338+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:35:10.372036+00:00",
+      "level": "info",
+      "message": "  \u2192 https://msitcos.lab.gl/",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:35:10.372565+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 2: Click escape button to show the - Login with password  - button",
+      "step": 2,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:35:10.987728+00:00",
+      "level": "info",
+      "message": "  \u2192 Key: Escape",
+      "step": 2,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:35:10.988211+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 3: Click the - Login with password  - button",
+      "step": 3,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:35:11.001978+00:00",
+      "level": "info",
+      "message": "  \u2192 Already logged in \u2014 skipping '- Login with password  -'",
+      "step": 3,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:35:11.002266+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 4: Enter Username in inuput box admin@telepost.gl",
+      "step": 4,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:35:11.002362+00:00",
+      "level": "info",
+      "message": "  \u2192 Already logged in \u2014 skipping type 'Username'",
+      "step": 4,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:35:11.002414+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 5: Enter Password in input box test1234",
+      "step": 5,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:35:11.002479+00:00",
+      "level": "info",
+      "message": "  \u2192 Already logged in \u2014 skipping type 'Password'",
+      "step": 5,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:35:11.002541+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 6: Click the - Log in  - button",
+      "step": 6,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:35:11.009867+00:00",
+      "level": "info",
+      "message": "  \u2192 Already logged in \u2014 skipping '- Log in  -'",
+      "step": 6,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:35:11.010031+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 7: In Search box enter the 299222341",
+      "step": 7,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:35:23.133475+00:00",
+      "level": "info",
+      "message": "  \ud83d\udd04 Search box not found \u2014 navigating to base URL",
+      "step": 7,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:35:55.305869+00:00",
+      "level": "error",
+      "message": "  \u2717 STEP FAILED \u2014 search box not found",
+      "step": 7,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:36:01.344394+00:00",
+      "level": "error",
+      "message": "\u274c STOPPED at step 7 \u2014 In Search box enter the 299222341",
+      "step": 7,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:36:02.096303+00:00",
+      "level": "error",
+      "message": "\u274c FAILED \u2014 6/33 steps in 217.5s",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T07:36:02.153023+00:00",
+      "level": "info",
+      "message": "\ud83d\udcc4 Report: Tusass_TopUp_Talk_222341_2026-06-17_07-36.pdf",
+      "step": null,
+      "screenshot": null
+    }
+  ],
+  "screenshots": [],
+  "result_summary": "Tusass topup talk flow is executed successfully. ${SUBSCRIBER_EXTERNAL_ID} is topped up with amount 200. Balance before: ${OLD_BALANCE} \u2014 Balance after: ${NEW_BALANCE}",
+  "error": null,
+  "steps_completed": 6,
+  "steps_total": 33,
+  "report_file": "Tusass_TopUp_Talk_222341_2026-06-17_07-36.pdf"
+}

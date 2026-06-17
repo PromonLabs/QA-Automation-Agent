@@ -33,7 +33,7 @@
       "Press Enter",
       "Wait 2000ms",
       "Click the Pay button",
-      "Wait 6000ms",
+      "Wait 10000ms",
       "After payment is successful, it show the Recipt page, take the screenshot of that page and save it as - receipt.png -", "SS",
       " Next Navigate to ${COS_URL}  ",
       "Wait 4000ms",

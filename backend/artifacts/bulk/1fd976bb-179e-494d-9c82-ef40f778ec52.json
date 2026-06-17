@@ -1,0 +1,128 @@
+{
+  "id": "1fd976bb-179e-494d-9c82-ef40f778ec52",
+  "flow_id": "json-flow/Tusass-TopUp-Talk",
+  "flow_name": "Tusass TopUp Talk",
+  "variable_name": "ACCOUNT_NUMBER",
+  "max_parallel": 10,
+  "total": 7,
+  "completed": 7,
+  "success": 1,
+  "failed": 6,
+  "status": "completed",
+  "started_at": "2026-06-17T07:32:14.534136+00:00",
+  "finished_at": "2026-06-17T07:40:26.079497+00:00",
+  "items": [
+    {
+      "number": "564925",
+      "label": "564925",
+      "env_vars": {
+        "MISTIN_ID": "299564925",
+        "ACCOUNT_NUMBER": "564925",
+        "PHONE_NUMBER": "564925",
+        "MOBILE_NUMBER": "564925"
+      },
+      "execution_id": "8ea8b714-4208-4d63-9c5c-3fdb3f40d99f",
+      "status": "failed",
+      "started_at": "2026-06-17T07:32:14.560928+00:00",
+      "finished_at": "2026-06-17T07:39:17.126374+00:00",
+      "duration_seconds": 422.07,
+      "error": "\u274c STOPPED at step 33 \u2014 Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -"
+    },
+    {
+      "number": "562617",
+      "label": "562617",
+      "env_vars": {
+        "MISTIN_ID": "299562617",
+        "ACCOUNT_NUMBER": "562617",
+        "PHONE_NUMBER": "562617",
+        "MOBILE_NUMBER": "562617"
+      },
+      "execution_id": "c321801e-5b6e-4ec6-aca3-905679df9bad",
+      "status": "success",
+      "started_at": "2026-06-17T07:32:16.561513+00:00",
+      "finished_at": "2026-06-17T07:37:40.522809+00:00",
+      "duration_seconds": 323.51,
+      "error": null
+    },
+    {
+      "number": "223401",
+      "label": "223401",
+      "env_vars": {
+        "MISTIN_ID": "299223401",
+        "ACCOUNT_NUMBER": "223401",
+        "PHONE_NUMBER": "223401",
+        "MOBILE_NUMBER": "223401"
+      },
+      "execution_id": "389ac031-1544-4664-a762-d08025416f65",
+      "status": "failed",
+      "started_at": "2026-06-17T07:32:18.567542+00:00",
+      "finished_at": "2026-06-17T07:40:26.052350+00:00",
+      "duration_seconds": 487.2,
+      "error": "\u274c STOPPED at step 33 \u2014 Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -"
+    },
+    {
+      "number": "230026",
+      "label": "230026",
+      "env_vars": {
+        "MISTIN_ID": "299230026",
+        "ACCOUNT_NUMBER": "230026",
+        "PHONE_NUMBER": "230026",
+        "MOBILE_NUMBER": "230026"
+      },
+      "execution_id": "2d6349bc-b83b-4435-826f-24905b49b0f7",
+      "status": "failed",
+      "started_at": "2026-06-17T07:32:20.560994+00:00",
+      "finished_at": "2026-06-17T07:36:33.958871+00:00",
+      "duration_seconds": 253.28,
+      "error": "\u274c STOPPED at step 7 \u2014 In Search box enter the 299230026"
+    },
+    {
+      "number": "223016",
+      "label": "223016",
+      "env_vars": {
+        "MISTIN_ID": "299223016",
+        "ACCOUNT_NUMBER": "223016",
+        "PHONE_NUMBER": "223016",
+        "MOBILE_NUMBER": "223016"
+      },
+      "execution_id": "f8dfcf1a-002c-4f4a-884b-c28d4565b551",
+      "status": "failed",
+      "started_at": "2026-06-17T07:32:22.568439+00:00",
+      "finished_at": "2026-06-17T07:36:17.795943+00:00",
+      "duration_seconds": 235.09,
+      "error": "\u274c STOPPED at step 7 \u2014 In Search box enter the 299223016"
+    },
+    {
+      "number": "222341",
+      "label": "222341",
+      "env_vars": {
+        "MISTIN_ID": "299222341",
+        "ACCOUNT_NUMBER": "222341",
+        "PHONE_NUMBER": "222341",
+        "MOBILE_NUMBER": "222341"
+      },
+      "execution_id": "e9149a04-9315-47c1-b647-2723fb3ee292",
+      "status": "failed",
+      "started_at": "2026-06-17T07:32:24.576288+00:00",
+      "finished_at": "2026-06-17T07:36:02.208439+00:00",
+      "duration_seconds": 217.5,
+      "error": "\u274c STOPPED at step 7 \u2014 In Search box enter the 299222341"
+    },
+    {
+      "number": "580690",
+      "label": "580690",
+      "env_vars": {
+        "MISTIN_ID": "299580690",
+        "ACCOUNT_NUMBER": "580690",
+        "PHONE_NUMBER": "580690",
+        "MOBILE_NUMBER": "580690"
+      },
+      "execution_id": "0a41770b-46e7-4def-9399-4a3d8d5ec56d",
+      "status": "failed",
+      "started_at": "2026-06-17T07:32:26.562894+00:00",
+      "finished_at": "2026-06-17T07:39:58.426098+00:00",
+      "duration_seconds": 451.35,
+      "error": "\u274c STOPPED at step 33 \u2014 Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -"
+    }
+  ]
+}

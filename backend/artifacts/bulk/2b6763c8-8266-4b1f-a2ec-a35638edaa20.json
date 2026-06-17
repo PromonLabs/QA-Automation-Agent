@@ -1,0 +1,80 @@
+{
+  "id": "2b6763c8-8266-4b1f-a2ec-a35638edaa20",
+  "flow_id": "json-flow/Tusass-TopUp-Talk",
+  "flow_name": "Tusass TopUp Talk",
+  "variable_name": "ACCOUNT_NUMBER",
+  "max_parallel": 10,
+  "total": 4,
+  "completed": 4,
+  "success": 4,
+  "failed": 0,
+  "status": "completed",
+  "started_at": "2026-06-17T08:02:20.107162+00:00",
+  "finished_at": "2026-06-17T08:06:25.884162+00:00",
+  "items": [
+    {
+      "number": "564925",
+      "label": "564925",
+      "env_vars": {
+        "MISTIN_ID": "299564925",
+        "ACCOUNT_NUMBER": "564925",
+        "PHONE_NUMBER": "564925",
+        "MOBILE_NUMBER": "564925"
+      },
+      "execution_id": "38640729-4f3e-468d-ae9c-01aa12ade02c",
+      "status": "success",
+      "started_at": "2026-06-17T08:02:20.130685+00:00",
+      "finished_at": "2026-06-17T08:05:18.423366+00:00",
+      "duration_seconds": 177.85,
+      "error": null
+    },
+    {
+      "number": "562617",
+      "label": "562617",
+      "env_vars": {
+        "MISTIN_ID": "299562617",
+        "ACCOUNT_NUMBER": "562617",
+        "PHONE_NUMBER": "562617",
+        "MOBILE_NUMBER": "562617"
+      },
+      "execution_id": "8be5e618-de5d-4c8c-8b42-dbee9781de66",
+      "status": "success",
+      "started_at": "2026-06-17T08:02:22.133840+00:00",
+      "finished_at": "2026-06-17T08:05:48.996242+00:00",
+      "duration_seconds": 206.39,
+      "error": null
+    },
+    {
+      "number": "223401",
+      "label": "223401",
+      "env_vars": {
+        "MISTIN_ID": "299223401",
+        "ACCOUNT_NUMBER": "223401",
+        "PHONE_NUMBER": "223401",
+        "MOBILE_NUMBER": "223401"
+      },
+      "execution_id": "1cc69a12-1fca-4b19-ac4e-d12fea4eea94",
+      "status": "success",
+      "started_at": "2026-06-17T08:02:24.175437+00:00",
+      "finished_at": "2026-06-17T08:05:59.569734+00:00",
+      "duration_seconds": 214.89,
+      "error": null
+    },
+    {
+      "number": "230026",
+      "label": "230026",
+      "env_vars": {
+        "MISTIN_ID": "299230026",
+        "ACCOUNT_NUMBER": "230026",
+        "PHONE_NUMBER": "230026",
+        "MOBILE_NUMBER": "230026"
+      },
+      "execution_id": "5af84b04-8a60-4f8b-97f2-00b53a15c055",
+      "status": "success",
+      "started_at": "2026-06-17T08:02:26.430824+00:00",
+      "finished_at": "2026-06-17T08:06:25.862309+00:00",
+      "duration_seconds": 238.98,
+      "error": null
+    }
+  ]
+}

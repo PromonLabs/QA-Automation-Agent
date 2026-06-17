@@ -1,0 +1,128 @@
+{
+  "id": "ec70de91-b7d1-43e4-a73e-bb368e6a5af9",
+  "flow_id": "json-flow/Tusass-TopUp-Talk",
+  "flow_name": "Tusass TopUp Talk",
+  "variable_name": "ACCOUNT_NUMBER",
+  "max_parallel": 7,
+  "total": 7,
+  "completed": 7,
+  "success": 4,
+  "failed": 3,
+  "status": "completed",
+  "started_at": "2026-06-17T07:02:07.725050+00:00",
+  "finished_at": "2026-06-17T07:09:55.739517+00:00",
+  "items": [
+    {
+      "number": "564925",
+      "label": "564925",
+      "env_vars": {
+        "MISTIN_ID": "299564925",
+        "ACCOUNT_NUMBER": "564925",
+        "PHONE_NUMBER": "564925",
+        "MOBILE_NUMBER": "564925"
+      },
+      "execution_id": "8401d4a5-ed59-4d10-9426-67d3a7704644",
+      "status": "failed",
+      "started_at": "2026-06-17T07:02:07.747463+00:00",
+      "finished_at": "2026-06-17T07:08:15.128969+00:00",
+      "duration_seconds": 367.05,
+      "error": "\u274c STOPPED at step 20 \u2014 Select amount 200"
+    },
+    {
+      "number": "562617",
+      "label": "562617",
+      "env_vars": {
+        "MISTIN_ID": "299562617",
+        "ACCOUNT_NUMBER": "562617",
+        "PHONE_NUMBER": "562617",
+        "MOBILE_NUMBER": "562617"
+      },
+      "execution_id": "323b515f-80e1-4854-9079-dba9a99df8fd",
+      "status": "failed",
+      "started_at": "2026-06-17T07:02:12.762213+00:00",
+      "finished_at": "2026-06-17T07:09:55.729523+00:00",
+      "duration_seconds": 462.45,
+      "error": "\u274c STOPPED at step 33 \u2014 Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -"
+    },
+    {
+      "number": "223401",
+      "label": "223401",
+      "env_vars": {
+        "MISTIN_ID": "299223401",
+        "ACCOUNT_NUMBER": "223401",
+        "PHONE_NUMBER": "223401",
+        "MOBILE_NUMBER": "223401"
+      },
+      "execution_id": "21026de5-eb97-49f3-b9af-945603d0fdfa",
+      "status": "success",
+      "started_at": "2026-06-17T07:02:17.759086+00:00",
+      "finished_at": "2026-06-17T07:08:50.044802+00:00",
+      "duration_seconds": 391.98,
+      "error": null
+    },
+    {
+      "number": "230026",
+      "label": "230026",
+      "env_vars": {
+        "MISTIN_ID": "299230026",
+        "ACCOUNT_NUMBER": "230026",
+        "PHONE_NUMBER": "230026",
+        "MOBILE_NUMBER": "230026"
+      },
+      "execution_id": "ceb511f3-0f5e-49ea-950a-4d4d67569d56",
+      "status": "success",
+      "started_at": "2026-06-17T07:02:22.754073+00:00",
+      "finished_at": "2026-06-17T07:08:34.824779+00:00",
+      "duration_seconds": 371.64,
+      "error": null
+    },
+    {
+      "number": "223016",
+      "label": "223016",
+      "env_vars": {
+        "MISTIN_ID": "299223016",
+        "ACCOUNT_NUMBER": "223016",
+        "PHONE_NUMBER": "223016",
+        "MOBILE_NUMBER": "223016"
+      },
+      "execution_id": "e46048aa-9259-4997-b95e-eb2466405120",
+      "status": "failed",
+      "started_at": "2026-06-17T07:02:27.749050+00:00",
+      "finished_at": "2026-06-17T07:07:57.104488+00:00",
+      "duration_seconds": 329.15,
+      "error": "\u274c STOPPED at step 18 \u2014 Click the Continue button"
+    },
+    {
+      "number": "222341",
+      "label": "222341",
+      "env_vars": {
+        "MISTIN_ID": "299222341",
+        "ACCOUNT_NUMBER": "222341",
+        "PHONE_NUMBER": "222341",
+        "MOBILE_NUMBER": "222341"
+      },
+      "execution_id": "b3142322-bba3-4a5e-ad52-66daa6b9e64a",
+      "status": "success",
+      "started_at": "2026-06-17T07:02:32.750282+00:00",
+      "finished_at": "2026-06-17T07:09:19.306025+00:00",
+      "duration_seconds": 406.25,
+      "error": null
+    },
+    {
+      "number": "580690",
+      "label": "580690",
+      "env_vars": {
+        "MISTIN_ID": "299580690",
+        "ACCOUNT_NUMBER": "580690",
+        "PHONE_NUMBER": "580690",
+        "MOBILE_NUMBER": "580690"
+      },
+      "execution_id": "af3df867-f774-4b3c-985c-39b8ab8b7836",
+      "status": "success",
+      "started_at": "2026-06-17T07:02:37.759521+00:00",
+      "finished_at": "2026-06-17T07:09:09.309647+00:00",
+      "duration_seconds": 391.28,
+      "error": null
+    }
+  ]
+}

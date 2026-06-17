@@ -17,7 +17,7 @@ export default function BulkPage() {
   const [flows, setFlows]               = useState<DiskFlow[]>([])
   const [selectedFlow, setSelectedFlow] = useState("")
   const [numbersInput, setNumbersInput] = useState("")
-  const [maxParallel, setMaxParallel]   = useState(1)
+  const [maxParallel, setMaxParallel]   = useState(10)
   const [running, setRunning]           = useState(false)
   const [activeBulk, setActiveBulk]     = useState<BulkRun | null>(null)
   const [history, setHistory]           = useState<BulkRun[]>([])
@@ -183,38 +183,45 @@ export default function BulkPage() {
                 </div>
 
                 {/* Max parallel */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-white/40 text-xs">Max Parallel: {maxParallel}</label>
-                    {parsedNumbers.length > 1 && maxParallel < parsedNumbers.length && (
-                      <button
-                        onClick={() => setMaxParallel(parsedNumbers.length)}
-                        className="text-white/30 hover:text-white text-xs transition-colors"
-                      >
-                        All ({parsedNumbers.length})
-                      </button>
-                    )}
-                  </div>
-                  <input
-                    type="range" min={1} max={Math.max(parsedNumbers.length, 1)}
-                    value={Math.min(maxParallel, Math.max(parsedNumbers.length, 1))}
-                    onChange={e => setMaxParallel(Number(e.target.value))}
-                    className="w-full accent-white"
-                  />
-                  <div className="flex justify-between text-white/20 text-xs">
-                    <span>1</span>
-                    <span>{Math.max(parsedNumbers.length, 1)}</span>
-                  </div>
-                  {maxParallel === 1 ? (
-                    <p className="text-white/30 text-xs">
-                      One browser, runs sequentially
-                    </p>
-                  ) : (
-                    <p className="text-white/30 text-xs">
-                      {maxParallel} browsers, each starting 5s apart
-                    </p>
-                  )}
-                </div>
+                {(() => {
+                  const effectiveParallel = Math.min(maxParallel, Math.max(parsedNumbers.length, 1))
+                  const allParallel = effectiveParallel >= parsedNumbers.length && parsedNumbers.length > 1
+                  return (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-white/40 text-xs">
+                          Max Parallel: {effectiveParallel}
+                          {allParallel && <span className="ml-1 text-green-400/70">⚡ fastest</span>}
+                        </label>
+                        {parsedNumbers.length > 1 && !allParallel && (
+                          <button
+                            onClick={() => setMaxParallel(parsedNumbers.length)}
+                            className="text-white/30 hover:text-white text-xs transition-colors"
+                          >
+                            All ({parsedNumbers.length})
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="range" min={1} max={Math.max(parsedNumbers.length, 1)}
+                        value={effectiveParallel}
+                        onChange={e => setMaxParallel(Number(e.target.value))}
+                        className="w-full accent-white"
+                      />
+                      <div className="flex justify-between text-white/20 text-xs">
+                        <span>1 (sequential)</span>
+                        <span>All parallel</span>
+                      </div>
+                      {effectiveParallel === 1 ? (
+                        <p className="text-white/30 text-xs">One browser, runs one at a time — slowest</p>
+                      ) : allParallel ? (
+                        <p className="text-green-400/50 text-xs">All {parsedNumbers.length} run simultaneously — ~{parsedNumbers.length * 2}s stagger, done in ~2 min</p>
+                      ) : (
+                        <p className="text-white/30 text-xs">{effectiveParallel} browsers at once, 2s apart</p>
+                      )}
+                    </div>
+                  )
+                })()}
 
                 {/* Start */}
                 <button

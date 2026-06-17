@@ -843,6 +843,8 @@ class BrowserAgent:
 
                 # If current page is already at this URL (same-document hash change),
                 # use JS pushState instead of a full Playwright goto() which resets SPA state
+                cu = None
+                tu = None
                 try:
                     current_url = self._page.url
                     cu = urlparse(current_url)
@@ -986,25 +988,24 @@ class BrowserAgent:
                                     pass
                                 continue
                             raise
+                    _same_domain = (cu.netloc == tu.netloc) if cu and tu else False
                     try:
-                        await self._page.wait_for_load_state("networkidle", timeout=4000)
+                        await self._page.wait_for_load_state("networkidle", timeout=2000 if _same_domain else 4000)
                     except Exception:
                         pass
-                    # Poll up to 30 s for ANY interactive element to appear.
-                    # This handles SSO redirect chains (e.g. Microsoft login) where
-                    # the page shows a loading spinner for many seconds before the
-                    # actual login form renders.
-                    for _ in range(60):    # 60 × 0.5 s = 30 s max
-                        try:
-                            n = await self._page.locator(
-                                "button:visible, input:visible, "
-                                "[role='button']:visible, a[href]:visible"
-                            ).count()
-                            if n > 0:
-                                break
-                        except Exception:
-                            pass
-                        await asyncio.sleep(0.5)
+                    if not _same_domain:
+                        # Poll up to 5 s for ANY interactive element to appear (cross-domain only).
+                        for _ in range(10):    # 10 × 0.5 s = 5 s max
+                            try:
+                                n = await self._page.locator(
+                                    "button:visible, input:visible, "
+                                    "[role='button']:visible, a[href]:visible"
+                                ).count()
+                                if n > 0:
+                                    break
+                            except Exception:
+                                pass
+                            await asyncio.sleep(0.5)
 
                 # For SPA hash/query routes: give the JS framework time to render the view
                 if "#" in url or "?" in url:
@@ -1031,31 +1032,15 @@ class BrowserAgent:
                 await step_shot("ok")
 
             elif action in ("click", "button_click"):
-                # Skip login buttons only on domains where login already succeeded this run
+                # Skip login buttons if page is already authenticated.
+                # Check _already_authenticated() directly — no domain tracking needed
+                # so this works correctly for new agent instances in sequential bulk runs.
                 if self._is_login_button(target):
-                    try:
-                        from urllib.parse import urlparse
-                        domain = urlparse(self._page.url).netloc
-                    except Exception:
-                        domain = ""
-                    if domain and domain in self._authenticated_domains:
-                        # Only skip if the page is CURRENTLY authenticated.
-                        # If the session expired (long-running test, 20+ min wait steps),
-                        # _already_authenticated() returns False because the overlay/login
-                        # page is showing — fall through and do a real re-login instead.
-                        if await self._already_authenticated():
-                            await self._log("info", f"  → Already logged in — skipping '{target}'")
-                            try:
-                                await self._page.wait_for_load_state("networkidle", timeout=3000)
-                            except Exception:
-                                pass
-                            await asyncio.sleep(0.5)
-                            await step_shot("ok")
-                            self._login_sequence_skipped = True
-                            return True
-                        # Domain was authenticated before but page now shows login state
-                        # (session expired or overlay covering dashboard) — re-login normally
-                        await self._log("info", f"  → Session may have expired — re-logging in")
+                    if await self._already_authenticated():
+                        await self._log("info", f"  → Already logged in — skipping '{target}'")
+                        await step_shot("ok")
+                        self._login_sequence_skipped = True
+                        return True
                     self._login_sequence_skipped = False
 
                 # Track page count BEFORE click to detect new tab
@@ -1406,11 +1391,14 @@ class BrowserAgent:
                                     return False
 
             elif action == "type":
-                # Skip credential fields that follow a skipped login button
-                if self._login_sequence_skipped and self._is_credential_field(target):
-                    await self._log("info", f"  → Already logged in — skipping type '{target}'")
-                    await step_shot("ok")
-                    return True
+                # Fast-skip credential fields: either after login-button skip OR
+                # when the page is already authenticated (saves 15s wait per field)
+                if self._is_credential_field(target):
+                    if self._login_sequence_skipped or await self._already_authenticated():
+                        await self._log("info", f"  → Already logged in — skipping type '{target}'")
+                        await step_shot("ok")
+                        self._login_sequence_skipped = True
+                        return True
                 else:
                     self._login_sequence_skipped = False
 
@@ -2765,8 +2753,12 @@ class BrowserAgent:
         t.start()
 
         # Keep yielding to the main event loop (so WS broadcasts and HTTP responses work)
-        while t.is_alive():
-            await asyncio.sleep(0.3)
+        try:
+            while t.is_alive():
+                await asyncio.sleep(0.3)
+        except asyncio.CancelledError:
+            t.join()
+            raise
         t.join()
 
         if error_box:

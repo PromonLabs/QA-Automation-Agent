@@ -1,0 +1,128 @@
+{
+  "id": "bb6004c5-ff9e-4c2b-980b-aff563c7927c",
+  "flow_id": "json-flow/Tusass-TopUp-Talk",
+  "flow_name": "Tusass TopUp Talk",
+  "variable_name": "ACCOUNT_NUMBER",
+  "max_parallel": 7,
+  "total": 7,
+  "completed": 7,
+  "success": 4,
+  "failed": 3,
+  "status": "completed",
+  "started_at": "2026-06-17T06:21:39.552280+00:00",
+  "finished_at": "2026-06-17T06:29:21.055946+00:00",
+  "items": [
+    {
+      "number": "564925",
+      "label": "564925",
+      "env_vars": {
+        "MISTIN_ID": "299564925",
+        "ACCOUNT_NUMBER": "564925",
+        "PHONE_NUMBER": "564925",
+        "MOBILE_NUMBER": "564925"
+      },
+      "execution_id": "771b3966-a96b-40de-9049-fc087b06ae8a",
+      "status": "success",
+      "started_at": "2026-06-17T06:21:39.579408+00:00",
+      "finished_at": "2026-06-17T06:26:47.796650+00:00",
+      "duration_seconds": 307.96,
+      "error": null
+    },
+    {
+      "number": "562617",
+      "label": "562617",
+      "env_vars": {
+        "MISTIN_ID": "299562617",
+        "ACCOUNT_NUMBER": "562617",
+        "PHONE_NUMBER": "562617",
+        "MOBILE_NUMBER": "562617"
+      },
+      "execution_id": "8166135e-6ea7-48c3-be08-a7caa5d03059",
+      "status": "failed",
+      "started_at": "2026-06-17T06:21:44.595928+00:00",
+      "finished_at": "2026-06-17T06:26:23.660665+00:00",
+      "duration_seconds": 278.78,
+      "error": "\u274c STOPPED at step 21 \u2014 Select amount 200"
+    },
+    {
+      "number": "223401",
+      "label": "223401",
+      "env_vars": {
+        "MISTIN_ID": "299223401",
+        "ACCOUNT_NUMBER": "223401",
+        "PHONE_NUMBER": "223401",
+        "MOBILE_NUMBER": "223401"
+      },
+      "execution_id": "f21201a8-91b2-4e37-82b8-f61e8410c1a9",
+      "status": "success",
+      "started_at": "2026-06-17T06:21:49.595127+00:00",
+      "finished_at": "2026-06-17T06:27:49.002686+00:00",
+      "duration_seconds": 359.09,
+      "error": null
+    },
+    {
+      "number": "230026",
+      "label": "230026",
+      "env_vars": {
+        "MISTIN_ID": "299230026",
+        "ACCOUNT_NUMBER": "230026",
+        "PHONE_NUMBER": "230026",
+        "MOBILE_NUMBER": "230026"
+      },
+      "execution_id": "fe25f1a0-b8f8-4dd3-b5c4-4baa0473ab75",
+      "status": "success",
+      "started_at": "2026-06-17T06:21:54.581085+00:00",
+      "finished_at": "2026-06-17T06:27:38.155003+00:00",
+      "duration_seconds": 343.21,
+      "error": null
+    },
+    {
+      "number": "223016",
+      "label": "223016",
+      "env_vars": {
+        "MISTIN_ID": "299223016",
+        "ACCOUNT_NUMBER": "223016",
+        "PHONE_NUMBER": "223016",
+        "MOBILE_NUMBER": "223016"
+      },
+      "execution_id": "68f33f71-d857-44ed-96bf-9fea1cf90908",
+      "status": "failed",
+      "started_at": "2026-06-17T06:21:59.594443+00:00",
+      "finished_at": "2026-06-17T06:29:21.034791+00:00",
+      "duration_seconds": 441.15,
+      "error": "\u274c STOPPED at step 41 \u2014 Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -"
+    },
+    {
+      "number": "222341",
+      "label": "222341",
+      "env_vars": {
+        "MISTIN_ID": "299222341",
+        "ACCOUNT_NUMBER": "222341",
+        "PHONE_NUMBER": "222341",
+        "MOBILE_NUMBER": "222341"
+      },
+      "execution_id": "a2dd809a-1610-4edf-b9b5-d0c003bb7d17",
+      "status": "success",
+      "started_at": "2026-06-17T06:22:04.583104+00:00",
+      "finished_at": "2026-06-17T06:27:48.336504+00:00",
+      "duration_seconds": 343.48,
+      "error": null
+    },
+    {
+      "number": "580690",
+      "label": "580690",
+      "env_vars": {
+        "MISTIN_ID": "299580690",
+        "ACCOUNT_NUMBER": "580690",
+        "PHONE_NUMBER": "580690",
+        "MOBILE_NUMBER": "580690"
+      },
+      "execution_id": "7c27b835-7344-4259-b115-dc0e02c42f91",
+      "status": "failed",
+      "started_at": "2026-06-17T06:22:09.588172+00:00",
+      "finished_at": "2026-06-17T06:25:50.842914+00:00",
+      "duration_seconds": 221.13,
+      "error": "\u274c STOPPED at step 7 \u2014 In Search box enter the 299580690"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "442e6414-b212-4ba5-961e-1bee0b1d3529",
+  "name": "Tusass TopUp Talk [230026]",
+  "description": "Bulk run for 230026",
+  "format": "json",
+  "task": "{\n  \"name\": \" Tusass TopUp Talk \",\n    \"steps\": [\n      \"Navigate to ${COS_URL}\",\n      \"Click escape button to show the - Login with password  - button\",\n      \"Click the - Login with password  - button\",\n      \" Enter Username in inuput box ${ADMIN_USER}\",\n      \" Enter Password in input box ${ADMIN_PASS}\",\n      \"Click the - Log in  - button\",\n      \"In Search box enter the ${MISTIN_ID}\",\n      \"Click on the customer ${MISTIN_ID}\",\n      \"Extract the external id from this customer page\",\n      \"Note the old balance on this page\",\n      \"Wait 1500ms\",\n      \"Take the screenshot of that page and save it as - search-result.png -\", \"SS\",\n      \"Next Navigate to ${PORTAL_URL}\",\n      \"Click the TopUp talk button\",\n      \"Enter phone number in input box ${PHONE_NUMBER}\",\n      \"Enter mobile number in input box ${MOBILE_NUMBER}\",\n      \"Take the screenshot of that page and save it as - number-fill.png -\",\n      \"Click the Continue button\", \"SS\",\n      \"Select amount ${TOPUP_AMOUNT}\",\n      \"Click the continue button\",\n      \"In Card number field, enter ${CARD_NUMBER}\",\n      \"Wait 800ms\",\n      \"In MM field, enter ${CARD_MONTH}\",\n      \"Wait 800ms\",\n      \"In YY field, enter ${CARD_YEAR}\",\n      \"Wait 800ms\",\n      \"In CVV/CVD field, enter ${CARD_CVV}\",\n      \"Wait 1000ms\",\n      \"Click the Pay button\",\n      \"Wait 5000ms\",\n      \"After payment is successful, it show the Recipt page, take the screenshot of that page and save it as - receipt.png -\", \"SS\",\n      \" Next Navigate to ${COS_URL}  \",\n      \"Wait 2000ms\",\n      \" IN that page current balance should be updated with topup amount, take the screenshot of that page and save it as - updated-balance.png -\", \"SS\",\n      \"Note the new balance on this page after topup\",\n      \"Wait 2000ms\",\n      \"Verify the balance is updated by comparing the current balance with previous balance and topup amount - ${TOPUP_AMOUNT} -\",\n      \"Give the report - Tusass topup talk flow is executed successfully. ${SUBSCRIBER_EXTERNAL_ID} is topped up with amount ${TOPUP_AMOUNT}. Balance before: ${OLD_BALANCE} \u2014 Balance after: ${NEW_BALANCE}\"\n\n    ]\n}\n",
+  "tags": [
+    "bulk"
+  ],
+  "env_vars": {
+    "MISTIN_ID": "299230026",
+    "ACCOUNT_NUMBER": "230026",
+    "PHONE_NUMBER": "230026",
+    "MOBILE_NUMBER": "230026"
+  },
+  "created_at": "2026-06-17T06:21:54.584723+00:00",
+  "updated_at": "2026-06-17T06:21:54.584723+00:00"
+}

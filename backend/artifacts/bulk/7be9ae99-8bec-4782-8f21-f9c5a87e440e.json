@@ -1,0 +1,32 @@
+{
+  "id": "7be9ae99-8bec-4782-8f21-f9c5a87e440e",
+  "flow_id": "json-flow/Tusass-TopUp-Talk",
+  "flow_name": "Tusass TopUp Talk",
+  "variable_name": "ACCOUNT_NUMBER",
+  "max_parallel": 10,
+  "total": 1,
+  "completed": 1,
+  "success": 1,
+  "failed": 0,
+  "status": "completed",
+  "started_at": "2026-06-17T07:58:38.436707+00:00",
+  "finished_at": "2026-06-17T08:01:49.977635+00:00",
+  "items": [
+    {
+      "number": "223016",
+      "label": "223016",
+      "env_vars": {
+        "MISTIN_ID": "299223016",
+        "ACCOUNT_NUMBER": "223016",
+        "PHONE_NUMBER": "223016",
+        "MOBILE_NUMBER": "223016"
+      },
+      "execution_id": "ccb7a780-e93d-49bc-8c87-d153de28d730",
+      "status": "success",
+      "started_at": "2026-06-17T07:58:38.458185+00:00",
+      "finished_at": "2026-06-17T08:01:49.956222+00:00",
+      "duration_seconds": 191.02,
+      "error": null
+    }
+  ]
+}
