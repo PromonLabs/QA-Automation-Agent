@@ -46,3 +46,11 @@ coverage/
 .cache/
 tmp/
 temp/
+
+# Artifacts (runtime-generated, not tracked)
+backend/artifacts/bulk/
+backend/artifacts/executions/
+backend/artifacts/flows/
+backend/artifacts/memory/
+backend/artifacts/reports/
+backend/artifacts/screenshots/
