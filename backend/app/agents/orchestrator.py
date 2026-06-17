@@ -428,7 +428,10 @@ class Orchestrator:
             await self._log("info", f"  Step {len(steps_list)}: {steps_list[-1][:80]}")
 
             # ── LLM Planning ───────────────────────────────────────────
-            await self._log("info", f"🤖 Sending task to {llm_client.model}…")
+            if settings.USE_FLOW_AGENT:
+                await self._log("info", f"🤖 Sending task to {llm_client.model}…")
+            else:
+                await self._log("info", "⚡ Flow agent disabled — running steps directly")
             plan = await llm_client.generate_plan(task_text)
             total_steps = len(plan.get("steps", []))
 

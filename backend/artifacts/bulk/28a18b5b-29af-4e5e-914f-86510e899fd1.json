@@ -5,12 +5,12 @@
   "variable_name": "ACCOUNT_NUMBER",
   "max_parallel": 7,
   "total": 7,
-  "completed": 6,
+  "completed": 7,
   "success": 6,
-  "failed": 0,
-  "status": "running",
+  "failed": 1,
+  "status": "completed",
   "started_at": "2026-06-16T13:07:14.812831+00:00",
-  "finished_at": null,
+  "finished_at": "2026-06-16T13:13:10.998136+00:00",
   "items": [
     {
       "number": "562617",
@@ -38,11 +38,11 @@
         "MOBILE_NUMBER": "547643"
       },
       "execution_id": "10c1ee58-e84b-44c9-9606-57406c6abdb9",
-      "status": "running",
+      "status": "failed",
       "started_at": "2026-06-16T13:07:19.858206+00:00",
-      "finished_at": null,
-      "duration_seconds": null,
-      "error": null
+      "finished_at": "2026-06-16T13:13:10.975043+00:00",
+      "duration_seconds": 350.89,
+      "error": "\u274c STOPPED at step 32 \u2014 Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -"
     },
     {
       "number": "223401",

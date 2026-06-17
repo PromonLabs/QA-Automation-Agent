@@ -1,0 +1,128 @@
+{
+  "id": "96b4c74c-9150-4b68-a3a4-386bcfd421b2",
+  "flow_id": "json-flow/Tusass-TopUp-Talk",
+  "flow_name": "Tusass TopUp Talk",
+  "variable_name": "ACCOUNT_NUMBER",
+  "max_parallel": 7,
+  "total": 7,
+  "completed": 7,
+  "success": 0,
+  "failed": 7,
+  "status": "completed",
+  "started_at": "2026-06-17T05:57:42.378171+00:00",
+  "finished_at": "2026-06-17T05:58:45.971677+00:00",
+  "items": [
+    {
+      "number": "564925",
+      "label": "564925",
+      "env_vars": {
+        "MISTIN_ID": "299564925",
+        "ACCOUNT_NUMBER": "564925",
+        "PHONE_NUMBER": "564925",
+        "MOBILE_NUMBER": "564925"
+      },
+      "execution_id": "9920b52b-5eb2-4b73-8182-41ad980a8a38",
+      "status": "failed",
+      "started_at": "2026-06-17T05:57:42.420640+00:00",
+      "finished_at": "2026-06-17T05:58:45.949983+00:00",
+      "duration_seconds": 63.36,
+      "error": "\u274c STOPPED at step 1 \u2014 Navigate to https://msitcos.lab.gl/"
+    },
+    {
+      "number": "562617",
+      "label": "562617",
+      "env_vars": {
+        "MISTIN_ID": "299562617",
+        "ACCOUNT_NUMBER": "562617",
+        "PHONE_NUMBER": "562617",
+        "MOBILE_NUMBER": "562617"
+      },
+      "execution_id": "adfde361-44bf-495a-bfb3-0518ac8638b7",
+      "status": "failed",
+      "started_at": "2026-06-17T05:57:47.423499+00:00",
+      "finished_at": "2026-06-17T05:58:45.804885+00:00",
+      "duration_seconds": 58.28,
+      "error": "\u274c STOPPED at step 1 \u2014 Navigate to https://msitcos.lab.gl/"
+    },
+    {
+      "number": "223401",
+      "label": "223401",
+      "env_vars": {
+        "MISTIN_ID": "299223401",
+        "ACCOUNT_NUMBER": "223401",
+        "PHONE_NUMBER": "223401",
+        "MOBILE_NUMBER": "223401"
+      },
+      "execution_id": "d53e21b8-3dd9-4f50-8c11-97c6aa60fb7b",
+      "status": "failed",
+      "started_at": "2026-06-17T05:57:52.435662+00:00",
+      "finished_at": "2026-06-17T05:58:45.721701+00:00",
+      "duration_seconds": 53.17,
+      "error": "\u274c STOPPED at step 1 \u2014 Navigate to https://msitcos.lab.gl/"
+    },
+    {
+      "number": "230026",
+      "label": "230026",
+      "env_vars": {
+        "MISTIN_ID": "299230026",
+        "ACCOUNT_NUMBER": "230026",
+        "PHONE_NUMBER": "230026",
+        "MOBILE_NUMBER": "230026"
+      },
+      "execution_id": "4acfe186-47c7-4b86-be72-c361756f0618",
+      "status": "failed",
+      "started_at": "2026-06-17T05:57:57.430179+00:00",
+      "finished_at": "2026-06-17T05:58:45.615613+00:00",
+      "duration_seconds": 48.12,
+      "error": "\u274c STOPPED at step 1 \u2014 Navigate to https://msitcos.lab.gl/"
+    },
+    {
+      "number": "223016",
+      "label": "223016",
+      "env_vars": {
+        "MISTIN_ID": "299223016",
+        "ACCOUNT_NUMBER": "223016",
+        "PHONE_NUMBER": "223016",
+        "MOBILE_NUMBER": "223016"
+      },
+      "execution_id": "783385d8-ad88-4a52-9be4-4b297cfcaa0f",
+      "status": "failed",
+      "started_at": "2026-06-17T05:58:02.427211+00:00",
+      "finished_at": "2026-06-17T05:58:45.568873+00:00",
+      "duration_seconds": 43.08,
+      "error": "\u274c STOPPED at step 1 \u2014 Navigate to https://msitcos.lab.gl/"
+    },
+    {
+      "number": "222341",
+      "label": "222341",
+      "env_vars": {
+        "MISTIN_ID": "299222341",
+        "ACCOUNT_NUMBER": "222341",
+        "PHONE_NUMBER": "222341",
+        "MOBILE_NUMBER": "222341"
+      },
+      "execution_id": "fec0cec3-399e-467c-ba1f-b1b81b4d195e",
+      "status": "failed",
+      "started_at": "2026-06-17T05:58:07.431663+00:00",
+      "finished_at": "2026-06-17T05:58:44.907970+00:00",
+      "duration_seconds": 37.42,
+      "error": "\u274c STOPPED at step 1 \u2014 Navigate to https://msitcos.lab.gl/"
+    },
+    {
+      "number": "580690",
+      "label": "580690",
+      "env_vars": {
+        "MISTIN_ID": "299580690",
+        "ACCOUNT_NUMBER": "580690",
+        "PHONE_NUMBER": "580690",
+        "MOBILE_NUMBER": "580690"
+      },
+      "execution_id": "d035a050-aa2c-40b1-981e-a35a892f87c7",
+      "status": "failed",
+      "started_at": "2026-06-17T05:58:12.422648+00:00",
+      "finished_at": "2026-06-17T05:58:45.522008+00:00",
+      "duration_seconds": 33.04,
+      "error": "\u274c STOPPED at step 1 \u2014 Navigate to https://msitcos.lab.gl/"
+    }
+  ]
+}

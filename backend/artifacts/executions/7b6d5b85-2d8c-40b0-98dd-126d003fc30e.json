@@ -1,0 +1,122 @@
+{
+  "id": "7b6d5b85-2d8c-40b0-98dd-126d003fc30e",
+  "flow_id": "eb0f29b6-d0c1-4e37-bc1f-fbc1479d21b7",
+  "flow_name": "Tusass TopUp Talk [562617]",
+  "status": "failed",
+  "started_at": "2026-06-17T04:54:09.587051+00:00",
+  "finished_at": "2026-06-17T05:03:38.648482+00:00",
+  "duration_seconds": 569.06,
+  "logs": [
+    {
+      "timestamp": "2026-06-17T04:54:09.606613+00:00",
+      "level": "info",
+      "message": "\ud83d\udd11 Using flow-level credentials (4 var(s))",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T04:54:09.660553+00:00",
+      "level": "info",
+      "message": "\ud83d\udcdd Task extracted: 33 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T04:54:09.683731+00:00",
+      "level": "info",
+      "message": "  Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T04:54:09.705894+00:00",
+      "level": "info",
+      "message": "  Step 33: Give the report - Tusass topup talk flow is executed successfully. ${SUBSCRIBER_",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T04:54:09.719505+00:00",
+      "level": "info",
+      "message": "\u26a1 Flow agent disabled \u2014 running steps directly",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T04:54:09.734391+00:00",
+      "level": "info",
+      "message": "\ud83d\udccb Plan ready: 32 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T04:54:09.760678+00:00",
+      "level": "info",
+      "message": "\ud83d\udcad Direct execution of 32 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T04:54:10.207495+00:00",
+      "level": "info",
+      "message": "\ud83d\ude80 Browser launched \u2014 32 steps",
+      "step": 0,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T04:54:10.207781+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T04:57:10.225702+00:00",
+      "level": "info",
+      "message": "  \u26a0 Navigation attempt 1 failed (Page.goto: Timeout 180000ms exceeded.\nCall log:\n  - navigating to \"https://msitc\u2026) \u2014 retrying in 3s",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:00:13.293291+00:00",
+      "level": "info",
+      "message": "  \u26a0 Navigation attempt 2 failed (Page.goto: Timeout 180000ms exceeded.\nCall log:\n  - navigating to \"https://msitc\u2026) \u2014 retrying in 3s",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:03:16.351317+00:00",
+      "level": "error",
+      "message": "  \u2717 STEP FAILED \u2014 Page.goto: Timeout 180000ms exceeded.\nCall log:\n  - navigating to \"https://msitcos.lab.gl/\", waiting until \"domcontentloaded\"\n",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:03:22.366075+00:00",
+      "level": "error",
+      "message": "\u274c STOPPED at step 1 \u2014 Navigate to https://msitcos.lab.gl/",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:03:38.654699+00:00",
+      "level": "error",
+      "message": "\u274c FAILED \u2014 0/32 steps in 569.1s",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:03:38.695606+00:00",
+      "level": "info",
+      "message": "\ud83d\udcc4 Report: Tusass_TopUp_Talk_562617_2026-06-17_05-03.pdf",
+      "step": null,
+      "screenshot": null
+    }
+  ],
+  "screenshots": [],
+  "result_summary": "Tusass topup talk flow is executed successfully. ${SUBSCRIBER_EXTERNAL_ID} is topped up with amount 200. Balance before: ${OLD_BALANCE} \u2014 Balance after: ${NEW_BALANCE}",
+  "error": null,
+  "steps_completed": 0,
+  "steps_total": 32,
+  "report_file": "Tusass_TopUp_Talk_562617_2026-06-17_05-03.pdf"
+}

@@ -378,6 +378,8 @@ def _parse_step(raw_line: str) -> Dict[str, Any]:
 
     # ── "In X box/field enter Y" / "In the X enter Y" ───────────────────
     # e.g. "In Search box enter the 236619" → search "236619"
+    # Guard: skip when X looks like a page context ("topup talk page", "same page")
+    # so "In the topup talk page, Enter your phone number…" doesn't misfire.
     m = re.match(
         r"^in\s+(?:the\s+)?(.+?)\s*(?:box|field|input|area)?\s*[,]?\s+enter\s+(?:the\s+)?(.+)$",
         line, re.IGNORECASE,
@@ -385,9 +387,10 @@ def _parse_step(raw_line: str) -> Dict[str, Any]:
     if m:
         field = m.group(1).strip()
         value = m.group(2).strip()
-        if "search" in field.lower():
-            return {"action": "search", "target": "search", "value": value, "description": line}
-        return {"action": "type", "target": field, "value": value, "description": line}
+        if not re.search(r'\bpage\b|\bsection\b|\bsame\b|\bcurrent\b', field, re.IGNORECASE):
+            if "search" in field.lower():
+                return {"action": "search", "target": "search", "value": value, "description": line}
+            return {"action": "type", "target": field, "value": value, "description": line}
 
     # ── "Enter your X Y in the Z box" / "Enter X Y in input box" ─────────
     # e.g. "Enter your phone number 236619 in the input box"
@@ -520,9 +523,8 @@ class LLMClient:
         self.timeout = settings.LLM_TIMEOUT
 
     async def generate_plan(self, task: str) -> dict:
-        """Try LLM first (unless SKIP_LLM=true), fall back to direct NL parsing."""
-        import os
-        if os.getenv("SKIP_LLM", "false").lower() != "true":
+        """Try LLM first (if USE_FLOW_AGENT=true), fall back to direct NL parsing."""
+        if settings.USE_FLOW_AGENT:
             # If LLM is already busy (parallel run), skip it — the caller gets
             # an instant NL-parsed plan so its browser starts without delay.
             if not _llm_lock.locked():

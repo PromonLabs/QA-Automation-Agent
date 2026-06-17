@@ -102,4 +102,10 @@ export const healthApi = {
   check: () => axios.get(`${API_URL}/health`),
 }
 
+// ── Agent Settings ────────────────────────
+export const agentSettingsApi = {
+  update: (data: { use_flow_agent?: boolean; use_vision_agent?: boolean }) =>
+    api.patch("/settings/agents", data),
+}
+
 export default api

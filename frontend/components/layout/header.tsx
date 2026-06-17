@@ -6,22 +6,24 @@ import { healthApi } from "@/lib/api"
 type AgentStatus = "connected" | "disconnected" | "checking"
 
 export function Header({ title }: { title: string }) {
-  const [llmStatus,     setLlmStatus]     = useState<AgentStatus>("checking")
-  const [visionStatus,  setVisionStatus]  = useState<AgentStatus>("checking")
-  const [llmModel,      setLlmModel]      = useState("moondream")
-  const [visionModel,   setVisionModel]   = useState("moondream")
+  const [visionStatus,     setVisionStatus]     = useState<AgentStatus>("checking")
+  const [visionModel,      setVisionModel]      = useState("moondream")
+  const [flowAgentEnabled, setFlowAgentEnabled] = useState(false)
+  const [llmStatus,        setLlmStatus]        = useState<AgentStatus>("checking")
+  const [llmModel,         setLlmModel]         = useState("moondream")
 
   useEffect(() => {
     const check = async () => {
       try {
         const { data } = await healthApi.check()
-        setLlmStatus(data.llm === "connected" ? "connected" : "disconnected")
         setVisionStatus(data.vision === "connected" ? "connected" : "disconnected")
-        if (data.model)        setLlmModel(data.model)
         if (data.vision_model) setVisionModel(data.vision_model.replace(":latest", ""))
+        setFlowAgentEnabled(!!data.flow_agent_enabled)
+        setLlmStatus(data.llm === "connected" ? "connected" : "disconnected")
+        if (data.model) setLlmModel(data.model)
       } catch {
-        setLlmStatus("disconnected")
         setVisionStatus("disconnected")
+        setLlmStatus("disconnected")
       }
     }
     check()
@@ -34,7 +36,9 @@ export function Header({ title }: { title: string }) {
       <h1 className="text-white font-semibold text-lg">{title}</h1>
 
       <div className="flex items-center gap-4 text-xs">
-        <AgentBadge label={llmModel}    role="Flow Agent"   status={llmStatus} />
+        {flowAgentEnabled && (
+          <AgentBadge label={llmModel} role="Flow Agent" status={llmStatus} />
+        )}
         <AgentBadge label={visionModel} role="Vision Agent" status={visionStatus} />
       </div>
     </header>
