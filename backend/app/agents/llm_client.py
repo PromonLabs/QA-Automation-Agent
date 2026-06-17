@@ -627,7 +627,7 @@ Return ONLY a valid JSON object — no markdown, no explanation:
 Element to find: """
 
 
-_VISION_CAPABLE_KEYWORDS = ("vl", "vision", "llava", "moondream", "bakllava", "minicpm", "phi3-vision", "cogvlm")
+_VISION_CAPABLE_KEYWORDS = ("vl", "vision", "llava", "bakllava", "minicpm", "phi3-vision", "cogvlm", "qwen2.5")
 
 
 class VisionClient:

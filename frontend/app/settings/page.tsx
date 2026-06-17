@@ -149,7 +149,7 @@ export default function SettingsPage() {
             <div className="space-y-2">
               {[
                 { label: "Start Ollama LLM",        cmd: "ollama serve" },
-                { label: "Pull Moondream model",      cmd: "ollama pull moondream:latest" },
+                { label: "Pull qwen2.5:7b model",     cmd: "ollama pull qwen2.5:7b" },
                 { label: "Install Chromium browser", cmd: "python -m playwright install chromium" },
                 { label: "Start backend",            cmd: ".\\start-backend.ps1" },
                 { label: "Start frontend",           cmd: ".\\start-frontend.ps1" },
@@ -172,7 +172,7 @@ export default function SettingsPage() {
             <h2 className="text-white font-semibold mb-4">Configuration</h2>
             <div className="space-y-2 text-sm">
               {[
-                { k: "Model",  v: health?.model || "moondream:latest" },
+                { k: "Model",  v: health?.model || "qwen2.5:7b" },
                 { k: "Ollama", v: health?.ollama_host || "http://localhost:11434" },
                 { k: "API",    v: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000" },
                 { k: "Login",  v: "admin / admin123" },

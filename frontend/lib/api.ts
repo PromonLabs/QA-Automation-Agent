@@ -97,6 +97,15 @@ export const bulkApi = {
   saveEnv: (env_vars: Record<string, string>) => api.put("/bulk/env", { env_vars }),
 }
 
+// ── Flow Agent ────────────────────────────
+export const flowAgentApi = {
+  chat: (message: string, flowName?: string) =>
+    api.post<{ flow: { name: string; steps: string[] }; flow_json: string; used_llm: boolean }>(
+      "/flow-agent/chat",
+      { message, flow_name: flowName || "" }
+    ),
+}
+
 // ── Health ────────────────────────────────
 export const healthApi = {
   check: () => axios.get(`${API_URL}/health`),

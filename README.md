@@ -25,8 +25,7 @@ AI-powered browser automation platform using local LLMs.
 Pull these after installing Ollama:
 
 ```bash
-ollama pull qwen2.5:0.5b      # LLM Model    (~400 MB)
-ollama pull moondream:latest   # Vision Model (~1.7 GB)
+ollama pull qwen2.5:7b         # LLM + Vision Model (~4.7 GB)
 ```
 
 ### 5. Playwright Chromium

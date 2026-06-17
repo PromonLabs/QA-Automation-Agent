@@ -7,10 +7,10 @@ type AgentStatus = "connected" | "disconnected" | "checking"
 
 export function Header({ title }: { title: string }) {
   const [visionStatus,     setVisionStatus]     = useState<AgentStatus>("checking")
-  const [visionModel,      setVisionModel]      = useState("moondream")
+  const [visionModel,      setVisionModel]      = useState("qwen2.5:7b")
   const [flowAgentEnabled, setFlowAgentEnabled] = useState(false)
   const [llmStatus,        setLlmStatus]        = useState<AgentStatus>("checking")
-  const [llmModel,         setLlmModel]         = useState("moondream")
+  const [llmModel,         setLlmModel]         = useState("qwen2.5:7b")
 
   useEffect(() => {
     const check = async () => {
