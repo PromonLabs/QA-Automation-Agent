@@ -26,6 +26,13 @@ from app.agents.llm_client import vision_client
 LogCallbackFn   = Callable[[ExecutionLog], Awaitable[None]]
 FrameCallbackFn = Callable[[str], Awaitable[None]]      # base64 JPEG
 
+# Card payment fields — type slowly (120 ms/char) + pause + Tab after each
+_CARD_FIELD_KEYWORDS = {"card", "card number", "mm", "month", "yy", "year", "cvv", "cvd", "cvc", "expiry", "expiration"}
+
+def _is_card_field(target: str) -> bool:
+    t = target.lower().strip()
+    return any(k in t for k in _CARD_FIELD_KEYWORDS)
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -392,7 +399,7 @@ class BrowserAgent:
         Take a viewport screenshot and ask qwen2.5vl to locate the element.
         Returns a Playwright locator (by text or coordinates) or None.
         """
-        if not self._page:
+        if not self._page or not settings.USE_VISION_AGENT:
             return None
         try:
             data = await self._page.screenshot(type="jpeg", quality=70, full_page=False)
@@ -1482,10 +1489,11 @@ class BrowserAgent:
                         # 1. press_sequentially (fires all key events Vue v-model needs)
                         # 2. JS evaluate (bypasses visibility — works for vs-inputx)
                         # 3. fill() last resort (may timeout on Vuesax, kept as safety net)
+                        _type_delay = 60 if _is_card_field(target) else 15
                         typed = False
                         try:
                             await el.clear()
-                            await el.press_sequentially(str(fill_val), delay=15)
+                            await el.press_sequentially(str(fill_val), delay=_type_delay)
                             typed = True
                         except Exception:
                             pass
@@ -1516,6 +1524,11 @@ class BrowserAgent:
                             )
                         except Exception:
                             pass
+                        # For card fields: Tab to next field + pause so DIBS JS validates
+                        if _is_card_field(target):
+                            await asyncio.sleep(0.3)
+                            await self._page.keyboard.press("Tab")
+                            await asyncio.sleep(0.5)
                         await self._log("success", f"  → Typed '{fill_val}' into '{target}'")
                         return True
                     # Fallback: fill first visible EMPTY input of any fillable type
@@ -1533,7 +1546,8 @@ class BrowserAgent:
                                         if not cur_val:
                                             await inp.click(timeout=3000)
                                             await inp.clear()
-                                            await inp.press_sequentially(str(fill_val), delay=15)
+                                            _fb_delay = 120 if _is_card_field(target) else 15
+                                            await inp.press_sequentially(str(fill_val), delay=_fb_delay)
                                             try:
                                                 await inp.evaluate(
                                                     "e => { e.dispatchEvent(new Event('input',{bubbles:true})); "
@@ -1542,6 +1556,10 @@ class BrowserAgent:
                                                 )
                                             except Exception:
                                                 pass
+                                            if _is_card_field(target):
+                                                await asyncio.sleep(0.5)
+                                                await self._page.keyboard.press("Tab")
+                                                await asyncio.sleep(1.0)
                                             await self._log("success", f"  → Typed '{fill_val}' (first empty input)")
                                             return True
                                 except Exception:
@@ -1577,9 +1595,9 @@ class BrowserAgent:
                 # First attempt
                 filled = await _do_type()
                 if not filled:
-                    # SPA may still be rendering — wait up to 45 s and retry
+                    # SPA may still be rendering — wait up to 15 s and retry
                     await self._log("info", f"  ⏳ Waiting for '{target}' input to appear…")
-                    for _ in range(90):
+                    for _ in range(30):
                         await asyncio.sleep(0.5)
                         filled = await _do_type()
                         if filled:
@@ -1598,14 +1616,26 @@ class BrowserAgent:
                     await self._log("info", f"  → Already logged in — skipping type '{target}'")
                     await step_shot("ok")
                 else:
+                    # Vision fallback: take a screenshot and ask the vision model to
+                    # locate the input field, then type the value into it.
+                    vision_el = await self._vision_find(f"{target} input field")
+                    if vision_el:
+                        await self._log("info", f"  👁 Vision agent found input for '{target}'")
+                        try:
+                            await vision_el.press_sequentially(str(fill_val), delay=15)
+                            await asyncio.sleep(0.3)
+                            await step_shot("ok")
+                            return True
+                        except Exception:
+                            pass
                     await self._log("error", f"  ✗ STEP FAILED — no input found for '{target}'")
                     await step_shot("FAIL")
                     return False
 
             elif action == "select":
-                # Wait 4s for the page to settle before attempting to select
+                # Wait 2s for the page to settle before attempting to select
                 # (amount-selection pages often render after a short SPA delay)
-                await asyncio.sleep(4)
+                await asyncio.sleep(2)
                 try:
                     await self._page.wait_for_load_state("networkidle", timeout=4000)
                 except Exception:

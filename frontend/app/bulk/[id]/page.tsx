@@ -16,7 +16,7 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
-const SHOT_LABELS = ["Before Data", "Payment", "After Data"]
+const SHOT_LABELS = ["Before Payment", "Number Fill", "Payment", "After Payment"]
 
 // step_015_error_step_015_1781510269.png  → true
 const isErrorShot = (filename: string) => /^step_\d+_error_/i.test(filename)
@@ -267,7 +267,7 @@ function ItemCard({ item }: { item: BulkItem }) {
                           Progress Screenshots
                         </p>
                       )}
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-4 gap-4">
                         {SHOT_LABELS.map((label, i) => {
                           const shot = namedShots[i]
                           return shot ? (

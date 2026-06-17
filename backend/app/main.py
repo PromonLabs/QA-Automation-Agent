@@ -83,18 +83,61 @@ async def health():
     browser_ok = _chromium_ok()
     import sys
     return {
-        "status":           "healthy" if browser_ok else "degraded",
-        "llm":              "connected" if llm_ok else "disconnected",
-        "vision":           "connected" if vision_ok else "disconnected",
-        "model":            settings.LLM_MODEL,
-        "vision_model":     settings.VISION_MODEL,
-        "ollama_host":      settings.OLLAMA_HOST,
-        "browser":          "ready" if browser_ok else "not_installed",
-        "browser_headless": settings.BROWSER_HEADLESS,
-        "screenshot_mode":  settings.SCREENSHOT_MODE,
-        "browser_fix":      None if browser_ok else "python -m playwright install chromium",
-        "platform":         sys.platform,
-        "note":             "Windows: Playwright runs in a ProactorEventLoop thread (automatic)",
+        "status":               "healthy" if browser_ok else "degraded",
+        "llm":                  "connected" if llm_ok else "disconnected",
+        "vision":               "connected" if vision_ok else "disconnected",
+        "model":                settings.LLM_MODEL,
+        "vision_model":         settings.VISION_MODEL,
+        "ollama_host":          settings.OLLAMA_HOST,
+        "browser":              "ready" if browser_ok else "not_installed",
+        "browser_headless":     settings.BROWSER_HEADLESS,
+        "screenshot_mode":      settings.SCREENSHOT_MODE,
+        "browser_fix":          None if browser_ok else "python -m playwright install chromium",
+        "platform":             sys.platform,
+        "note":                 "Windows: Playwright runs in a ProactorEventLoop thread (automatic)",
+        "flow_agent_enabled":   settings.USE_FLOW_AGENT,
+        "vision_agent_enabled": settings.USE_VISION_AGENT,
+    }
+
+
+@app.patch("/api/settings/agents")
+async def update_agent_settings(
+    body: dict,
+    user: str = Depends(get_current_user),
+):
+    """Toggle flow / vision agents at runtime and persist to .env."""
+    from pathlib import Path
+    import re as _re
+
+    env_path = Path(__file__).parent.parent / ".env"
+    updates: dict[str, str] = {}
+
+    if "use_flow_agent" in body:
+        val = str(body["use_flow_agent"]).lower() in ("true", "1", "yes")
+        settings.USE_FLOW_AGENT = val
+        updates["USE_FLOW_AGENT"] = "true" if val else "false"
+
+    if "use_vision_agent" in body:
+        val = str(body["use_vision_agent"]).lower() in ("true", "1", "yes")
+        settings.USE_VISION_AGENT = val
+        updates["USE_VISION_AGENT"] = "true" if val else "false"
+
+    if updates and env_path.exists():
+        lines = env_path.read_text(encoding="utf-8").splitlines()
+        for key, new_val in updates.items():
+            replaced = False
+            for i, ln in enumerate(lines):
+                if _re.match(rf"^\s*{key}\s*=", ln):
+                    lines[i] = f"{key}={new_val}"
+                    replaced = True
+                    break
+            if not replaced:
+                lines.append(f"{key}={new_val}")
+        env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    return {
+        "flow_agent_enabled":   settings.USE_FLOW_AGENT,
+        "vision_agent_enabled": settings.USE_VISION_AGENT,
     }
 
 

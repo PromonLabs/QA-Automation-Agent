@@ -9,8 +9,48 @@
       "step": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
       "error": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
       "at": "2026-06-16T12:29:43.978870+00:00"
+    },
+    {
+      "step": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "error": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "at": "2026-06-16T13:22:47.986601+00:00"
+    },
+    {
+      "step": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "error": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "at": "2026-06-16T13:41:24.909870+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-17T04:16:10.369188+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-17T05:04:03.560915+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-17T05:13:24.266378+00:00"
+    },
+    {
+      "step": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "error": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "at": "2026-06-17T05:56:21.580859+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-17T05:58:45.491150+00:00"
+    },
+    {
+      "step": "Step 15 failed: In the topup talk page, Enter your phone number 580690 in the input box",
+      "error": "Step 15 failed: In the topup talk page, Enter your phone number 580690 in the input box",
+      "at": "2026-06-17T06:05:24.980767+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk [580690]",
-  "updated_at": "2026-06-16T12:29:43.979228+00:00"
+  "updated_at": "2026-06-17T06:05:24.981002+00:00"
 }

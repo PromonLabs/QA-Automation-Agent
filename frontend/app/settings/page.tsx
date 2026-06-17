@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { healthApi } from "@/lib/api"
+import { healthApi, agentSettingsApi } from "@/lib/api"
 import { Sidebar } from "@/components/layout/sidebar"
 import { Header } from "@/components/layout/header"
 import { Loader2, CheckCircle2, XCircle, RefreshCw, Copy } from "lucide-react"
@@ -10,6 +10,7 @@ export default function SettingsPage() {
   const [health, setHealth] = useState<any>(null)
   const [checking, setChecking] = useState(true)
   const [copied, setCopied] = useState("")
+  const [togglingAgent, setTogglingAgent] = useState<string | null>(null)
 
   const check = async () => {
     setChecking(true)
@@ -23,6 +24,18 @@ export default function SettingsPage() {
     }
   }
 
+  const toggleAgent = async (key: "use_flow_agent" | "use_vision_agent", current: boolean) => {
+    setTogglingAgent(key)
+    try {
+      await agentSettingsApi.update({ [key]: !current })
+      await check()
+    } catch {
+      // ignore
+    } finally {
+      setTogglingAgent(null)
+    }
+  }
+
   useEffect(() => { check() }, [])
 
   const copyCmd = (cmd: string) => {
@@ -33,7 +46,7 @@ export default function SettingsPage() {
 
   const checks = health ? [
     { label: "Backend API",      ok: health.status !== "error",   detail: health.status },
-    { label: "Qwen2.5:14b LLM",  ok: health.llm === "connected",  detail: health.llm === "connected" ? "online" : "offline",        fix: health.llm !== "connected" ? "ollama serve" : null },
+    { label: "Vision Agent",     ok: health.vision === "connected", detail: health.vision === "connected" ? "online" : "offline", fix: health.vision !== "connected" ? "ollama serve" : null },
     { label: "Chromium Browser", ok: health.browser === "ready",  detail: health.browser === "ready" ? "installed" : "not installed", fix: health.browser !== "ready" ? "python -m playwright install chromium" : null },
   ] : []
 
@@ -80,6 +93,54 @@ export default function SettingsPage() {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Agent Toggles */}
+          <div className="bg-white/[0.03] border border-white/10 rounded-xl p-6">
+            <h2 className="text-white font-semibold mb-5">Agents</h2>
+            <div className="space-y-4">
+              {[
+                {
+                  key: "use_flow_agent" as const,
+                  label: "Flow Agent",
+                  sub: "LLM-based step planning (requires Ollama)",
+                  enabled: health?.flow_agent_enabled ?? false,
+                  status: health?.llm,
+                },
+                {
+                  key: "use_vision_agent" as const,
+                  label: "Vision Agent",
+                  sub: "Screen element detection via vision model",
+                  enabled: health?.vision_agent_enabled ?? true,
+                  status: health?.vision,
+                },
+              ].map(({ key, label, sub, enabled, status }) => (
+                <div key={key} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+                  <div>
+                    <p className="text-white/70 text-sm font-medium">{label}</p>
+                    <p className="text-white/30 text-xs mt-0.5">{sub}</p>
+                    {status && (
+                      <p className={`text-xs mt-0.5 ${status === "connected" ? "text-white/40" : "text-white/20"}`}>
+                        {status === "connected" ? "model online" : "model offline"}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => toggleAgent(key, enabled)}
+                    disabled={togglingAgent === key || checking}
+                    className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
+                      enabled ? "bg-white/70" : "bg-white/10"
+                    } ${togglingAgent === key ? "opacity-50" : ""}`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-black rounded-full shadow transition-transform duration-200 ${
+                        enabled ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Quick Setup */}

@@ -4,8 +4,43 @@
       "step": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
       "error": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
       "at": "2026-06-16T12:28:49.266277+00:00"
+    },
+    {
+      "step": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "error": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "at": "2026-06-16T13:41:24.275098+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-17T04:18:23.306913+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-17T05:03:48.478640+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-17T05:13:09.101523+00:00"
+    },
+    {
+      "step": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "error": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "at": "2026-06-17T05:56:15.550114+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-17T05:58:45.585241+00:00"
+    },
+    {
+      "step": "Step 15 failed: In the topup talk page, Enter your phone number 230026 in the input box",
+      "error": "Step 15 failed: In the topup talk page, Enter your phone number 230026 in the input box",
+      "at": "2026-06-17T06:04:57.031118+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk [230026]",
-  "updated_at": "2026-06-16T12:28:49.266812+00:00"
+  "updated_at": "2026-06-17T06:04:57.031741+00:00"
 }

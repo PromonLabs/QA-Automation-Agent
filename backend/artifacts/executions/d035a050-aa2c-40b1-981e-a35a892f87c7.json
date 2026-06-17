@@ -1,0 +1,136 @@
+{
+  "id": "d035a050-aa2c-40b1-981e-a35a892f87c7",
+  "flow_id": "1a76daf2-ca64-4f97-bef7-cfff678dc82f",
+  "flow_name": "Tusass TopUp Talk [580690]",
+  "status": "failed",
+  "started_at": "2026-06-17T05:58:12.435828+00:00",
+  "finished_at": "2026-06-17T05:58:45.471357+00:00",
+  "duration_seconds": 33.04,
+  "logs": [
+    {
+      "timestamp": "2026-06-17T05:58:12.442570+00:00",
+      "level": "info",
+      "message": "\ud83d\udd11 Using flow-level credentials (4 var(s))",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:12.462243+00:00",
+      "level": "info",
+      "message": "\ud83d\udcdd Task extracted: 33 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:12.477247+00:00",
+      "level": "info",
+      "message": "  Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:12.492787+00:00",
+      "level": "info",
+      "message": "  Step 33: Give the report - Tusass topup talk flow is executed successfully. ${SUBSCRIBER_",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:12.513459+00:00",
+      "level": "info",
+      "message": "\u26a1 Flow agent disabled \u2014 running steps directly",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:12.537405+00:00",
+      "level": "info",
+      "message": "\ud83d\udccb Plan ready: 32 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:12.559906+00:00",
+      "level": "info",
+      "message": "\ud83d\udcad Direct execution of 32 steps",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:13.014735+00:00",
+      "level": "info",
+      "message": "\ud83d\ude80 Browser launched \u2014 32 steps",
+      "step": 0,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:13.015133+00:00",
+      "level": "info",
+      "message": "\u25b6 Step 1: Navigate to https://msitcos.lab.gl/",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:40.918966+00:00",
+      "level": "info",
+      "message": "  \u26a0 Context dead \u2014 relaunching browser for admin navigation",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:42.249336+00:00",
+      "level": "info",
+      "message": "  \u26a0 Browser relaunch attempt 1 failed: BrowserType.launch: Connection closed while reading from the driver",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:42.249450+00:00",
+      "level": "info",
+      "message": "  \u26a0 Retrying browser relaunch\u2026",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:45.262797+00:00",
+      "level": "info",
+      "message": "  \u26a0 Browser relaunch attempt 2 failed: BrowserType.launch: Connection closed while reading from the driver",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:45.263107+00:00",
+      "level": "error",
+      "message": "  \u2717 STEP FAILED \u2014 Page.goto: Target page, context or browser has been closed\nCall log:\n  - navigating to \"https://msitcos.lab.gl/\", waiting until \"domcontentloaded\"\n",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:45.287752+00:00",
+      "level": "error",
+      "message": "\u274c STOPPED at step 1 \u2014 Navigate to https://msitcos.lab.gl/",
+      "step": 1,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:45.475418+00:00",
+      "level": "error",
+      "message": "\u274c FAILED \u2014 0/32 steps in 33.0s",
+      "step": null,
+      "screenshot": null
+    },
+    {
+      "timestamp": "2026-06-17T05:58:45.494970+00:00",
+      "level": "info",
+      "message": "\ud83d\udcc4 Report: Tusass_TopUp_Talk_580690_2026-06-17_05-58.pdf",
+      "step": null,
+      "screenshot": null
+    }
+  ],
+  "screenshots": [],
+  "result_summary": "Tusass topup talk flow is executed successfully. ${SUBSCRIBER_EXTERNAL_ID} is topped up with amount 200. Balance before: ${OLD_BALANCE} \u2014 Balance after: ${NEW_BALANCE}",
+  "error": null,
+  "steps_completed": 0,
+  "steps_total": 32,
+  "report_file": "Tusass_TopUp_Talk_580690_2026-06-17_05-58.pdf"
+}

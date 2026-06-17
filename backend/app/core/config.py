@@ -31,6 +31,13 @@ class Settings:
     VISION_MODEL: str = os.getenv("VISION_MODEL", "qwen2.5vl:latest") # vision: screen agent
     LLM_TIMEOUT: int = int(os.getenv("LLM_TIMEOUT", "120"))
 
+    # Agent toggles — set in .env to control which agents are active
+    # USE_FLOW_AGENT=false  → steps execute directly, no LLM planning (fast, offline)
+    # USE_FLOW_AGENT=true   → LLM plans steps before execution (requires Ollama)
+    # USE_VISION_AGENT=true → vision model used as fallback element finder
+    USE_FLOW_AGENT: bool = os.getenv("USE_FLOW_AGENT", "false").lower() in ("true", "1", "yes")
+    USE_VISION_AGENT: bool = os.getenv("USE_VISION_AGENT", "true").lower() in ("true", "1", "yes")
+
     # Browser — headless=true for speed (no visible window)
     BROWSER_HEADLESS: bool = os.getenv("BROWSER_HEADLESS", "true").lower() == "true"
     BROWSER_SLOW_MO: int = int(os.getenv("BROWSER_SLOW_MO", "0"))

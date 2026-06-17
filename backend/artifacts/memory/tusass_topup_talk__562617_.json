@@ -14,8 +14,33 @@
       "step": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
       "error": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
       "at": "2026-06-16T12:29:53.518201+00:00"
+    },
+    {
+      "step": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "error": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
+      "at": "2026-06-16T13:40:38.461625+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-17T05:03:38.685234+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-17T05:12:59.296730+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-17T05:58:45.734073+00:00"
+    },
+    {
+      "step": "Step 15 failed: In the topup talk page, Enter your phone number 562617 in the input box",
+      "error": "Step 15 failed: In the topup talk page, Enter your phone number 562617 in the input box",
+      "at": "2026-06-17T06:05:14.936913+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk [562617]",
-  "updated_at": "2026-06-16T12:29:53.518523+00:00"
+  "updated_at": "2026-06-17T06:05:14.937336+00:00"
 }
