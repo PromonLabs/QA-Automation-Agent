@@ -9,8 +9,13 @@
       "step": "Step 7 failed: In Search box enter the 299230026",
       "error": "Step 7 failed: In Search box enter the 299230026",
       "at": "2026-06-17T07:36:33.876060+00:00"
+    },
+    {
+      "step": "Step 33 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 50 -",
+      "error": "Step 33 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 50 -",
+      "at": "2026-06-18T08:00:27.107766+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk [230026]",
-  "updated_at": "2026-06-17T07:36:33.876472+00:00"
+  "updated_at": "2026-06-18T08:00:27.107957+00:00"
 }

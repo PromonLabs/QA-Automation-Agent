@@ -70,6 +70,7 @@ class BrowserAgent:
         self._shared_browser: Optional[Browser] = None   # set by bulk sequential runner
         self._shared_context: Optional[BrowserContext] = None  # reuse login session across sequential runs
         self._already_in_proactor_loop: bool = False     # skip thread spawn when already in right loop
+        self._skip_until_navigate: bool = False   # True when current site is unreachable — skip steps until next Navigate
 
     # ── Thread-safe callback dispatch ────────────────────────────────────────
     def _dispatch(self, coro) -> None:
@@ -844,6 +845,27 @@ class BrowserAgent:
             except Exception:
                 pass
 
+        # Keywords that mean the host is simply not reachable (DNS fail, refused, timeout)
+        _UNREACHABLE_KW = (
+            "ERR_NAME_NOT_RESOLVED", "ERR_CONNECTION_REFUSED",
+            "ERR_CONNECTION_TIMED_OUT", "ERR_TIMED_OUT",
+            "NS_ERROR_UNKNOWN_HOST", "NS_ERROR_CONNECTION_REFUSED",
+            "net::ERR_NAME", "net::ERR_CONNECTION",
+            "ERR_INTERNET_DISCONNECTED",
+        )
+
+        # Step patterns that are soft failures — log a warning and continue instead of stopping
+        _SOFT_FAIL_PATTERNS = (
+            "search box", "balance", "external id", "iccid",
+            "copy one", "note the", "verify", "check",
+        )
+
+        # Skip all non-navigate steps when the previous site was unreachable
+        if self._skip_until_navigate and action != "navigate":
+            await self._log("info", f"  ⏭ Skipping — previous site unreachable: '{target}'")
+            await step_shot("ok")
+            return True
+
         try:
             if action == "navigate":
                 url = target if target.startswith("http") else f"https://{target}"
@@ -984,6 +1006,12 @@ class BrowserAgent:
                             _nav_done = True
                             break
                         else:
+                            # Check if the host is simply unreachable (DNS/refused/timeout)
+                            if any(k in nav_err_s for k in _UNREACHABLE_KW):
+                                await self._log("info", f"  ⏭ Site unreachable ({url}) — skipping all steps until next Navigate")
+                                await step_shot("ok")
+                                self._skip_until_navigate = True
+                                return True
                             # Transient failure (timeout, connection refused, etc.) — retry
                             if _nav_attempt < 2:
                                 await self._log("info", f"  ⚠ Navigation attempt {_nav_attempt + 1} failed ({nav_err_s[:80]}…) — retrying in 3s")
@@ -994,6 +1022,12 @@ class BrowserAgent:
                                 except Exception:
                                     pass
                                 continue
+                            # All retries exhausted — if still a network error, skip gracefully
+                            if any(k in nav_err_s for k in _UNREACHABLE_KW):
+                                await self._log("info", f"  ⏭ Site unreachable after retries ({url}) — skipping remaining steps")
+                                await step_shot("ok")
+                                self._skip_until_navigate = True
+                                return True
                             raise
                     _same_domain = (cu.netloc == tu.netloc) if cu and tu else False
                     try:
@@ -1035,6 +1069,7 @@ class BrowserAgent:
                         await asyncio.sleep(0.5)
 
                 self._last_idle_url = ""   # new page — reset idle cache
+                self._skip_until_navigate = False   # site is reachable — resume normal execution
                 await self._log("info", f"  → {url}")
                 await step_shot("ok")
 
@@ -1284,9 +1319,14 @@ class BrowserAgent:
                             await step_shot("ok")
                             self._login_sequence_skipped = True
                         else:
-                            await self._log("error", f"  ✗ STEP FAILED — '{target}' not found on page")
-                            await step_shot("FAIL")
-                            return False
+                            tgt_lo = target.lower()
+                            if any(p in tgt_lo for p in _SOFT_FAIL_PATTERNS):
+                                await self._log("info", f"  ⚠ '{target}' not found — soft skip (non-critical step)")
+                                await step_shot("ok")
+                            else:
+                                await self._log("error", f"  ✗ STEP FAILED — '{target}' not found on page")
+                                await step_shot("FAIL")
+                                return False
                     else:
                         # JS full-DOM fallback: scroll page and click any element
                         # whose text content matches the target string.
