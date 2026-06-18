@@ -19,8 +19,28 @@
       "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
       "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
       "at": "2026-06-18T07:56:56.304874+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-18T08:05:41.389055+00:00"
+    },
+    {
+      "step": "Step 33 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 50 -",
+      "error": "Step 33 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 50 -",
+      "at": "2026-06-18T08:14:25.365245+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-18T08:16:59.648380+00:00"
+    },
+    {
+      "step": "Step 20 failed: Select amount 50",
+      "error": "Step 20 failed: Select amount 50",
+      "at": "2026-06-18T08:40:57.735190+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk [580690]",
-  "updated_at": "2026-06-18T07:56:56.305047+00:00"
+  "updated_at": "2026-06-18T08:40:57.735414+00:00"
 }

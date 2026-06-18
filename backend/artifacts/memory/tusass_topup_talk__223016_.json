@@ -29,8 +29,33 @@
       "step": "Step 33 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 50 -",
       "error": "Step 33 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 50 -",
       "at": "2026-06-18T08:00:01.692893+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-18T08:05:37.228697+00:00"
+    },
+    {
+      "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
+      "at": "2026-06-18T08:12:08.415654+00:00"
+    },
+    {
+      "step": "Step 15 failed: Enter phone number in input box 223016",
+      "error": "Step 15 failed: Enter phone number in input box 223016",
+      "at": "2026-06-18T08:19:27.272922+00:00"
+    },
+    {
+      "step": "Step 33 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 50 -",
+      "error": "Step 33 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 50 -",
+      "at": "2026-06-18T08:29:06.281260+00:00"
+    },
+    {
+      "step": "Step 20 failed: Select amount 50",
+      "error": "Step 20 failed: Select amount 50",
+      "at": "2026-06-18T08:40:53.210435+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk [223016]",
-  "updated_at": "2026-06-18T08:00:01.693346+00:00"
+  "updated_at": "2026-06-18T08:40:53.210987+00:00"
 }
