@@ -83,11 +83,19 @@ async def health():
     )
     browser_ok = _chromium_ok()
     import sys
+    llm_provider = settings.LLM_PROVIDER
+    claude_key_set = bool(settings.ANTHROPIC_API_KEY)
     return {
         "status":               "healthy" if browser_ok else "degraded",
         "llm":                  "connected" if llm_ok else "disconnected",
         "vision":               "connected" if vision_ok else "disconnected",
-        "model":                settings.LLM_MODEL,
+        "llm_provider":         llm_provider,
+        "llm_provider_label":   (
+            f"Claude API ({settings.CLAUDE_MODEL})" if llm_provider == "claude"
+            else f"Ollama ({settings.LLM_MODEL})"
+        ),
+        "claude_key_set":       claude_key_set,
+        "model":                settings.CLAUDE_MODEL if llm_provider == "claude" else settings.LLM_MODEL,
         "vision_model":         settings.VISION_MODEL,
         "ollama_host":          settings.OLLAMA_HOST,
         "browser":              "ready" if browser_ok else "not_installed",

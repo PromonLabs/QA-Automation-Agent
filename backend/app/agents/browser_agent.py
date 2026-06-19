@@ -71,6 +71,7 @@ class BrowserAgent:
         self._shared_context: Optional[BrowserContext] = None  # reuse login session across sequential runs
         self._already_in_proactor_loop: bool = False     # skip thread spawn when already in right loop
         self._skip_until_navigate: bool = False   # True when current site is unreachable — skip steps until next Navigate
+        self._flow_env: dict = {}   # per-run env vars (e.g. bulk MISTIN_ID); set by orchestrator
 
     # ── Thread-safe callback dispatch ────────────────────────────────────────
     def _dispatch(self, coro) -> None:
@@ -2516,8 +2517,13 @@ class BrowserAgent:
                         if "ICC" in target.upper():
                             fallback = os.environ.get("ICC_ID") or ""
                         else:
+                            # Use flow-level env vars first (correct for bulk runs),
+                            # then fall back to global os.environ (single-run .env)
+                            _fenv = self._flow_env
                             fallback = (
-                                os.environ.get("MISTIN_ID")
+                                _fenv.get("MISTIN_ID")
+                                or _fenv.get("PHONE_NUMBER")
+                                or os.environ.get("MISTIN_ID")
                                 or os.environ.get("PHONE_NUMBER")
                                 or ""
                             )
@@ -2535,6 +2541,9 @@ class BrowserAgent:
                             await self._log("info", f"  ⚠ Could not find Extra Data amount on page after 10s")
                         else:
                             await self._log("info", f"  ⚠ Could not find balance on page after 10s")
+                            # Store N/A so ${OLD_BALANCE}/${NEW_BALANCE} show "N/A" in report
+                            # instead of the literal placeholder string
+                            self._captured_vars.setdefault(target, "N/A")
                 await step_shot("ok")
 
             elif action == "click_existing_contact":

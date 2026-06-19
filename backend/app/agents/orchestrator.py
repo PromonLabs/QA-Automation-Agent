@@ -469,6 +469,7 @@ class Orchestrator:
             agent._shared_browser = self.shared_browser
             agent._shared_context = self.shared_context
             agent._already_in_proactor_loop = self.already_in_proactor_loop
+            agent._flow_env = flow_env   # pass bulk-run per-item vars to agent for fallbacks
             result = await agent.run(plan)
 
             # ── Finalize ──────────────────────────────────────────────
@@ -478,13 +479,17 @@ class Orchestrator:
                 ExecutionStatus.SUCCESS if result["status"] == "success"
                 else ExecutionStatus.FAILED
             )
+            # Merge: flow env vars (lowest priority) < captured runtime vars (highest priority)
+            # This ensures ${MISTIN_ID} etc. in report templates get substituted even if
+            # the agent couldn't extract the value from the page.
+            merged_vars = {**flow_env, **result.get("captured_vars", {})}
             exec_result = artifact_store.update_execution(self.exec_id, {
                 "status": final_status,
                 "finished_at": _now(),
                 "duration_seconds": round(duration, 2),
                 "steps_completed": result["steps_completed"],
                 "steps_total": result["steps_total"],
-                "result_summary": _substitute_captured(report_note or result.get("summary", ""), result.get("captured_vars", {})),
+                "result_summary": _substitute_captured(report_note or result.get("summary", ""), merged_vars),
             })
 
             icon = "✅" if final_status == ExecutionStatus.SUCCESS else "❌"

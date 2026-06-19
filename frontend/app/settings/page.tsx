@@ -103,7 +103,9 @@ export default function SettingsPage() {
                 {
                   key: "use_flow_agent" as const,
                   label: "Flow Agent",
-                  sub: "LLM-based step planning (requires Ollama)",
+                  sub: health?.llm_provider === "claude"
+                    ? `LLM planning via ${health?.llm_provider_label || "Claude API"}`
+                    : "LLM-based step planning (requires Ollama)",
                   enabled: health?.flow_agent_enabled ?? false,
                   status: health?.llm,
                 },
@@ -172,10 +174,11 @@ export default function SettingsPage() {
             <h2 className="text-white font-semibold mb-4">Configuration</h2>
             <div className="space-y-2 text-sm">
               {[
-                { k: "Model",  v: health?.model || "qwen2.5:7b" },
-                { k: "Ollama", v: health?.ollama_host || "http://localhost:11434" },
-                { k: "API",    v: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000" },
-                { k: "Login",  v: "admin / admin123" },
+                { k: "LLM Provider", v: health?.llm_provider_label || "Ollama (qwen2.5:14b)" },
+                { k: "Claude Key",   v: health?.claude_key_set ? "configured" : "not set" },
+                { k: "Ollama Host",  v: health?.ollama_host || "http://localhost:11434" },
+                { k: "API",          v: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000" },
+                { k: "Login",        v: "admin / admin123" },
               ].map(({ k, v }) => (
                 <div key={k} className="flex justify-between py-1.5 border-b border-white/5 last:border-0">
                   <span className="text-white/30">{k}</span>

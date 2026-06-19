@@ -1,6 +1,9 @@
 """
-Qwen2.5:14b client via Ollama HTTP API.
-Includes a smart natural-language step parser as LLM fallback.
+LLM client — supports Ollama (local) and Claude API (Anthropic cloud).
+Includes a smart natural-language step parser used when LLM is disabled/unavailable.
+
+Set LLM_PROVIDER=claude + ANTHROPIC_API_KEY in .env to use the Claude API.
+Set LLM_PROVIDER=ollama (default) to use a local Ollama model.
 """
 import re
 import json
@@ -518,16 +521,25 @@ _llm_lock = asyncio.Lock()   # Ollama processes one generation at a time
 
 class LLMClient:
     def __init__(self):
-        self.host    = settings.OLLAMA_HOST
-        self.model   = settings.LLM_MODEL
-        self.timeout = settings.LLM_TIMEOUT
+        self.host     = settings.OLLAMA_HOST
+        self.model    = settings.LLM_MODEL
+        self.timeout  = settings.LLM_TIMEOUT
+        self.provider = settings.LLM_PROVIDER   # "ollama" | "claude"
 
     async def generate_plan(self, task: str) -> dict:
         """Try LLM first (if USE_FLOW_AGENT=true), fall back to direct NL parsing."""
         if settings.USE_FLOW_AGENT:
-            # If LLM is already busy (parallel run), skip it — the caller gets
-            # an instant NL-parsed plan so its browser starts without delay.
-            if not _llm_lock.locked():
+            # Claude API supports parallel calls; Ollama is single-threaded (use lock)
+            if self.provider == "claude":
+                try:
+                    plan = await self._call_claude(task)
+                    if plan and len(plan.get("steps", [])) > 1:
+                        return plan
+                except Exception:
+                    pass
+            elif not _llm_lock.locked():
+                # If Ollama is already busy (parallel run), skip it — the caller gets
+                # an instant NL-parsed plan so its browser starts without delay.
                 try:
                     async with _llm_lock:
                         plan = await self._call_llm(task)
@@ -536,7 +548,6 @@ class LLMClient:
                 except Exception:
                     pass
 
-
         steps = _steps_from_task(task)
         return {
             "reasoning": f"Direct execution of {len(steps)} steps",
@@ -544,7 +555,49 @@ class LLMClient:
             "expected_outcome": "Complete all steps successfully",
         }
 
+    async def _call_claude(self, task: str) -> dict:
+        """Call Anthropic Claude API for LLM planning."""
+        api_key = settings.ANTHROPIC_API_KEY
+        if not api_key:
+            raise RuntimeError("ANTHROPIC_API_KEY not set in .env")
+
+        headers = {
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+        }
+        payload = {
+            "model": settings.CLAUDE_MODEL,
+            "max_tokens": 1500,
+            "system": SYSTEM_PROMPT,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": (
+                        f"Create a browser automation plan for this task:\n{task[:2000]}\n\n"
+                        "Respond with ONLY the JSON object."
+                    ),
+                }
+            ],
+            "temperature": 0.05,
+        }
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(
+                "https://api.anthropic.com/v1/messages",
+                headers=headers,
+                json=payload,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+
+        raw = data.get("content", [{}])[0].get("text", "")
+        plan = _extract_json(raw)
+        if plan and "steps" in plan and len(plan["steps"]) > 0:
+            return plan
+        return {}
+
     async def _call_llm(self, task: str) -> dict:
+        """Call local Ollama model for LLM planning."""
         url = f"{self.host}/api/generate"
         payload = {
             "model": self.model,
@@ -573,6 +626,15 @@ class LLMClient:
         return {}
 
     async def stream_reasoning(self, task: str) -> AsyncIterator[str]:
+        if self.provider == "claude":
+            # Claude doesn't support streaming here — yield a single token
+            try:
+                plan = await self._call_claude(task)
+                yield json.dumps(plan)
+            except Exception:
+                pass
+            return
+
         url = f"{self.host}/api/generate"
         payload = {
             "model": self.model,
@@ -594,6 +656,8 @@ class LLMClient:
                             pass
 
     async def check_health(self) -> bool:
+        if self.provider == "claude":
+            return bool(settings.ANTHROPIC_API_KEY)
         try:
             async with httpx.AsyncClient(timeout=10) as client:
                 resp = await client.get(f"{self.host}/api/tags")

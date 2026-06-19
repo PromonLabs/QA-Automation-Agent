@@ -25,15 +25,24 @@ class Settings:
     ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "admin")
     ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "admin123")
 
+    # LLM Provider — "ollama" (local) or "claude" (Anthropic API)
+    # Set LLM_PROVIDER=claude + ANTHROPIC_API_KEY to use the Claude API
+    # instead of a local Ollama model (recommended for laptops without a GPU)
+    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "ollama").lower()   # "ollama" | "claude"
+    ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
+    # Claude model to use when LLM_PROVIDER=claude
+    # claude-haiku-4-5-20251001 = fastest/cheapest; claude-sonnet-4-6 = smarter
+    CLAUDE_MODEL: str = os.getenv("CLAUDE_MODEL", "claude-haiku-4-5-20251001")
+
     # Ollama / LLM
     OLLAMA_HOST: str = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-    LLM_MODEL: str = os.getenv("LLM_MODEL", "qwen2.5:14b")          # text: flow parsing
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "qwen2.5:14b")          # text: flow parsing (Ollama)
     VISION_MODEL: str = os.getenv("VISION_MODEL", "qwen2.5vl:latest") # vision: screen agent
     LLM_TIMEOUT: int = int(os.getenv("LLM_TIMEOUT", "120"))
 
     # Agent toggles — set in .env to control which agents are active
     # USE_FLOW_AGENT=false  → steps execute directly, no LLM planning (fast, offline)
-    # USE_FLOW_AGENT=true   → LLM plans steps before execution (requires Ollama)
+    # USE_FLOW_AGENT=true   → LLM plans steps before execution (Ollama or Claude API)
     # USE_VISION_AGENT=true → vision model used as fallback element finder
     USE_FLOW_AGENT: bool = os.getenv("USE_FLOW_AGENT", "false").lower() in ("true", "1", "yes")
     USE_VISION_AGENT: bool = os.getenv("USE_VISION_AGENT", "true").lower() in ("true", "1", "yes")
