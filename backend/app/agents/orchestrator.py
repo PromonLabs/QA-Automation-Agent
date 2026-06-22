@@ -29,6 +29,8 @@ def _substitute_captured(text: str, captured: dict) -> str:
     """Replace ${VAR} placeholders with values extracted during the run."""
     for k, v in captured.items():
         text = text.replace(f"${{{k}}}", v)
+    # Replace any remaining unresolved placeholders so the report never shows raw ${...}
+    text = re.sub(r'\$\{[^}]+\}', 'N/A', text)
     return text
 
 
@@ -483,13 +485,17 @@ class Orchestrator:
             # This ensures ${MISTIN_ID} etc. in report templates get substituted even if
             # the agent couldn't extract the value from the page.
             merged_vars = {**flow_env, **result.get("captured_vars", {})}
+            skipped_unreachable = result.get("skipped_unreachable", 0)
+            summary = report_note or result.get("summary", "")
+            if final_status == ExecutionStatus.FAILED and skipped_unreachable:
+                summary = result.get("stop_reason", summary)
             exec_result = artifact_store.update_execution(self.exec_id, {
                 "status": final_status,
                 "finished_at": _now(),
                 "duration_seconds": round(duration, 2),
                 "steps_completed": result["steps_completed"],
                 "steps_total": result["steps_total"],
-                "result_summary": _substitute_captured(report_note or result.get("summary", ""), merged_vars),
+                "result_summary": _substitute_captured(summary, merged_vars),
             })
 
             icon = "✅" if final_status == ExecutionStatus.SUCCESS else "❌"

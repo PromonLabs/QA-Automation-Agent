@@ -64,6 +64,7 @@ class BrowserAgent:
         self._running    = False
         self._main_loop: Optional[asyncio.AbstractEventLoop] = None   # caller's loop
         self._captured_vars: dict = {}   # values extracted from pages during the run
+        self._skipped_unreachable: int = 0   # steps skipped because the target site was unreachable
         self._login_sequence_skipped = False
         self._authenticated_domains: set = set()  # domains where login succeeded this run
         self._last_idle_url: str = ""   # URL we last waited networkidle for (skip re-wait)
@@ -326,6 +327,23 @@ class BrowserAgent:
                     try:
                         loc = frame.locator(sel).first
                         if await loc.count() > 0:
+                            return loc
+                    except Exception:
+                        pass
+
+            # Mobile / phone number field — "Log in" pages often accept mobile number or
+            # e-mail in a single input with no explicit label pointing to the raw <input>.
+            # Try by input type so the field is found even without placeholder/name hints.
+            if any(w in tl for w in ["mobile", "phone", "msisdn"]):
+                for sel in [
+                    "input[type='tel']",
+                    "input[type='email']",
+                    "input[type='text']",
+                    "input:not([type])",
+                ]:
+                    try:
+                        loc = frame.locator(sel).first
+                        if await loc.count() > 0 and await loc.is_visible():
                             return loc
                     except Exception:
                         pass
@@ -742,11 +760,22 @@ class BrowserAgent:
                 await self._page.wait_for_load_state("networkidle", timeout=5000)
             except Exception:
                 pass
-            await asyncio.sleep(1)
+            await asyncio.sleep(2)
 
-            # Navigate back to the operation detail page
+            # Only navigate back to return_url when the app didn't already land us
+            # somewhere useful (e.g. the subscriber list page that has the search box).
+            # If the current URL is already past the auth pages, stay there — navigating
+            # to base_url would lose the SPA route that MS auth redirected us to.
             current = self._page.url
-            if current != return_url:
+            current_body = ""
+            try:
+                current_body = (await self._page.inner_text("body")).lower()
+            except Exception:
+                pass
+            _still_on_auth = any(m in current_body for m in (
+                "sign in", "signin", "enter password", "login",
+            )) or "/login" in current.lower()
+            if _still_on_auth and current != return_url:
                 await self._page.goto(return_url, wait_until="domcontentloaded", timeout=20000)
                 await asyncio.sleep(1.5)
 
@@ -865,6 +894,10 @@ class BrowserAgent:
         # Skip all non-navigate steps when the previous site was unreachable
         if self._skip_until_navigate and action != "navigate":
             await self._log("info", f"  ⏭ Skipping — previous site unreachable: '{target}'")
+            self._skipped_unreachable += 1
+            # Mark any variable-capture targets as N/A so the report doesn't show raw ${...}
+            if target and re.match(r'^[A-Z][A-Z0-9_]+$', target):
+                self._captured_vars.setdefault(target, "N/A")
             await step_shot("ok")
             return True
 
@@ -1008,25 +1041,21 @@ class BrowserAgent:
                             _nav_done = True
                             break
                         else:
-                            # Check if the host is simply unreachable (DNS/refused/timeout)
-                            if any(k in nav_err_s for k in _UNREACHABLE_KW):
-                                await self._log("info", f"  ⏭ Site unreachable ({url}) — skipping all steps until next Navigate")
-                                await step_shot("ok")
-                                self._skip_until_navigate = True
-                                return True
-                            # Transient failure (timeout, connection refused, etc.) — retry
+                            # All failures (including UNREACHABLE_KW) get the same retry
+                            # treatment — MS SSO redirects and lab servers can look like
+                            # ERR_CONNECTION_REFUSED on the first attempt but recover quickly.
                             if _nav_attempt < 2:
-                                await self._log("info", f"  ⚠ Navigation attempt {_nav_attempt + 1} failed ({nav_err_s[:80]}…) — retrying in 3s")
-                                await asyncio.sleep(3)
+                                _is_unreachable = any(k in nav_err_s for k in _UNREACHABLE_KW)
+                                _delay = 10 if _is_unreachable else 3
+                                await self._log("info", f"  ⚠ Navigation attempt {_nav_attempt + 1} failed ({nav_err_s[:80]}…) — retrying in {_delay}s")
+                                await asyncio.sleep(_delay)
                                 # Open a fresh page so the stale tab doesn't block the retry
                                 try:
                                     self._page = await self._context.new_page()
                                 except Exception:
                                     pass
                                 continue
-                            # All retries exhausted — always skip gracefully for navigation failures
-                            # (covers ERR_NAME_NOT_RESOLVED, ERR_CONNECTION_REFUSED, Playwright
-                            # Timeout exceeded, and any other network-level failure)
+                            # All retries exhausted — skip gracefully
                             await self._log("info", f"  ⏭ Site unreachable after retries ({url}) — skipping remaining steps for this site")
                             await step_shot("ok")
                             self._skip_until_navigate = True
@@ -1620,6 +1649,37 @@ class BrowserAgent:
                                     pass
                         except Exception:
                             pass
+
+                    # ── Final fallback: single visible input, clear and fill regardless ──
+                    # Handles browser-autofilled login fields (e.g. "Log in" page where
+                    # the mobile-number field shows the previous phone number from autofill).
+                    # Only fires when exactly ONE visible text-type input exists so we don't
+                    # accidentally overwrite the wrong field on multi-input pages.
+                    try:
+                        all_visible = [
+                            i for i in await frame.locator(
+                                "input[type='text'],input[type='tel'],input[type='email'],"
+                                "input:not([type])"
+                            ).all()
+                            if await i.is_visible()
+                        ]
+                        if len(all_visible) == 1:
+                            inp = all_visible[0]
+                            await inp.click(timeout=3000)
+                            await inp.clear()
+                            await inp.press_sequentially(str(fill_val), delay=15)
+                            try:
+                                await inp.evaluate(
+                                    "e => { e.dispatchEvent(new Event('input',{bubbles:true})); "
+                                    "e.dispatchEvent(new Event('change',{bubbles:true})); "
+                                    "e.dispatchEvent(new Event('blur',{bubbles:true})); }"
+                                )
+                            except Exception:
+                                pass
+                            await self._log("success", f"  → Typed '{fill_val}' (cleared autofill, single input)")
+                            return True
+                    except Exception:
+                        pass
                     return False
 
                 # First attempt
@@ -1654,7 +1714,7 @@ class BrowserAgent:
                         try:
                             await vision_el.press_sequentially(str(fill_val), delay=15)
                             await asyncio.sleep(0.3)
-                            await step_shot("ok")
+                            await step_shot("ok")       
                             return True
                         except Exception:
                             pass
@@ -1837,9 +1897,10 @@ class BrowserAgent:
                 if not found:
                     await self._log("info", "  🔄 Search box not found — navigating to base URL")
                     try:
-                        # Navigate to the root of the current origin so the SPA
-                        # starts at the subscriber list (not the last customer detail).
-                        base_url = "/".join(self._page.url.split("/")[:3])
+                        # Save the original URL (e.g. COS_URL with /subscribers path)
+                        # so we can return to it after re-login instead of staying on root.
+                        original_url = self._page.url
+                        base_url = "/".join(original_url.split("/")[:3])
                         await self._page.goto(base_url, wait_until="domcontentloaded", timeout=20000)
                         await self._page.wait_for_load_state("networkidle", timeout=4000)
                         await asyncio.sleep(1)
@@ -1853,7 +1914,10 @@ class BrowserAgent:
                             body_lo = (await self._page.inner_text("body")).lower()
                             if "login" in body_lo and not await self._already_authenticated():
                                 await self._recover_ms_login(base_url)
-                                await asyncio.sleep(2)
+                                # Give the COS SPA extra time to render after re-login —
+                                # _recover_ms_login now stays on whichever page MS auth
+                                # redirected to (ideally the subscriber list).
+                                await asyncio.sleep(3)
                         except Exception:
                             pass
                     except Exception:
@@ -1946,13 +2010,22 @@ class BrowserAgent:
                 if target and target.lower().endswith((".png", ".jpg")):
                     safe_name = re.sub(r"[^\w\-.]", "_", target)
                     named_path = self.screenshot_dir / safe_name
+                    _saved = False
                     try:
                         await self._page.screenshot(
                             path=str(named_path), full_page=True, animations="disabled"
                         )
-                        await self._log("info", f"  📸 Screenshot saved: {safe_name}", screenshot=safe_name)
+                        _saved = True
                     except Exception:
-                        pass
+                        try:
+                            await self._page.screenshot(
+                                path=str(named_path), full_page=False, timeout=5000
+                            )
+                            _saved = True
+                        except Exception:
+                            pass
+                    if _saved:
+                        await self._log("info", f"  📸 Screenshot saved: {safe_name}", screenshot=safe_name)
                 else:
                     # SS / bare screenshot step — always save as ss_NNN.png so the
                     # PDF reporter can include it regardless of SCREENSHOT_MODE.
@@ -2706,16 +2779,22 @@ class BrowserAgent:
                 await self._log("info", "Final state captured", screenshot=shot)
 
         rate   = (completed / len(steps) * 100) if steps else 0
-        all_ok = (completed == len(steps) and not failed)
+        has_unreachable = self._skipped_unreachable > 0
+        all_ok = (completed == len(steps) and not failed and not has_unreachable)
         status = "success" if all_ok else ("failed" if completed == 0 else "partial")
+        stop_reason = stop_reason or (
+            f"{self._skipped_unreachable} step(s) skipped — target site unreachable"
+            if has_unreachable else "all steps completed"
+        )
         return {
             "status": status,
             "steps_completed": completed,
             "steps_total": len(steps),
             "failed_steps": failed,
-            "stop_reason": stop_reason or "all steps completed",
+            "stop_reason": stop_reason,
             "success_rate": rate,
             "captured_vars": self._captured_vars,
+            "skipped_unreachable": self._skipped_unreachable,
         }
 
     async def _execute(self, plan: dict) -> dict:

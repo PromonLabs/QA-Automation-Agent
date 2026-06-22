@@ -44,8 +44,13 @@
       "step": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
       "error": "Step 1 failed: Navigate to https://msitcos.lab.gl/",
       "at": "2026-06-18T08:12:00.654341+00:00"
+    },
+    {
+      "step": "Step 33 failed: Click the Pay button",
+      "error": "Step 33 failed: Click the Pay button",
+      "at": "2026-06-19T11:34:52.461522+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk [562617]",
-  "updated_at": "2026-06-18T08:12:00.654809+00:00"
+  "updated_at": "2026-06-19T11:34:52.461720+00:00"
 }

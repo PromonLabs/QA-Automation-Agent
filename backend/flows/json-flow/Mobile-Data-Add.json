@@ -1,0 +1,24 @@
+{
+  "name": " Mobile Data Add ",
+  "steps": [
+     "Next Navigate to ${PORTAL_URL}",
+    "Click the  Mobile button",
+    "Wait 3000ms",
+   "  Click the Mobile 100"
+   "Wait 3000ms" 
+  "In Input  number field, enter ${PHONE_MOBILE_NUMBER}",
+"Click Next ",
+"In Input  number field, enter ${SMS}",
+" Click Next",
+  "Wait 3000ms",
+" Click Yes",
+"In Input  field, enter ${LOGIN_NUMBER}",
+"Click Next ",
+"In Input  number field, enter ${SMS}",
+" Click Continue "
+" Click the checkbox labeled "I accept the terms and conditions".  ",
+"Click Next ",
+"In Input  number field, enter ${LAST_CARD}",
+ 
+  ]
+}
