@@ -97,7 +97,8 @@
       "Bash(Measure-Object)",
       "Bash(Select-Object -ExpandProperty Count)",
       "PowerShell(Get-WmiObject *)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(py --version)"
     ]
   }
 }

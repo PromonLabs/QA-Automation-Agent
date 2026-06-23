@@ -333,7 +333,8 @@ class BrowserAgent:
 
             # Mobile / phone number field — "Log in" pages often accept mobile number or
             # e-mail in a single input with no explicit label pointing to the raw <input>.
-            # Try by input type so the field is found even without placeholder/name hints.
+            # When multiple inputs exist (e.g. phone + verify), prefer the first EMPTY one
+            # so "verify mobile number" steps skip the already-filled phone field.
             if any(w in tl for w in ["mobile", "phone", "msisdn"]):
                 for sel in [
                     "input[type='tel']",
@@ -342,7 +343,21 @@ class BrowserAgent:
                     "input:not([type])",
                 ]:
                     try:
-                        loc = frame.locator(sel).first
+                        locs = frame.locator(sel)
+                        cnt = await locs.count()
+                        if cnt > 1:
+                            # Pass 1: first empty visible input (sequential fields)
+                            for i in range(cnt):
+                                loc = locs.nth(i)
+                                try:
+                                    if await loc.count() > 0 and await loc.is_visible():
+                                        v = await loc.input_value()
+                                        if not v:
+                                            return loc
+                                except Exception:
+                                    pass
+                        # Fall back: first visible input
+                        loc = locs.first
                         if await loc.count() > 0 and await loc.is_visible():
                             return loc
                     except Exception:
@@ -1158,6 +1173,64 @@ class BrowserAgent:
                 pages_before = len(self._context.pages)
 
                 el = None   # always initialise before the find call below
+
+                # ── Checkbox special handling ─────────────────────────────
+                # "Check the I accept the terms and conditions checkbox"
+                # Vue/custom checkboxes are not standard inputs — try several
+                # strategies: check() on the input, click the label, JS click.
+                if "checkbox" in target.lower():
+                    _cb_text = re.sub(r'\s*checkbox\s*$', '', target, flags=re.IGNORECASE).strip()
+                    _checked = False
+                    for frame in self._page.frames:
+                        if _checked:
+                            break
+                        # Strategy 1: get_by_label → .check()
+                        try:
+                            _loc = frame.get_by_label(re.compile(re.escape(_cb_text), re.IGNORECASE)).first
+                            if await _loc.count() > 0:
+                                await _loc.check(timeout=5000)
+                                _checked = True
+                                await self._log("success", f"  → Checked '{_cb_text}' (label)")
+                        except Exception:
+                            pass
+                        if _checked:
+                            break
+                        # Strategy 2: find input[type=checkbox] near matching text via JS
+                        try:
+                            result = await frame.evaluate("""
+                                (text) => {
+                                    const labels = Array.from(document.querySelectorAll('label'));
+                                    const lbl = labels.find(l => l.textContent.toLowerCase().includes(text.toLowerCase()));
+                                    if (lbl) { lbl.click(); return true; }
+                                    const spans = Array.from(document.querySelectorAll('span, div, p'));
+                                    const sp = spans.find(s => s.textContent.trim().toLowerCase().includes(text.toLowerCase()));
+                                    if (sp) {
+                                        const cb = sp.closest('label') || sp.querySelector('input[type=checkbox]') ||
+                                                   sp.parentElement && sp.parentElement.querySelector('input[type=checkbox]');
+                                        if (cb) { cb.click(); return true; }
+                                    }
+                                    return false;
+                                }
+                            """, _cb_text)
+                            if result:
+                                _checked = True
+                                await self._log("success", f"  → Checked '{_cb_text}' (JS label click)")
+                        except Exception:
+                            pass
+                        if _checked:
+                            break
+                        # Strategy 3: first visible checkbox on the page
+                        try:
+                            _loc = frame.locator("input[type='checkbox']").first
+                            if await _loc.count() > 0:
+                                await _loc.check(timeout=5000)
+                                _checked = True
+                                await self._log("success", f"  → Checked first checkbox on page")
+                        except Exception:
+                            pass
+                    if _checked:
+                        await step_shot("ok")
+                        return True
 
                 # Try primary target, then each alternative label
                 if el is None:

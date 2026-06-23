@@ -226,6 +226,16 @@ def _parse_step(raw_line: str) -> Dict[str, Any]:
        re.match(r"^note\s+the\b", lo):
         return {"action": "screenshot", "target": "note_value", "description": line}
 
+    # ── Check / tick a checkbox ───────────────────────────────────────────
+    # Must be tested BEFORE the generic verify block because "check" matches both.
+    # "Check the I accept the terms and conditions checkbox" → click the checkbox.
+    m = re.match(
+        r"^(?:check|tick|select|enable)\s+(?:the\s+)?(.+?)\s+checkbox\s*$",
+        line, re.IGNORECASE,
+    )
+    if m:
+        return {"action": "click", "target": m.group(1).strip() + " checkbox", "description": line}
+
     # ── Verify / Check ────────────────────────────────────────────────────
     if re.match(r"^(verify|check|assert|confirm|ensure)\b", lo):
         subject = re.sub(
