@@ -119,6 +119,20 @@ class EnvPayload(BaseModel):
 # Path to .env file
 _ENV_FILE = Path(__file__).parent.parent.parent.parent / ".env"
 
+# Per-flow env files live under DISK_FLOWS_DIR/env/
+_FLOW_ENV_DIR = settings.DISK_FLOWS_DIR / "env"
+
+
+def _flow_id_to_stem(flow_id: str) -> str:
+    """'json-flow/Tusass-TopUp-Talk' → 'Tusass-TopUp-Talk'"""
+    parts = flow_id.split("/", 1)
+    return parts[1] if len(parts) == 2 else flow_id
+
+
+class FlowEnvPayload(BaseModel):
+    flow_id: str
+    vars: List[EnvVar]
+
 
 @router.get("", response_model=List[DiskFlow])
 async def list_disk_flows(user: str = Depends(get_current_user)):
@@ -321,3 +335,41 @@ async def save_env(body: EnvPayload, user: str = Depends(get_current_user)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save .env: {e}")
     return {"ok": True, "count": len(used) + len(extras)}
+
+
+# ── Per-flow .env read/write ───────────────────────────────────────────────────
+
+@router.get("/flow-env", response_model=List[EnvVar])
+async def get_flow_env(flow_id: str, user: str = Depends(get_current_user)):
+    """Return the per-flow .env file as a list of {key, value} pairs."""
+    stem = _flow_id_to_stem(flow_id)
+    env_file = _FLOW_ENV_DIR / f"{stem}.env"
+    if not env_file.exists():
+        return []
+    vars_list = []
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if "=" in stripped:
+            k, _, v = stripped.partition("=")
+            vars_list.append(EnvVar(key=k.strip(), value=v.strip()))
+    return vars_list
+
+
+@router.put("/flow-env")
+async def save_flow_env(body: FlowEnvPayload, user: str = Depends(get_current_user)):
+    """Save per-flow env vars to DISK_FLOWS_DIR/env/<stem>.env"""
+    stem = _flow_id_to_stem(body.flow_id)
+    _FLOW_ENV_DIR.mkdir(parents=True, exist_ok=True)
+    env_file = _FLOW_ENV_DIR / f"{stem}.env"
+    lines = [f"# Per-flow env for {body.flow_id}", ""]
+    for v in body.vars:
+        if v.key.strip():
+            lines.append(f"{v.key.strip()}={v.value}")
+    lines.append("")
+    try:
+        env_file.write_text("\n".join(lines), encoding="utf-8")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save flow env: {e}")
+    return {"ok": True, "flow_id": body.flow_id, "file": env_file.name, "count": len(body.vars)}

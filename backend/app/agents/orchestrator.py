@@ -25,6 +25,34 @@ _cancelled_executions: Set[str] = set()
 _ENV_FILE = Path(__file__).parent.parent.parent / ".env"
 
 
+def _load_flow_env_file(flow_name: str) -> dict:
+    """
+    Load per-flow .env from DISK_FLOWS_DIR/env/<stem>.env.
+    Matches by normalizing both the filename stem and the flow name
+    (strips spaces/hyphens/underscores, case-insensitive) so
+    'Mobile-Data-Add.env' matches flow name 'Mobile Data Add'.
+    """
+    from app.core.config import settings
+    env_dir = settings.DISK_FLOWS_DIR / "env"
+    if not env_dir.exists():
+        return {}
+    norm_name = re.sub(r'[\s_\-]+', '', flow_name.strip().lower())
+    try:
+        for env_file in sorted(env_dir.glob("*.env")):
+            if re.sub(r'[\s_\-]+', '', env_file.stem.lower()) == norm_name:
+                result = {}
+                for line in env_file.read_text(encoding="utf-8").splitlines():
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, _, v = line.partition("=")
+                        if k.strip() and " " not in k.strip():
+                            result[k.strip().upper()] = v.strip()
+                return result
+    except Exception:
+        pass
+    return {}
+
+
 def _substitute_captured(text: str, captured: dict) -> str:
     """Replace ${VAR} placeholders with values extracted during the run."""
     for k, v in captured.items():
@@ -397,9 +425,14 @@ class Orchestrator:
 
             # ── Extract task steps (handles ALL JSON formats + natural language) ──
             raw_task = self.flow.task
-            # Use per-flow credentials if saved, otherwise fall back to global .env
+            # Explicit per-flow credentials saved in the flow record (UI-entered, highest priority)
             flow_env = dict(self.flow.env_vars) if self.flow.env_vars else {}
-            if flow_env:
+            # Load per-flow .env file — overrides global .env, explicit env_vars win over file
+            file_env = _load_flow_env_file(self.flow.name)
+            if file_env:
+                await self._log("info", f"📂 Per-flow env: {self.flow.name}.env ({len(file_env)} var(s))")
+                flow_env = {**file_env, **flow_env}
+            elif flow_env:
                 await self._log("info", f"🔑 Using flow-level credentials ({len(flow_env)} var(s))")
             steps_list = _extract_steps_from_task(raw_task, flow_env=flow_env)
 

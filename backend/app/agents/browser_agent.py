@@ -348,6 +348,40 @@ class BrowserAgent:
                     except Exception:
                         pass
 
+            # Card / expiry / CVV fields — no visibility check: these inputs are
+            # often inside styled card graphics or iframes and may not register
+            # as visible. Prefer the first EMPTY input so sequential card fields
+            # (card number → MM → YY → CVV) pick correctly without overwriting
+            # an already-filled field.
+            if any(w in tl for w in ["card", "last", "digit", "cvv", "cvc", "pin",
+                                      "mm", "yy", "month", "year", "expiry"]):
+                for sel in [
+                    "input[type='number']",
+                    "input[type='tel']",
+                    "input[type='text']",
+                    "input[type='password']",
+                    "input:not([type])",
+                ]:
+                    try:
+                        locs = frame.locator(sel)
+                        cnt = await locs.count()
+                        # Pass 1: first empty input (correct sequential field)
+                        for i in range(cnt):
+                            loc = locs.nth(i)
+                            try:
+                                if await loc.count() > 0:
+                                    v = await loc.input_value()
+                                    if not v:
+                                        return loc
+                            except Exception:
+                                pass
+                        # Pass 2: first input of any value (initial card number entry)
+                        loc = frame.locator(sel).first
+                        if await loc.count() > 0:
+                            return loc
+                    except Exception:
+                        pass
+
         return None
 
     # ── Primary action button finder (submit/order/activate) ─────────────────
@@ -903,6 +937,10 @@ class BrowserAgent:
 
         try:
             if action == "navigate":
+                # Substitute flow-env and captured vars (e.g. ${PORTAL_URL})
+                if "${" in target:
+                    for k, v in {**self._flow_env, **self._captured_vars}.items():
+                        target = target.replace(f"${{{k}}}", str(v))
                 url = target if target.startswith("http") else f"https://{target}"
 
                 # If current page is already at this URL (same-document hash change),
@@ -1367,7 +1405,11 @@ class BrowserAgent:
                         try:
                             clicked_js = await self._page.evaluate(f"""
                                 (tgt) => {{
-                                    const all = [...document.querySelectorAll('a, button, [role="button"], span, li, div')];
+                                    // Include label + checkbox so "I accept..." steps work
+                                    const all = [...document.querySelectorAll(
+                                        'a, button, [role="button"], label, span, li, div, ' +
+                                        'input[type="checkbox"], input[type="radio"]'
+                                    )];
                                     // Prefer exact match first, then partial
                                     const el = all.find(e => e.textContent.trim().toLowerCase() === tgt)
                                             || all.find(e => e.textContent.trim().toLowerCase().includes(tgt));
@@ -1428,6 +1470,83 @@ class BrowserAgent:
                                     if clicked_primary:
                                         await step_shot("ok")
                                         return True
+                                # Checkbox fallback — triggers when target text mentions
+                                # acceptance/terms (e.g. "I accept the terms and conditions")
+                                # and no element was found because the label text is split
+                                # across a plain-text node + an <a> link child, so Playwright
+                                # text matchers cannot match the full combined string.
+                                # Strategy: click the first visible unchecked checkbox on the
+                                # page, then fall back to any visible checkbox (to handle
+                                # pre-checked state) rather than failing the step.
+                                _CHECKBOX_KW = ("accept", "terms", "condition", "tick", "agree", "consent")
+                                if any(w in target.lower() for w in _CHECKBOX_KW):
+                                    _cb_clicked = False
+                                    for _frame in self._page.frames:
+                                        if _cb_clicked:
+                                            break
+                                        try:
+                                            # Pass 1: visible native checkbox (standard HTML)
+                                            for _cb_sel in [
+                                                "input[type='checkbox']:not(:checked)",
+                                                "input[type='checkbox']",
+                                                "[role='checkbox'][aria-checked='false']",
+                                                "[role='checkbox']",
+                                            ]:
+                                                _cb = _frame.locator(_cb_sel).first
+                                                if await _cb.count() > 0 and await _cb.is_visible():
+                                                    await _cb.click()
+                                                    await self._log("success", f"  → Clicked checkbox for '{target}'")
+                                                    _cb_clicked = True
+                                                    break
+                                            if _cb_clicked:
+                                                break
+                                            # Pass 2: Vuesax / hidden native checkbox — click via JS
+                                            # Also handles [role="checkbox"], custom div/span checkboxes,
+                                            # and labels whose text contains acceptance/terms keywords.
+                                            _cb_js = await _frame.evaluate("""
+                                                (tgt) => {
+                                                    const norm = s => s.trim().toLowerCase();
+                                                    // Native input[type=checkbox]
+                                                    const cb = document.querySelector(
+                                                        'input[type="checkbox"]:not(:checked)'
+                                                    ) || document.querySelector('input[type="checkbox"]');
+                                                    if (cb) {
+                                                        const wrapper = cb.closest(
+                                                            '.vs-checkbox-con, .vs-checkbox, [class*="checkbox"]'
+                                                        ) || cb.parentElement;
+                                                        if (wrapper) { wrapper.click(); return true; }
+                                                        cb.click();
+                                                        return true;
+                                                    }
+                                                    // ARIA role=checkbox
+                                                    const ariaChk = document.querySelector(
+                                                        '[role="checkbox"][aria-checked="false"]'
+                                                    ) || document.querySelector('[role="checkbox"]');
+                                                    if (ariaChk) { ariaChk.click(); return true; }
+                                                    // Label whose text contains terms/accept keywords
+                                                    const kws = ['accept', 'terms', 'condition', 'agree'];
+                                                    const labels = [...document.querySelectorAll(
+                                                        'label, .checkbox-label, [class*="check"], span, div'
+                                                    )];
+                                                    for (const kw of kws) {
+                                                        const el = labels.find(l => {
+                                                            const r = l.getBoundingClientRect();
+                                                            return r.width > 0 && r.height > 0
+                                                                && norm(l.textContent).includes(kw);
+                                                        });
+                                                        if (el) { el.click(); return true; }
+                                                    }
+                                                    return false;
+                                                }
+                                            """, target.lower())
+                                            if _cb_js:
+                                                await self._log("success", f"  → Clicked checkbox via JS for '{target}'")
+                                                _cb_clicked = True
+                                        except Exception:
+                                            pass
+                                    if _cb_clicked:
+                                        await step_shot("ok")
+                                        return True
                                 # Final resort: vision agent
                                 vision_el = await self._vision_find(target)
                                 if vision_el:
@@ -1455,6 +1574,61 @@ class BrowserAgent:
                                     if clicked_primary:
                                         await step_shot("ok")
                                         return True
+                                _CHECKBOX_KW = ("accept", "terms", "condition", "tick", "agree", "consent")
+                                if any(w in target.lower() for w in _CHECKBOX_KW):
+                                    for _frame in self._page.frames:
+                                        try:
+                                            for _cb_sel in [
+                                                "input[type='checkbox']:not(:checked)",
+                                                "input[type='checkbox']",
+                                                "[role='checkbox'][aria-checked='false']",
+                                                "[role='checkbox']",
+                                            ]:
+                                                _cb = _frame.locator(_cb_sel).first
+                                                if await _cb.count() > 0 and await _cb.is_visible():
+                                                    await _cb.click()
+                                                    await self._log("success", f"  → Clicked checkbox for '{target}'")
+                                                    await step_shot("ok")
+                                                    return True
+                                            # JS fallback for hidden/custom checkboxes
+                                            _cb_js2 = await _frame.evaluate("""
+                                                (tgt) => {
+                                                    const norm = s => s.trim().toLowerCase();
+                                                    const cb = document.querySelector(
+                                                        'input[type="checkbox"]:not(:checked)'
+                                                    ) || document.querySelector('input[type="checkbox"]');
+                                                    if (cb) {
+                                                        const wrapper = cb.closest(
+                                                            '.vs-checkbox-con, .vs-checkbox, [class*="checkbox"]'
+                                                        ) || cb.parentElement;
+                                                        if (wrapper) { wrapper.click(); return true; }
+                                                        cb.click(); return true;
+                                                    }
+                                                    const ariaChk = document.querySelector(
+                                                        '[role="checkbox"][aria-checked="false"]'
+                                                    ) || document.querySelector('[role="checkbox"]');
+                                                    if (ariaChk) { ariaChk.click(); return true; }
+                                                    const kws = ['accept', 'terms', 'condition', 'agree'];
+                                                    const labels = [...document.querySelectorAll(
+                                                        'label, .checkbox-label, [class*="check"], span, div'
+                                                    )];
+                                                    for (const kw of kws) {
+                                                        const el = labels.find(l => {
+                                                            const r = l.getBoundingClientRect();
+                                                            return r.width > 0 && r.height > 0
+                                                                && norm(l.textContent).includes(kw);
+                                                        });
+                                                        if (el) { el.click(); return true; }
+                                                    }
+                                                    return false;
+                                                }
+                                            """, target.lower())
+                                            if _cb_js2:
+                                                await self._log("success", f"  → Clicked checkbox via JS for '{target}'")
+                                                await step_shot("ok")
+                                                return True
+                                        except Exception:
+                                            pass
                                 vision_el = await self._vision_find(target)
                                 if vision_el:
                                     await self._log("info", f"  👁 Vision agent clicking '{target}'")
@@ -1482,9 +1656,9 @@ class BrowserAgent:
 
                 fill_val = value if value else target
 
-                # Substitute captured vars (e.g. ${SUBSCRIBER_EXTERNAL_ID} from extract step)
+                # Substitute flow-env vars (e.g. ${SMS}, ${PHONE_MOBILE_NUMBER}) then captured vars
                 if "${" in fill_val:
-                    for k, v in self._captured_vars.items():
+                    for k, v in {**self._flow_env, **self._captured_vars}.items():
                         fill_val = fill_val.replace(f"${{{k}}}", str(v))
 
                 # If the LLM produced a descriptive phrase instead of a bare value
@@ -1583,8 +1757,11 @@ class BrowserAgent:
                             )
                         except Exception:
                             pass
-                        # For card fields: Tab to next field + pause so DIBS JS validates
-                        if _is_card_field(target):
+                        # Tab after card NUMBER only to trigger DIBS JS validation.
+                        # Do NOT Tab after MM/YY/CVV — payment iframes handle their
+                        # own auto-advance and an extra Tab resets the form.
+                        _SKIP_TAB_KW = {"mm", "yy", "month", "year", "cvv", "cvd", "cvc", "expiry"}
+                        if _is_card_field(target) and not any(k in target.lower() for k in _SKIP_TAB_KW):
                             await asyncio.sleep(0.3)
                             await self._page.keyboard.press("Tab")
                             await asyncio.sleep(0.5)
@@ -1615,7 +1792,8 @@ class BrowserAgent:
                                                 )
                                             except Exception:
                                                 pass
-                                            if _is_card_field(target):
+                                            _SKIP_TAB_KW2 = {"mm", "yy", "month", "year", "cvv", "cvd", "cvc", "expiry"}
+                                            if _is_card_field(target) and not any(k in target.lower() for k in _SKIP_TAB_KW2):
                                                 await asyncio.sleep(0.5)
                                                 await self._page.keyboard.press("Tab")
                                                 await asyncio.sleep(1.0)
@@ -1680,6 +1858,51 @@ class BrowserAgent:
                             return True
                     except Exception:
                         pass
+
+                    # ── Nuclear fallback: card / number / digit confirmation fields ──────
+                    # Card confirmation inputs often have a default placeholder value
+                    # ("0000") or are inside styled card graphics, causing all earlier
+                    # passes to skip them.  This JS pass finds the first input with a
+                    # non-zero bounding box, clears it, and fills regardless of current value.
+                    # Only fires for targets that look like a number/card/PIN entry.
+                    _NUM_KW = ("number", "card", "digit", "last", "pin", "cvv", "cvc", "code")
+                    if any(w in target.lower() for w in _NUM_KW):
+                        for _nf in self._page.frames:
+                            try:
+                                _ok = await _nf.evaluate("""
+                                    (val) => {
+                                        const SKIP = new Set(['checkbox','radio','hidden','submit','button','file','image','reset']);
+                                        const inputs = [...document.querySelectorAll('input')].filter(el => {
+                                            if (SKIP.has((el.type || '').toLowerCase())) return false;
+                                            const r = el.getBoundingClientRect();
+                                            return r.width > 0 && r.height > 0;
+                                        });
+                                        if (!inputs.length) return false;
+                                        const inp = inputs[0];
+                                        inp.focus();
+                                        inp.click();
+                                        try {
+                                            const set = Object.getOwnPropertyDescriptor(
+                                                HTMLInputElement.prototype, 'value'
+                                            ).set;
+                                            set.call(inp, '');        // clear first
+                                            set.call(inp, val);
+                                        } catch(e) {
+                                            inp.value = val;
+                                        }
+                                        inp.dispatchEvent(new Event('input',  {bubbles:true}));
+                                        inp.dispatchEvent(new Event('change', {bubbles:true}));
+                                        inp.dispatchEvent(new Event('blur',   {bubbles:true}));
+                                        return true;
+                                    }
+                                """, str(fill_val))
+                                if _ok:
+                                    await self._log("success",
+                                        f"  → Typed '{fill_val}' via nuclear JS (card/number field)")
+                                    return True
+                            except Exception:
+                                pass
+
                     return False
 
                 # First attempt
@@ -1701,8 +1924,9 @@ class BrowserAgent:
                     await self._log("info", f"  → Optional type skipped ('{target}' not present)")
                     await step_shot("ok")
                     return True
-                elif await self._already_authenticated():
-                    # No input found but page is authenticated — credentials already submitted
+                elif self._is_credential_field(target) and await self._already_authenticated():
+                    # Only skip credential fields (email/password/username) when already authenticated.
+                    # Non-credential fields (card digits, PIN, etc.) must fail explicitly, not be silently skipped.
                     await self._log("info", f"  → Already logged in — skipping type '{target}'")
                     await step_shot("ok")
                 else:

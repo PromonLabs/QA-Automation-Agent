@@ -117,6 +117,11 @@ def _parse_step(raw_line: str) -> Dict[str, Any]:
     if re.match(r"^give\s+the\s+report\b", lo) or re.match(r"^\s*report\s*$", lo):
         return {"action": "skip", "target": "", "description": line}
 
+    # ── "Navigate to X" → always navigate (handles ${VAR} placeholders too) ──
+    m = re.match(r"^navigate\s+to\s+(.+)$", line, re.IGNORECASE)
+    if m:
+        return {"action": "navigate", "target": m.group(1).strip(), "description": line}
+
     # ── URL → always navigate ─────────────────────────────────────────────
     url_m = re.search(r"https?://[^\s,)\"\']+", line)
     if url_m:
@@ -452,15 +457,16 @@ def _parse_step(raw_line: str) -> Dict[str, Any]:
 
     # ── Click the X button / Click button labeled X / Click X or Y ───────
     m = re.match(
-        r"^click\s+(?:the\s+)?(?:button\s+(?:labeled\s+)?|on\s+)?(.+?)(?:\s+button)?$",
+        r"^click\s+(?:the\s+)?(?:(?:button|checkbox|radio|link)\s+(?:labeled\s+)?|on\s+)?(.+?)(?:\s+button)?$",
         line,
         re.IGNORECASE,
     )
     if m:
-        label = _strip_quotes(m.group(1).strip())
+        label = m.group(1).strip().rstrip(".,;:")   # strip trailing sentence punctuation first
+        label = _strip_quotes(label)                # then strip surrounding quotes
         # Handle "Login or Sign In" → multiple options
         if re.search(r"\s+or\s+", label, re.IGNORECASE):
-            parts = [_strip_quotes(p.strip()) for p in re.split(r"\s+or\s+", label)]
+            parts = [_strip_quotes(p.strip().rstrip(".,;:")) for p in re.split(r"\s+or\s+", label)]
             return {"action": "click", "target": parts[0], "alternatives": parts[1:], "description": line}
         return {"action": "click", "target": label, "description": line}
 

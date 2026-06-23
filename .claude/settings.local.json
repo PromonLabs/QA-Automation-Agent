@@ -96,7 +96,8 @@
       "Bash(sort -t' ' -k6 -r)",
       "Bash(Measure-Object)",
       "Bash(Select-Object -ExpandProperty Count)",
-      "PowerShell(Get-WmiObject *)"
+      "PowerShell(Get-WmiObject *)",
+      "Bash(python3 *)"
     ]
   }
 }
