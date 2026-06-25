@@ -460,6 +460,20 @@ def _parse_step(raw_line: str) -> Dict[str, Any]:
         target_val = m.group(1).strip() if m else "COMPLETED"
         return {"action": "refresh_until", "target": target_val, "description": line}
 
+    # ── "Click the second/third/fourth/... X" → click Nth item in list ───
+    _ORD_MAP = {
+        "second": 1, "third": 2, "fourth": 3, "fifth": 4,
+        "sixth": 5, "seventh": 6, "eighth": 7, "ninth": 8, "tenth": 9,
+    }
+    _ord_pat = "|".join(_ORD_MAP.keys())
+    m = re.match(
+        r"^click\s+(?:the\s+)?(" + _ord_pat + r")\s+(.+?)(?:\s+button)?$",
+        line, re.IGNORECASE,
+    )
+    if m:
+        idx = _ORD_MAP[m.group(1).lower()]
+        return {"action": "click_nth_row", "target": m.group(2).strip(), "index": idx, "description": line}
+
     # ── "Click first X" → click first visible row/link in table ──────────
     m = re.match(r"^click\s+(?:the\s+)?first\s+(.+?)$", line, re.IGNORECASE)
     if m:

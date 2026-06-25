@@ -6,8 +6,10 @@
     "Wait 3000ms",
     "Click the Mobile 100 button",
     "Wait 3000ms",
+    "Click Next ",
     "In the phone number field, enter ${PHONE_MOBILE_NUMBER}",
     "In the verify mobile number field, enter ${PHONE_MOBILE_NUMBER}",
+    "Take the screenshot of that page and save it as - number-fill.png -",
     "Click Next",
     "Wait 3000ms",
     "In the input number field, enter ${SMS}",
@@ -25,8 +27,9 @@
     "Click Next",
     "Wait 3000ms",
     "In the last 4 digits field, enter ${LAST_CARD}",
+    "Take the screenshot of that page and save it as - payment.png -",
     "Click Next",
     "Wait 5000ms",
-    "Take a screenshot"
+    "Take the screenshot of that page and save it as - receipt.png -"
   ]
 }

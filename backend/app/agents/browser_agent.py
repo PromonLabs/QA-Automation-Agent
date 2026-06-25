@@ -639,7 +639,17 @@ class BrowserAgent:
                 any(k in url for k in ("/login", "/signin", "/auth"))
                 or any(k in body for k in login_kw)
             )
-            return not on_login_page
+            if on_login_page:
+                return False
+            # Most reliable check: a visible password input means we are on a login page
+            for frame in self._page.frames:
+                try:
+                    pwd = frame.locator("input[type='password']").first
+                    if await pwd.count() > 0 and await pwd.is_visible():
+                        return False
+                except Exception:
+                    pass
+            return True
         except Exception:
             return False
 
@@ -2663,6 +2673,82 @@ class BrowserAgent:
                     await step_shot("FAIL")
                     return False
 
+            elif action == "click_nth_row":
+                # Click the Nth item in a phone-number list or table row.
+                # index from step dict is 0-based (second=1, third=2, ...).
+                nth_idx = step.get("index", 1)
+                clicked = False
+                pages_before = len(self._context.pages)
+
+                # Phone-number button grid — find all phone-like buttons, pick index nth_idx
+                phone_text = None
+                try:
+                    phone_text = await self._page.evaluate(
+                        """(idx) => {
+                            const allBtns = [...document.querySelectorAll(
+                                'button, [role="button"], li, div, span, a'
+                            )];
+                            const phoneBtns = allBtns.filter(el => {
+                                const t = el.textContent.trim();
+                                const r = el.getBoundingClientRect();
+                                return /^[\\d\\s]{5,15}$/.test(t) && /\\d{2,}/.test(t)
+                                    && r.width > 0 && r.height > 0;
+                            });
+                            return phoneBtns[idx] ? phoneBtns[idx].textContent.trim() : null;
+                        }""",
+                        nth_idx,
+                    )
+                except Exception:
+                    pass
+                if phone_text:
+                    import re as _re
+                    try:
+                        loc = self._page.get_by_text(
+                            _re.compile(_re.escape(phone_text), _re.I), exact=True
+                        ).first
+                        if await loc.count() > 0:
+                            await loc.click(timeout=5000)
+                            clicked = True
+                            await self._log("success", f"  → Clicked phone number '{phone_text}' (position {nth_idx + 1})")
+                            await self._maybe_switch_new_tab(pages_before)
+                    except Exception:
+                        pass
+
+                # CSS nth-child fallback for table rows
+                if not clicked:
+                    css_n = nth_idx + 2  # nth_idx=1(second) → nth-child(3) skipping header
+                    for frame in self._page.frames:
+                        if clicked:
+                            break
+                        for sel in [
+                            f"table tbody tr:nth-child({nth_idx + 1}) td a",
+                            f"table tbody tr:nth-child({nth_idx + 1}) a",
+                            f"table tr:nth-child({css_n}) td a",
+                            f"table tr:nth-child({css_n}) td:first-child",
+                            f"[role='row']:nth-child({css_n}) [role='cell']:first-child",
+                        ]:
+                            try:
+                                loc = frame.locator(sel).first
+                                if await loc.count() > 0 and await loc.is_visible():
+                                    await loc.click(timeout=8000)
+                                    clicked = True
+                                    await self._log("success", f"  → Clicked row {nth_idx + 1} ({sel})")
+                                    await self._maybe_switch_new_tab(pages_before)
+                                    break
+                            except Exception:
+                                pass
+
+                if clicked:
+                    try:
+                        await self._page.wait_for_load_state("networkidle", timeout=5000)
+                    except Exception:
+                        pass
+                    await step_shot("ok")
+                else:
+                    await self._log("error", f"  ✗ STEP FAILED — position {nth_idx + 1} not found on page")
+                    await step_shot("FAIL")
+                    return False
+
             elif action == "refresh_until":
                 # Poll: click the page's refresh icon (if present) or full reload,
                 # wait 30 s, check for target text OR green-coloured status elements.
@@ -2814,12 +2900,12 @@ class BrowserAgent:
 
                             # ── Pass 2: table column (inventory/search result pages) ──
                             # Finds the column index of "External Id" / "ICCID" / "ICC"
-                            # in the table header, then reads the first data row cell.
-                            js_val = await self._page.evaluate("""
-                                () => {
+                            # then reads the row specified by ICC_ROW (1-based, default 1).
+                            _icc_row = int(self._flow_env.get("ICC_ROW", 1))
+                            js_val = await self._page.evaluate(
+                                """(rowIdx) => {
                                     const COL_KEYWORDS = ['external id','iccid','icc id','sim id','external'];
                                     function normTxt(el) { return el.textContent.trim().toLowerCase(); }
-                                    // Try every table on the page
                                     for (const tbl of document.querySelectorAll('table')) {
                                         const headers = [...tbl.querySelectorAll('th')];
                                         let colIdx = -1;
@@ -2830,19 +2916,26 @@ class BrowserAgent:
                                             }
                                         }
                                         if (colIdx < 0) continue;
-                                        // First data row in that column
+                                        // Collect all valid ICCID cells in this column
                                         const rows = tbl.querySelectorAll('tbody tr');
+                                        const matches = [];
                                         for (const row of rows) {
                                             const cells = row.querySelectorAll('td');
                                             const cell = cells[colIdx];
                                             if (!cell) continue;
                                             const txt = cell.textContent.trim().replace(/\\s+/g, '');
-                                            if (/^\\d{8,}$/.test(txt)) return txt;
+                                            if (/^\\d{8,}$/.test(txt)) matches.push(txt);
+                                        }
+                                        // rowIdx is 1-based; fall back to last row if out of range
+                                        if (matches.length > 0) {
+                                            const pick = Math.min(rowIdx, matches.length) - 1;
+                                            return matches[pick];
                                         }
                                     }
                                     return null;
-                                }
-                            """)
+                                }""",
+                                _icc_row,
+                            )
                             if js_val:
                                 val = str(js_val).strip()
                                 break

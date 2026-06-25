@@ -188,6 +188,14 @@ async def _run_one_item(bulk_id: str, idx: int, shared_browser=None, shared_cont
 
         bulk_env = _load_bulk_env()
         env_vars = {**bulk_env, **item.get("env_vars", {})}
+        # Each bulk item gets a different ICC and phone row so repeated runs don't
+        # hit "reserved" errors on the same ID/number. Row = 1-based item index.
+        _ORDINALS = ["first", "second", "third", "fourth", "fifth",
+                     "sixth", "seventh", "eighth", "ninth", "tenth"]
+        if "ICC_ROW" not in env_vars:
+            env_vars["ICC_ROW"] = str(idx + 1)
+        if "PHONE_ROW" not in env_vars:
+            env_vars["PHONE_ROW"] = _ORDINALS[min(idx, len(_ORDINALS) - 1)]
         label = item.get("label") or item["number"]
 
         payload = {
