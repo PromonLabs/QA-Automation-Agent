@@ -295,7 +295,7 @@ async def get_env(user: str = Depends(get_current_user)):
 
 
 _ENV_SECTIONS = [
-    ("Platform Settings",             ["SCREENSHOT_MODE","SKIP_LLM","BROWSER_HEADLESS","BROWSER_SLOW_MO","BROWSER_NAVIGATION_TIMEOUT"]),
+    ("Platform Settings",             ["SCREENSHOT_MODE","SKIP_LLM","BROWSER_HEADLESS","BROWSER_SLOW_MO","BROWSER_NAVIGATION_TIMEOUT","LLM_PROVIDER","LLM_MODEL","VISION_MODEL","CLAUDE_MODEL","ANTHROPIC_API_KEY"]),
     ("Shared Admin Credentials",       ["ADMIN_USER","ADMIN_PASS","ADMIN_EMAIL","ADMIN_PASSWORD","OPERATIONS_USER","OPERATIONS_PASS"]),
     ("Flow 1 : New Account Creation",  ["ICC_URL","CSR_USER","CSR_PASSWORD","ACCOUNT_NUMBER","MSITCOS_URL"]),
     ("Flow 2 : Tusass TopUp Talk",     ["COS_URL","PORTAL_URL","MISTIN_ID","PHONE_NUMBER","MOBILE_NUMBER","TOPUP_AMOUNT"]),

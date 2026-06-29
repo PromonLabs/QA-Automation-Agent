@@ -19,7 +19,7 @@ const SECTIONS = [
     title: "Platform Settings",
     subtitle: "Browser behaviour, LLM and screenshot options",
     icon: <Settings2 className="w-5 h-5" />,
-    keys: ["SCREENSHOT_MODE","SKIP_LLM","BROWSER_HEADLESS","BROWSER_SLOW_MO","BROWSER_NAVIGATION_TIMEOUT"],
+    keys: ["SCREENSHOT_MODE","SKIP_LLM","BROWSER_HEADLESS","BROWSER_SLOW_MO","BROWSER_NAVIGATION_TIMEOUT","LLM_PROVIDER","LLM_MODEL","VISION_MODEL","CLAUDE_MODEL","ANTHROPIC_API_KEY"],
   },
   {
     id: "admin",

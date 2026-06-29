@@ -98,7 +98,10 @@
       "Bash(Select-Object -ExpandProperty Count)",
       "PowerShell(Get-WmiObject *)",
       "Bash(python3 *)",
-      "Bash(py --version)"
+      "Bash(py --version)",
+      "PowerShell(C:\\\\Users\\\\Sandhosh\\\\AppData\\\\Roaming\\\\npm\\\\agent-browser.cmd --help)",
+      "PowerShell(C:\\\\Users\\\\Sandhosh\\\\AppData\\\\Roaming\\\\npm\\\\agent-browser.cmd --headed chat \"open google.com, take a screenshot and save it as google-home.png, then search for chatgpt, wait for results, take a screenshot and save it as search-result.png\")",
+      "PowerShell(ollama list *)"
     ]
   }
 }
