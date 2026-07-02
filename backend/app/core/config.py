@@ -36,8 +36,8 @@ class Settings:
 
     # Ollama / LLM
     OLLAMA_HOST: str = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-    LLM_MODEL: str = os.getenv("LLM_MODEL", "qwen2.5:14b")          # text: flow parsing (Ollama)
-    VISION_MODEL: str = os.getenv("VISION_MODEL", "qwen2.5vl:latest") # vision: screen agent
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "qwen3-vl:32b")          # text: flow parsing (Ollama)
+    VISION_MODEL: str = os.getenv("VISION_MODEL", "qwen3-vl:32b") # vision: screen agent
     LLM_TIMEOUT: int = int(os.getenv("LLM_TIMEOUT", "120"))
 
     # Agent toggles — set in .env to control which agents are active

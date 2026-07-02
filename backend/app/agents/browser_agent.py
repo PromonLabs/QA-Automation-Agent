@@ -462,10 +462,10 @@ class BrowserAgent:
                 pass
         return False
 
-    # ── Vision fallback: qwen2.5vl finds element from screenshot ─────────────
+    # ── Vision fallback: qwen3-vl finds element from screenshot ──────────────
     async def _vision_find(self, description: str):
         """
-        Take a viewport screenshot and ask qwen2.5vl to locate the element.
+        Take a viewport screenshot and ask qwen3-vl to locate the element.
         Returns a Playwright locator (by text or coordinates) or None.
         """
         if not self._page or not settings.USE_VISION_AGENT:

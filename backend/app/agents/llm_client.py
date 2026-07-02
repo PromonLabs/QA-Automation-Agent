@@ -135,6 +135,10 @@ def _parse_step(raw_line: str) -> Dict[str, Any]:
     if re.search(r'\bcontact\s+name\b|\bexisting\s+contact\b|\bvisible\s+contact\b', lo):
         return {"action": "click_existing_contact", "target": "", "description": line}
 
+    # ── "Click the Pay button" → use specific XPath ──────────────────────
+    if re.search(r'\bpay\s+button\b|\bclick\s+pay\b', lo):
+        return {"action": "click", "target": '//*[@id="total-field"]', "description": line}
+
     # ── XPath / CSS selector click ────────────────────────────────────────
     # "Click xpath //EXPR"  or  "Click #id"  or  "Click //*[...]"
     m = re.match(r"^click\s+xpath\s+(.+)$", lo)
@@ -703,7 +707,7 @@ llm_client = LLMClient()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Vision Client  —  qwen2.5vl:latest  (screen agent / element finder)
+# Vision Client  —  qwen3-vl:32b  (screen agent / element finder)
 # ─────────────────────────────────────────────────────────────────────────────
 
 _VISION_PROMPT = """You are a browser automation vision assistant.

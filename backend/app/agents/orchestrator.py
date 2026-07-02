@@ -360,6 +360,9 @@ def _extract_steps_from_task(raw_task: str, flow_env: Optional[dict] = None) -> 
     result = []
     for step in raw_steps:
         step = _substitute_env_vars(step, flow_env=flow_env)
+        # Strip trailing parenthetical annotations like "(all digits, do not truncate)"
+        # so they are never typed literally into browser fields.
+        step = re.sub(r'\s*\([^)]{3,120}\)\s*$', '', step).strip()
         if _is_screenshot_step(step):
             continue   # dropped — no screenshots; final state captured automatically
         if step and (len(step) > 3 or step.strip().upper() == "SS"):

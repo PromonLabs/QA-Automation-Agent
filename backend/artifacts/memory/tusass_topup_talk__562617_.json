@@ -79,8 +79,13 @@
       "step": "19 step(s) skipped — target site unreachable",
       "error": "19 step(s) skipped — target site unreachable",
       "at": "2026-06-26T10:14:53.536676+00:00"
+    },
+    {
+      "step": "12 step(s) skipped — target site unreachable",
+      "error": "12 step(s) skipped — target site unreachable",
+      "at": "2026-06-29T06:04:54.925828+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk [562617]",
-  "updated_at": "2026-06-26T10:14:53.537292+00:00"
+  "updated_at": "2026-06-29T06:04:54.927333+00:00"
 }

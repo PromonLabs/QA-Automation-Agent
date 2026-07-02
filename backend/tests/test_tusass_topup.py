@@ -49,8 +49,10 @@ MISTIN_ID    = os.getenv("MISTIN_ID",    "236619")
 PHONE_NUMBER = os.getenv("PHONE_NUMBER", "236619")
 TOPUP_AMOUNT = os.getenv("TOPUP_AMOUNT", "50")
 CARD_NUMBER  = os.getenv("CARD_NUMBER",  "1000000000000008")
-CARD_EXPIRY  = os.getenv("CARD_EXPIRY",  "11/28")
-CARD_CVC     = os.getenv("CARD_CVC",     "121")
+CARD_MONTH   = os.getenv("CARD_MONTH",   "01")
+CARD_YEAR    = os.getenv("CARD_YEAR",    "06")
+CARD_EXPIRY  = f"{CARD_MONTH}/{CARD_YEAR}"
+CARD_CVC     = os.getenv("CARD_CVV",     os.getenv("CARD_CVC", "123"))
 HEADLESS     = os.getenv("HEADLESS",     "false").lower() == "true"
 MAX_RUNS     = int(os.getenv("MAX_RUNS", "10"))
 
@@ -231,32 +233,39 @@ def _make_plan(run_num: int) -> dict:
         {
             "step_number": 24,
             "action": "type",
-            "target": "expiry",
-            "value": CARD_EXPIRY,
-            "description": f"Enter card expiry: {CARD_EXPIRY}",
+            "target": "MM",
+            "value": CARD_MONTH,
+            "description": f"Enter card expiry month: {CARD_MONTH}",
         },
         {
             "step_number": 25,
+            "action": "type",
+            "target": "YY",
+            "value": CARD_YEAR,
+            "description": f"Enter card expiry year: {CARD_YEAR}",
+        },
+        {
+            "step_number": 26,
             "action": "type",
             "target": "cvv",
             "value": CARD_CVC,
             "description": f"Enter CVV: {CARD_CVC}",
         },
         {
-            "step_number": 26,
+            "step_number": 27,
             "action": "click",
             "target": "Pay",
             "alternatives": ["Submit", "Complete Payment", "Confirm Payment", "Pay now"],
             "description": "Click Pay button",
         },
         {
-            "step_number": 27,
+            "step_number": 28,
             "action": "wait",
             "target": "3000",
             "description": "Wait for payment to process",
         },
         {
-            "step_number": 28,
+            "step_number": 29,
             "action": "click",
             "target": "No, thanks",
             "alternatives": ["Cancel", "Close", "Skip", "Dismiss", "No thanks"],
@@ -264,7 +273,7 @@ def _make_plan(run_num: int) -> dict:
             "optional": True,
         },
         {
-            "step_number": 29,
+            "step_number": 30,
             "action": "screenshot",
             "target": "receipt.png",
             "description": "Screenshot: payment receipt page",
@@ -272,26 +281,26 @@ def _make_plan(run_num: int) -> dict:
 
         # ── Part 4: Return to COS — verify updated balance ────────────────────
         {
-            "step_number": 30,
+            "step_number": 31,
             "action": "navigate",
             "target": COS_URL,
             "description": "Return to COS Admin Portal to verify balance",
         },
         {
-            "step_number": 31,
+            "step_number": 32,
             "action": "search",
             "target": "search",
             "value": MISTIN_ID,
             "description": f"Search for customer {MISTIN_ID} (post-TopUp verification)",
         },
         {
-            "step_number": 32,
+            "step_number": 33,
             "action": "screenshot",
             "target": "updated-balance.png",
             "description": "Screenshot: updated balance after TopUp",
         },
         {
-            "step_number": 33,
+            "step_number": 34,
             "action": "verify",
             "target": MISTIN_ID,
             "description": f"Verify customer {MISTIN_ID} is visible on balance page",

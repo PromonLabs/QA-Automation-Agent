@@ -64,8 +64,28 @@
       "step": "19 step(s) skipped — target site unreachable",
       "error": "19 step(s) skipped — target site unreachable",
       "at": "2026-06-26T10:14:49.656001+00:00"
+    },
+    {
+      "step": "19 step(s) skipped — target site unreachable",
+      "error": "19 step(s) skipped — target site unreachable",
+      "at": "2026-06-29T06:04:32.586517+00:00"
+    },
+    {
+      "step": "12 step(s) skipped — target site unreachable",
+      "error": "12 step(s) skipped — target site unreachable",
+      "at": "2026-06-29T08:25:23.636882+00:00"
+    },
+    {
+      "step": "Step 18 failed: In the phone number field, enter 230026",
+      "error": "Step 18 failed: In the phone number field, enter 230026",
+      "at": "2026-07-01T06:04:35.920813+00:00"
+    },
+    {
+      "step": "12 step(s) skipped — target site unreachable",
+      "error": "12 step(s) skipped — target site unreachable",
+      "at": "2026-07-01T06:15:07.289691+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk [230026]",
-  "updated_at": "2026-06-26T10:14:49.658373+00:00"
+  "updated_at": "2026-07-01T06:15:07.290145+00:00"
 }

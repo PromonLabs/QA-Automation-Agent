@@ -59,8 +59,13 @@
       "step": "Step 33 failed: Click the Pay button",
       "error": "Step 33 failed: Click the Pay button",
       "at": "2026-06-23T06:01:09.667719+00:00"
+    },
+    {
+      "step": "Step 2 failed: Click the login button",
+      "error": "Step 2 failed: Click the login button",
+      "at": "2026-07-01T11:33:02.143436+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk",
-  "updated_at": "2026-06-23T06:01:09.668575+00:00"
+  "updated_at": "2026-07-01T11:33:02.144158+00:00"
 }

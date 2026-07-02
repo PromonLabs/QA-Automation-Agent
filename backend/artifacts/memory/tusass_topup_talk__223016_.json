@@ -54,8 +54,18 @@
       "step": "Step 20 failed: Select amount 50",
       "error": "Step 20 failed: Select amount 50",
       "at": "2026-06-18T08:40:53.210435+00:00"
+    },
+    {
+      "step": "12 step(s) skipped — target site unreachable",
+      "error": "12 step(s) skipped — target site unreachable",
+      "at": "2026-07-01T06:15:19.537756+00:00"
+    },
+    {
+      "step": "19 step(s) skipped — target site unreachable",
+      "error": "19 step(s) skipped — target site unreachable",
+      "at": "2026-07-02T05:43:37.211917+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk [223016]",
-  "updated_at": "2026-06-18T08:40:53.210987+00:00"
+  "updated_at": "2026-07-02T05:43:37.212382+00:00"
 }

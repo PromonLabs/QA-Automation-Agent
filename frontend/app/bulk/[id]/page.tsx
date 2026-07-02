@@ -21,6 +21,11 @@ const SHOT_LABELS = ["Before Payment", "Number Fill", "Payment", "After Payment"
 // step_015_error_step_015_1781510269.png  → true
 const isErrorShot = (filename: string) => /^step_\d+_error_/i.test(filename)
 
+// Auto-generated screenshots (ss_NNN.png, step_NNN_ok_*, step_NNN_error_*) should
+// never appear in the 4-slot checkpoint grid — only flow-defined named shots do.
+const isAutoShot = (filename: string) =>
+  /^ss_\d+/i.test(filename) || /^step_\d+_(ok|error|fail)_/i.test(filename)
+
 // Extract step number from error screenshot name: step_015_error_... → "Step 15"
 function errorStepLabel(filename: string): string {
   const m = filename.match(/^step_(\d+)_error_/i)
@@ -128,13 +133,10 @@ function ItemCard({ item }: { item: BulkItem }) {
     executionApi.screenshots(item.execution_id)
       .then(r => {
         const all: string[] = r.data.screenshots ?? []
-        // ss_NNN.png are auto-duplicates of the named screenshots taken in the same step.
-        // Filter them out so the 3 columns map to the meaningful named captures:
-        //   Before Data → search-result.png
-        //   Payment     → receipt.png
-        //   After Data  → updated-balance.png
-        const named = all.filter(s => !/^ss_\d+\.png$/i.test(s))
-        setShots(named.length > 0 ? named : all)
+        // Keep only flow-defined named screenshots (search-result.png, number-fill.png, etc.)
+        // Exclude auto-generated ones: ss_NNN.png and step_NNN_ok/error_*.png
+        const named = all.filter(s => !isAutoShot(s) && !isErrorShot(s))
+        setShots(named.length > 0 ? named : all.filter(s => !isAutoShot(s)))
       })
       .catch(() => {})
       .finally(() => setLoadingShots(false))

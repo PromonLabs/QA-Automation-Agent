@@ -54,3 +54,8 @@ backend/artifacts/flows/
 backend/artifacts/memory/
 backend/artifacts/reports/
 backend/artifacts/screenshots/
+
+
+finetune/data
+finetune/llama.cpp
+finetune/output

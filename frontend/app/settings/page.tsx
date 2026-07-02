@@ -151,7 +151,7 @@ export default function SettingsPage() {
             <div className="space-y-2">
               {[
                 { label: "Start Ollama LLM",        cmd: "ollama serve" },
-                { label: "Pull qwen2.5:7b model",     cmd: "ollama pull qwen2.5:7b" },
+                { label: "Load qwen3-vl model", cmd: "ollama run qwen3-vl:32b" },
                 { label: "Install Chromium browser", cmd: "python -m playwright install chromium" },
                 { label: "Start backend",            cmd: ".\\start-backend.ps1" },
                 { label: "Start frontend",           cmd: ".\\start-frontend.ps1" },
@@ -174,7 +174,7 @@ export default function SettingsPage() {
             <h2 className="text-white font-semibold mb-4">Configuration</h2>
             <div className="space-y-2 text-sm">
               {[
-                { k: "LLM Provider", v: health?.llm_provider_label || "Ollama (qwen2.5:14b)" },
+                { k: "LLM Provider", v: health?.llm_provider_label || "Ollama (qwen3-vl:32b)" },
                 { k: "Claude Key",   v: health?.claude_key_set ? "configured" : "not set" },
                 { k: "Ollama Host",  v: health?.ollama_host || "http://localhost:11434" },
                 { k: "API",          v: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000" },

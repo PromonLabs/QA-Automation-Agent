@@ -59,8 +59,13 @@
       "step": "Step 33 failed: Payment gateway returned CANCEL_AUTH — 50,00 kr topup not applied (ref ROdb8e1838c4984, visa **08 11/2028)",
       "error": "Step 33 failed: Payment gateway returned CANCEL_AUTH — 50,00 kr topup not applied (ref ROdb8e1838c4984, visa **08 11/2028)",
       "at": "2026-06-26T04:19:00+00:00"
+    },
+    {
+      "step": "Step 6 failed: Click the - Log in  - button",
+      "error": "Step 6 failed: Click the - Log in  - button",
+      "at": "2026-06-29T06:01:51.389249+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk [222341]",
-  "updated_at": "2026-06-26T04:19:00+00:00"
+  "updated_at": "2026-06-29T06:01:51.389905+00:00"
 }

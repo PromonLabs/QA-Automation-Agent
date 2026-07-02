@@ -3,11 +3,6 @@
     {
       "step": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
       "error": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
-      "at": "2026-06-16T11:34:45.729433+00:00"
-    },
-    {
-      "step": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
-      "error": "Step 32 failed: Verify the balance is updated by comparing the current balance with previous balance and topup amount - 200 -",
       "at": "2026-06-16T12:29:14.204753+00:00"
     },
     {
@@ -79,8 +74,33 @@
       "step": "19 step(s) skipped — target site unreachable",
       "error": "19 step(s) skipped — target site unreachable",
       "at": "2026-06-26T10:14:52.217464+00:00"
+    },
+    {
+      "step": "19 step(s) skipped — target site unreachable",
+      "error": "19 step(s) skipped — target site unreachable",
+      "at": "2026-06-29T06:04:59.022073+00:00"
+    },
+    {
+      "step": "12 step(s) skipped — target site unreachable",
+      "error": "12 step(s) skipped — target site unreachable",
+      "at": "2026-06-29T08:25:09.576874+00:00"
+    },
+    {
+      "step": "12 step(s) skipped — target site unreachable",
+      "error": "12 step(s) skipped — target site unreachable",
+      "at": "2026-07-01T06:06:31.691323+00:00"
+    },
+    {
+      "step": "19 step(s) skipped — target site unreachable",
+      "error": "19 step(s) skipped — target site unreachable",
+      "at": "2026-07-01T06:14:45.992272+00:00"
+    },
+    {
+      "step": "12 step(s) skipped — target site unreachable",
+      "error": "12 step(s) skipped — target site unreachable",
+      "at": "2026-07-02T05:43:54.459662+00:00"
     }
   ],
   "flow_name": "Tusass TopUp Talk [223401]",
-  "updated_at": "2026-06-26T10:14:52.218018+00:00"
+  "updated_at": "2026-07-02T05:43:54.460267+00:00"
 }
