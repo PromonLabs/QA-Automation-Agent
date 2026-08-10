@@ -462,10 +462,10 @@ class BrowserAgent:
                 pass
         return False
 
-    # ── Vision fallback: qwen3-vl finds element from screenshot ──────────────
+    # ── Vision fallback: qwen2.5vl finds element from screenshot ─────────────
     async def _vision_find(self, description: str):
         """
-        Take a viewport screenshot and ask qwen3-vl to locate the element.
+        Take a viewport screenshot and ask qwen2.5vl to locate the element.
         Returns a Playwright locator (by text or coordinates) or None.
         """
         if not self._page or not settings.USE_VISION_AGENT:
@@ -1325,11 +1325,46 @@ class BrowserAgent:
                     await step_shot("ok")
 
                 else:
+                    # Known payment button whose id/label has drifted before (see the
+                    # Pay-button rule in llm_client.py). Log the page's visible button
+                    # text for diagnosis, then try any submit/primary-styled button as
+                    # a last resort before falling through to the generic handling below.
+                    if "total-field" in target:
+                        try:
+                            visible_buttons = await self._page.evaluate("""
+                                () => Array.from(document.querySelectorAll(
+                                    'button, input[type="submit"], input[type="button"], [role="button"]'
+                                )).filter(el => el.offsetParent !== null).map(el =>
+                                    (el.innerText || el.value || el.getAttribute('aria-label') || '').trim()
+                                ).filter(t => t)
+                            """)
+                            if visible_buttons:
+                                await self._log("info", f"  ℹ visible buttons on page: {visible_buttons}")
+                        except Exception:
+                            pass
+                        try:
+                            submit_loc = self._page.locator(
+                                "button[type='submit'], input[type='submit'], "
+                                "button.btn-primary, button.primary, button.pay-button"
+                            ).first
+                            if await submit_loc.count() > 0 and await submit_loc.is_visible():
+                                try:
+                                    await submit_loc.click(timeout=5000)
+                                except Exception:
+                                    await submit_loc.evaluate("el => el.click()")
+                                await self._log("success", "  → Clicked submit-type button (generic fallback)")
+                                await step_shot("ok")
+                                return True
+                        except Exception:
+                            pass
+
                     # Element not found by text — try <select> option (e.g. amount dropdown)
                     if await self._select_option(target):
                         await self._log("success", f"  → Selected option '{target}' from dropdown")
                         await step_shot("ok")
-                    elif re.search(r'\bid\b', target, re.IGNORECASE) or re.match(r'^\+?\d[\d\s\-\.]{5,}$', target.strip()):
+                    elif not target.startswith(("#", ".", "[", "//")) and (
+                        re.search(r'\bid\b', target, re.IGNORECASE) or re.match(r'^\+?\d[\d\s\-\.]{5,}$', target.strip())
+                    ):
                         # Target looks like an ID or phone/subscriber number — click first table row link.
                         # Wait up to 60 s for search results to appear (COS can be slow under parallel load).
                         # Also breaks early if a card-style link result appears (COS search uses card UI).
@@ -2249,8 +2284,29 @@ class BrowserAgent:
                 # they don't block the flow ("Stay signed in?", account picker).
                 found = False
                 words = [w for w in target.lower().split() if len(w) >= 3]
+                # "suggestion(s)/dropdown/options/list" describe a UI widget, not
+                # literal page text — a rendered listbox/option satisfies these.
+                _WIDGET_WORDS = {"suggestion", "suggestions", "dropdown", "options", "option", "list"}
+                widget_target = any(w.rstrip("s") in {w2.rstrip("s") for w2 in _WIDGET_WORDS} for w in words)
                 for _ in range(180):   # 180 × 0.5s = 90s max
                     try:
+                        if widget_target:
+                            try:
+                                has_options = await self._page.evaluate(
+                                    """() => [...document.querySelectorAll(
+                                        '[role="option"], [role="listbox"] li, ' +
+                                        '[class*="suggest" i] li, [class*="autocomplete" i] li, ' +
+                                        '[class*="dropdown" i] li'
+                                    )].some(el => {
+                                        const r = el.getBoundingClientRect();
+                                        return r.width > 0 && r.height > 0 && el.textContent.trim().length > 0;
+                                    })"""
+                                )
+                            except Exception:
+                                has_options = False
+                            if has_options:
+                                found = True
+                                break
                         body = await self._page.inner_text("body")
                         body_lower = body.lower()
                         if target.lower() in body_lower or all(w in body_lower for w in words):
@@ -2674,11 +2730,69 @@ class BrowserAgent:
                     return False
 
             elif action == "click_nth_row":
-                # Click the Nth item in a phone-number list or table row.
+                # Click the Nth item in a phone-number list, table row, or
+                # dropdown/autocomplete suggestion list.
                 # index from step dict is 0-based (second=1, third=2, ...).
                 nth_idx = step.get("index", 1)
+                match_text = step.get("match_text")
                 clicked = False
                 pages_before = len(self._context.pages)
+
+                # Explicit text hint (e.g. "- NUUK CENTER ..., NUUK -") — try this
+                # first since it's more reliable than raw position: autocomplete/
+                # suggestion lists can reorder as the query narrows.
+                if match_text:
+                    import re as _re
+                    for frame in self._page.frames:
+                        if clicked:
+                            break
+                        try:
+                            loc = frame.get_by_text(
+                                _re.compile(_re.escape(match_text), _re.I)
+                            ).first
+                            if await loc.count() > 0 and await loc.is_visible():
+                                await loc.scroll_into_view_if_needed()
+                                await loc.click(timeout=8000)
+                                clicked = True
+                                await self._log("success", f"  → Clicked suggestion matching '{match_text}'")
+                                await self._maybe_switch_new_tab(pages_before)
+                        except Exception:
+                            pass
+
+                # Generic dropdown/autocomplete option list — pick the Nth
+                # visible option by position when no text match was found.
+                if not clicked:
+                    try:
+                        list_text = await self._page.evaluate(
+                            """(idx) => {
+                                const items = [...document.querySelectorAll(
+                                    '[role="option"], [role="listbox"] li, ' +
+                                    '[class*="suggest" i] li, [class*="suggest" i] > *, ' +
+                                    '[class*="autocomplete" i] li, [class*="dropdown" i] li, ' +
+                                    'ul li'
+                                )].filter(el => {
+                                    const r = el.getBoundingClientRect();
+                                    return r.width > 0 && r.height > 0 && el.textContent.trim().length > 0;
+                                });
+                                return items[idx] ? items[idx].textContent.trim() : null;
+                            }""",
+                            nth_idx,
+                        )
+                    except Exception:
+                        list_text = None
+                    if list_text:
+                        import re as _re
+                        try:
+                            loc = self._page.get_by_text(
+                                _re.compile(_re.escape(list_text), _re.I), exact=True
+                            ).first
+                            if await loc.count() > 0:
+                                await loc.click(timeout=5000)
+                                clicked = True
+                                await self._log("success", f"  → Clicked list item '{list_text}' (position {nth_idx + 1})")
+                                await self._maybe_switch_new_tab(pages_before)
+                        except Exception:
+                            pass
 
                 # Phone-number button grid — find all phone-like buttons, pick index nth_idx
                 phone_text = None
@@ -2825,7 +2939,7 @@ class BrowserAgent:
                                 pass
                     return False
 
-                for attempt in range(40):
+                for attempt in range(80):   # 80 × 10s = ~13 min max — same safety margin as before, checked 3x more often
                     # ── Check condition ───────────────────────────────────────
                     try:
                         body = await self._page.inner_text("body")
@@ -2868,7 +2982,7 @@ class BrowserAgent:
                     except Exception:
                         pass
 
-                    await asyncio.sleep(27)   # 3+27 = 30s per cycle
+                    await asyncio.sleep(7)   # 3+7 = 10s per cycle — checks status 3x more often
 
                 if not found:
                     await self._log("info", f"  ⚠ '{target}' not seen after 40 refreshes — continuing")

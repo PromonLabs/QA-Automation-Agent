@@ -1,0 +1,32 @@
+{
+  "name": "Internet Flow",
+  "steps": [
+    "Navigate to ${PORTAL_URL}/internet",
+    "Wait 3000ms",
+    "In the search box, enter ${ADDRESS_SEARCH}",
+    "Wait 2000ms",
+    "Wait for the address suggestions list to appear",
+    "Click the 3rd address suggestion - ${ADDRESS_SELECT} -",
+    "Wait 3000ms",
+    "Click the Internet 303 button",
+    "Wait 3000ms",
+    "Click Next",
+    "Wait 3000ms",
+    "Click Yes",
+    "In the mobile number field, enter ${LOGIN_MOBILE_NUMBER}",
+    "Click Next",
+    "Wait 3000ms",
+    "Wait for Input number field to appear",
+    "In the input number field, enter ${SMS}",
+    "Click Next",
+    "Wait 3000ms",
+    "Click Next",
+    "Wait 3000ms",
+    "In the last 4 digits field, enter ${LAST_CARD}",
+    "Take the screenshot of that page and save it as - payment.png -",
+    "Click Next",
+    "Wait 5000ms",
+    "Take the screenshot of that page and save it as - receipt.png -"
+
+  ]
+}

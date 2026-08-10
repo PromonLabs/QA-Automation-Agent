@@ -15,7 +15,7 @@ import {
   KeyRound,
   Layers,
   BarChart2,
-  Sparkles,
+  MessageSquare,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -23,7 +23,7 @@ const nav = [
   { href: "/dashboard",  label: "Dashboard",    icon: LayoutDashboard },
   { href: "/flows",      label: "Flows",         icon: Play },
   { href: "/flows/new",  label: "Write Flow",    icon: PenLine },
-  { href: "/flow-agent", label: "Flow Agent",    icon: Sparkles },
+  { href: "/chat",       label: "Chat Agent",    icon: MessageSquare },
   { href: "/execution",  label: "Executions",    icon: Activity },
   { href: "/bulk",       label: "Bulk Run",      icon: Layers },
   { href: "/bulk/results", label: "Bulk Results", icon: BarChart2 },

@@ -13,7 +13,6 @@ from typing import Callable, Optional, Set, List
 from app.agents.llm_client import llm_client
 from app.agents.browser_agent import BrowserAgent
 from app.agents.pdf_reporter import generate_pdf
-from app.agents.memory_store import record_failure
 from app.models.schemas import ExecutionStatus, ExecutionLog, ExecutionResult, FlowResponse
 from app.storage import artifact_store
 from app.core.config import settings
@@ -467,7 +466,7 @@ class Orchestrator:
 
             # ── LLM Planning ───────────────────────────────────────────
             if settings.USE_FLOW_AGENT:
-                await self._log("info", f"🤖 Sending task to {llm_client.model}…")
+                await self._log("info", f"🤖 Sending task to {llm_client.active_model} ({llm_client.provider})…")
             else:
                 await self._log("info", "⚡ Flow agent disabled — running steps directly")
             plan = await llm_client.generate_plan(task_text)
@@ -565,14 +564,6 @@ class Orchestrator:
                             await self._log("info", f"🧹 Removed from .env: {', '.join(removed)}")
                     except Exception:
                         pass
-
-            # ── Record failures in flow memory ─────────────────────────────
-            if final_status == ExecutionStatus.FAILED and exec_result:
-                stop_reason = result.get("stop_reason", "")
-                try:
-                    record_failure(self.flow.name, stop_reason, stop_reason)
-                except Exception:
-                    pass
 
             # ── Generate PDF report ────────────────────────────────────────
             if exec_result:

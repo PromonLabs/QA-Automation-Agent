@@ -1,17 +1,61 @@
 """
-LLM client — supports Ollama (local) and Claude API (Anthropic cloud).
+LLM client — supports Ollama (local), Claude API (Anthropic cloud), and the
+Promon AI Gateway (LiteLLM proxy, OpenAI-compatible — see litellm_benchmarking).
 Includes a smart natural-language step parser used when LLM is disabled/unavailable.
 
 Set LLM_PROVIDER=claude + ANTHROPIC_API_KEY in .env to use the Claude API.
+Set LLM_PROVIDER=gateway + GATEWAY_API_KEY (+ GATEWAY_CACERT) to use the AI Gateway.
 Set LLM_PROVIDER=ollama (default) to use a local Ollama model.
 """
 import re
 import json
 import asyncio
 import httpx
+from datetime import datetime, timezone
 from typing import List, Dict, Any, AsyncIterator
 
 from app.core.config import settings
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Gemini token usage tracking — persisted to artifacts/gemini_usage.json so it
+# survives restarts. Gemini responses include exact token counts per call.
+# ─────────────────────────────────────────────────────────────────────────────
+
+_gemini_usage_lock = asyncio.Lock()
+
+
+def _gemini_usage_path():
+    return settings.ARTIFACTS_DIR / "gemini_usage.json"
+
+
+async def _record_gemini_usage(usage_metadata: dict) -> None:
+    if not usage_metadata:
+        return
+    path = _gemini_usage_path()
+    async with _gemini_usage_lock:
+        data = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 0}
+        if path.exists():
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except Exception:
+                pass
+        data["prompt_tokens"]     = data.get("prompt_tokens", 0) + usage_metadata.get("promptTokenCount", 0)
+        data["completion_tokens"] = data.get("completion_tokens", 0) + usage_metadata.get("candidatesTokenCount", 0)
+        data["total_tokens"]      = data.get("total_tokens", 0) + usage_metadata.get("totalTokenCount", 0)
+        data["calls"]             = data.get("calls", 0) + 1
+        data["updated_at"]        = datetime.now(timezone.utc).isoformat()
+        path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+
+def get_gemini_usage() -> dict:
+    path = _gemini_usage_path()
+    if not path.exists():
+        return {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 0}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "calls": 0}
 
 
 SYSTEM_PROMPT = """You are a browser automation expert. Your job is to read ANY description of a web flow — even informal, broken English, or conversational — and convert it into a precise, ordered, step-by-step browser automation plan as JSON.
@@ -135,9 +179,19 @@ def _parse_step(raw_line: str) -> Dict[str, Any]:
     if re.search(r'\bcontact\s+name\b|\bexisting\s+contact\b|\bvisible\s+contact\b', lo):
         return {"action": "click_existing_contact", "target": "", "description": line}
 
-    # ── "Click the Pay button" → use specific XPath ──────────────────────
+    # ── "Click the Pay button" → try the known id first, fall back to text ──
+    # Alternatives cover common English/Danish payment-button wording since the
+    # target site (Tusass) is Greenlandic/Danish and the exact label has drifted before.
     if re.search(r'\bpay\s+button\b|\bclick\s+pay\b', lo):
-        return {"action": "click", "target": '//*[@id="total-field"]', "description": line}
+        return {
+            "action": "click",
+            "target": '//*[@id="total-field"]',
+            "alternatives": [
+                "Pay", "Pay Now", "PAY", "Submit Payment", "Confirm Payment",
+                "Complete Payment", "Confirm", "Submit", "Betal", "Godkend", "Bekræft",
+            ],
+            "description": line,
+        }
 
     # ── XPath / CSS selector click ────────────────────────────────────────
     # "Click xpath //EXPR"  or  "Click #id"  or  "Click //*[...]"
@@ -464,19 +518,34 @@ def _parse_step(raw_line: str) -> Dict[str, Any]:
         target_val = m.group(1).strip() if m else "COMPLETED"
         return {"action": "refresh_until", "target": target_val, "description": line}
 
-    # ── "Click the second/third/fourth/... X" → click Nth item in list ───
+    # ── "Click the second/third/3rd/4th/... X" → click Nth item in list ──
+    # Also handles a trailing "- explicit text -" hint, e.g.
+    # "Click the 3rd address suggestion - NUUK CENTER ..., NUUK -", which is
+    # used as the preferred match target (more reliable than raw position
+    # since suggestion/autocomplete lists can reorder).
     _ORD_MAP = {
         "second": 1, "third": 2, "fourth": 3, "fifth": 4,
         "sixth": 5, "seventh": 6, "eighth": 7, "ninth": 8, "tenth": 9,
     }
-    _ord_pat = "|".join(_ORD_MAP.keys())
+    _ord_pat = "|".join(_ORD_MAP.keys()) + r"|\d+(?:st|nd|rd|th)"
     m = re.match(
         r"^click\s+(?:the\s+)?(" + _ord_pat + r")\s+(.+?)(?:\s+button)?$",
         line, re.IGNORECASE,
     )
     if m:
-        idx = _ORD_MAP[m.group(1).lower()]
-        return {"action": "click_nth_row", "target": m.group(2).strip(), "index": idx, "description": line}
+        ord_raw = m.group(1).lower()
+        idx = _ORD_MAP.get(ord_raw)
+        if idx is None:
+            idx = int(re.match(r"\d+", ord_raw).group()) - 1
+        rest = m.group(2).strip()
+        match_text = None
+        dash_m = re.match(r"^(.*?)\s+-\s+(.+?)\s*-\s*$", rest)
+        if dash_m:
+            rest, match_text = dash_m.group(1).strip(), dash_m.group(2).strip()
+        result = {"action": "click_nth_row", "target": rest, "index": idx, "description": line}
+        if match_text:
+            result["match_text"] = match_text
+        return result
 
     # ── "Click first X" → click first visible row/link in table ──────────
     m = re.match(r"^click\s+(?:the\s+)?first\s+(.+?)$", line, re.IGNORECASE)
@@ -552,21 +621,75 @@ def _steps_from_task(task: str) -> List[Dict[str, Any]]:
 
 _llm_lock = asyncio.Lock()   # Ollama processes one generation at a time
 
+# Shared, persistent gateway connection — reused by every text + vision gateway
+# call instead of opening a fresh TLS connection per step (a flow makes dozens
+# of gateway calls, so paying the handshake once instead of every time matters).
+_gateway_client: httpx.AsyncClient | None = None
+_gateway_client_lock = asyncio.Lock()
+
+
+async def _get_gateway_client() -> httpx.AsyncClient:
+    global _gateway_client
+    if _gateway_client is None or _gateway_client.is_closed:
+        async with _gateway_client_lock:
+            if _gateway_client is None or _gateway_client.is_closed:
+                verify: str | bool = settings.GATEWAY_CACERT if settings.GATEWAY_CACERT else True
+                _gateway_client = httpx.AsyncClient(
+                    base_url=settings.GATEWAY_BASE_URL,
+                    verify=verify,
+                    limits=httpx.Limits(max_keepalive_connections=20, max_connections=20),
+                    timeout=settings.LLM_TIMEOUT,
+                )
+    return _gateway_client
+
+
+async def close_gateway_client() -> None:
+    """Close the shared gateway connection pool — call on app shutdown."""
+    global _gateway_client
+    if _gateway_client is not None and not _gateway_client.is_closed:
+        await _gateway_client.aclose()
+    _gateway_client = None
+
 
 class LLMClient:
     def __init__(self):
         self.host     = settings.OLLAMA_HOST
         self.model    = settings.LLM_MODEL
         self.timeout  = settings.LLM_TIMEOUT
-        self.provider = settings.LLM_PROVIDER   # "ollama" | "claude"
+        self.provider = settings.LLM_PROVIDER   # "ollama" | "claude" | "gateway" | "gemini"
+
+    @property
+    def active_model(self) -> str:
+        """The model actually in use for the current provider (for logging/display)."""
+        if self.provider == "claude":
+            return settings.CLAUDE_MODEL
+        if self.provider == "gateway":
+            return settings.GATEWAY_MODEL
+        if self.provider == "gemini":
+            return settings.GEMINI_MODEL
+        return self.model
 
     async def generate_plan(self, task: str) -> dict:
         """Try LLM first (if USE_FLOW_AGENT=true), fall back to direct NL parsing."""
         if settings.USE_FLOW_AGENT:
-            # Claude API supports parallel calls; Ollama is single-threaded (use lock)
+            # Claude API / Gateway / Gemini support parallel calls; local Ollama is single-threaded (use lock)
             if self.provider == "claude":
                 try:
                     plan = await self._call_claude(task)
+                    if plan and len(plan.get("steps", [])) > 1:
+                        return plan
+                except Exception:
+                    pass
+            elif self.provider == "gateway":
+                try:
+                    plan = await self._call_gateway(task)
+                    if plan and len(plan.get("steps", [])) > 1:
+                        return plan
+                except Exception:
+                    pass
+            elif self.provider == "gemini":
+                try:
+                    plan = await self._call_gemini(task)
                     if plan and len(plan.get("steps", [])) > 1:
                         return plan
                 except Exception:
@@ -630,6 +753,86 @@ class LLMClient:
             return plan
         return {}
 
+    async def _call_gateway(self, task: str) -> dict:
+        """Call the Promon AI Gateway (LiteLLM proxy, OpenAI-compatible) for LLM planning."""
+        api_key = settings.GATEWAY_API_KEY
+        if not api_key:
+            raise RuntimeError("GATEWAY_API_KEY not set in .env")
+
+        payload = {
+            "model": settings.GATEWAY_MODEL,
+            "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {
+                    "role": "user",
+                    "content": (
+                        f"Create a browser automation plan for this task:\n{task[:2000]}\n\n"
+                        "Respond with ONLY the JSON object."
+                    ),
+                },
+            ],
+            "max_tokens": 1500,
+            "temperature": 0.05,
+        }
+        client = await _get_gateway_client()
+        resp = await client.post(
+            "/v1/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}"},
+            json=payload,
+            timeout=self.timeout,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        raw = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+        plan = _extract_json(raw)
+        if plan and "steps" in plan and len(plan["steps"]) > 0:
+            return plan
+        return {}
+
+    async def _call_gemini(self, task: str) -> dict:
+        """Call the Google Gemini API for LLM planning."""
+        api_key = settings.GEMINI_API_KEY
+        if not api_key:
+            raise RuntimeError("GEMINI_API_KEY not set in .env")
+
+        url = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/"
+            f"{settings.GEMINI_MODEL}:generateContent"
+        )
+        payload = {
+            "systemInstruction": {"parts": [{"text": SYSTEM_PROMPT}]},
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [{
+                        "text": (
+                            f"Create a browser automation plan for this task:\n{task[:2000]}\n\n"
+                            "Respond with ONLY the JSON object."
+                        ),
+                    }],
+                }
+            ],
+            "generationConfig": {"temperature": 0.05, "maxOutputTokens": 1500},
+        }
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(
+                url,
+                params={"key": api_key},
+                headers={"content-type": "application/json"},
+                json=payload,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+
+        await _record_gemini_usage(data.get("usageMetadata", {}))
+
+        raw = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+        plan = _extract_json(raw)
+        if plan and "steps" in plan and len(plan["steps"]) > 0:
+            return plan
+        return {}
+
     async def _call_llm(self, task: str) -> dict:
         """Call local Ollama model for LLM planning."""
         url = f"{self.host}/api/generate"
@@ -669,6 +872,15 @@ class LLMClient:
                 pass
             return
 
+        if self.provider == "gemini":
+            # Gemini path doesn't stream here — yield a single token
+            try:
+                plan = await self._call_gemini(task)
+                yield json.dumps(plan)
+            except Exception:
+                pass
+            return
+
         url = f"{self.host}/api/generate"
         payload = {
             "model": self.model,
@@ -692,6 +904,31 @@ class LLMClient:
     async def check_health(self) -> bool:
         if self.provider == "claude":
             return bool(settings.ANTHROPIC_API_KEY)
+        if self.provider == "gateway":
+            if not settings.GATEWAY_API_KEY:
+                return False
+            try:
+                client = await _get_gateway_client()
+                resp = await client.get(
+                    "/v1/models",
+                    headers={"Authorization": f"Bearer {settings.GATEWAY_API_KEY}"},
+                    timeout=10,
+                )
+                return resp.status_code == 200
+            except Exception:
+                return False
+        if self.provider == "gemini":
+            if not settings.GEMINI_API_KEY:
+                return False
+            try:
+                async with httpx.AsyncClient(timeout=10) as client:
+                    resp = await client.get(
+                        f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}",
+                        params={"key": settings.GEMINI_API_KEY},
+                    )
+                    return resp.status_code == 200
+            except Exception:
+                return False
         try:
             async with httpx.AsyncClient(timeout=10) as client:
                 resp = await client.get(f"{self.host}/api/tags")
@@ -707,7 +944,7 @@ llm_client = LLMClient()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Vision Client  —  qwen3-vl:32b  (screen agent / element finder)
+# Vision Client  —  qwen2.5vl:latest  (screen agent / element finder)
 # ─────────────────────────────────────────────────────────────────────────────
 
 _VISION_PROMPT = """You are a browser automation vision assistant.
@@ -725,18 +962,28 @@ Return ONLY a valid JSON object — no markdown, no explanation:
 Element to find: """
 
 
-_VISION_CAPABLE_KEYWORDS = ("vl", "vision", "llava", "bakllava", "minicpm", "phi3-vision", "cogvlm", "qwen2.5")
+_VISION_CAPABLE_KEYWORDS = ("vl", "vision", "llava", "bakllava", "minicpm", "phi3-vision", "cogvlm", "qwen2.5", "moondream")
 
 
 class VisionClient:
     """Locates UI elements from a screenshot using a vision-capable model."""
 
     def __init__(self):
-        self.host    = settings.OLLAMA_HOST
-        self.model   = settings.VISION_MODEL
-        self.timeout = 30   # vision calls must be fast
+        self.host     = settings.OLLAMA_HOST
+        self.model    = settings.VISION_MODEL
+        self.provider = settings.LLM_PROVIDER   # "ollama" | "claude" | "gateway" | "gemini"
+        self.timeout  = 30   # vision calls must be fast
         model_lo = self.model.lower()
         self._capable = any(k in model_lo for k in _VISION_CAPABLE_KEYWORDS)
+
+    @property
+    def active_model(self) -> str:
+        """The vision model actually in use for the current provider (for logging/display)."""
+        if self.provider == "gateway":
+            return settings.GATEWAY_VISION_MODEL
+        if self.provider == "gemini":
+            return settings.GEMINI_VISION_MODEL
+        return self.model
 
     async def find_element(self, screenshot_b64: str, description: str) -> dict:
         """
@@ -744,6 +991,10 @@ class VisionClient:
         Returns parsed JSON with found/element_text/element_type/x/y/css_hint,
         or {"found": False} on any error or when no vision model is configured.
         """
+        if self.provider == "gateway":
+            return await self._find_element_gateway(screenshot_b64, description)
+        if self.provider == "gemini":
+            return await self._find_element_gemini(screenshot_b64, description)
         if not self._capable:
             # Text-only model — cannot process images; skip silently
             return {"found": False}
@@ -767,7 +1018,109 @@ class VisionClient:
             pass
         return {"found": False}
 
+    async def _find_element_gateway(self, screenshot_b64: str, description: str) -> dict:
+        """Send a screenshot + description to the vision model via the AI Gateway (OpenAI-compatible)."""
+        api_key = settings.GATEWAY_API_KEY
+        if not api_key:
+            return {"found": False}
+        payload = {
+            "model": settings.GATEWAY_VISION_MODEL,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": _VISION_PROMPT + description},
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{screenshot_b64}"}},
+                    ],
+                }
+            ],
+            "max_tokens": 300,
+            "temperature": 0.05,
+        }
+        try:
+            client = await _get_gateway_client()
+            resp = await client.post(
+                "/v1/chat/completions",
+                headers={"Authorization": f"Bearer {api_key}"},
+                json=payload,
+                timeout=self.timeout,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            raw = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+            result = _extract_json(raw)
+            if result and isinstance(result.get("found"), bool):
+                return result
+        except Exception:
+            pass
+        return {"found": False}
+
+    async def _find_element_gemini(self, screenshot_b64: str, description: str) -> dict:
+        """Send a screenshot + description to the vision model via the Gemini API."""
+        api_key = settings.GEMINI_API_KEY
+        if not api_key:
+            return {"found": False}
+        url = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/"
+            f"{settings.GEMINI_VISION_MODEL}:generateContent"
+        )
+        payload = {
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [
+                        {"text": _VISION_PROMPT + description},
+                        {"inline_data": {"mime_type": "image/png", "data": screenshot_b64}},
+                    ],
+                }
+            ],
+            "generationConfig": {"temperature": 0.05, "maxOutputTokens": 300},
+        }
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                resp = await client.post(
+                    url,
+                    params={"key": api_key},
+                    headers={"content-type": "application/json"},
+                    json=payload,
+                )
+                resp.raise_for_status()
+                data = resp.json()
+            await _record_gemini_usage(data.get("usageMetadata", {}))
+            raw = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+            result = _extract_json(raw)
+            if result and isinstance(result.get("found"), bool):
+                return result
+        except Exception:
+            pass
+        return {"found": False}
+
     async def check_health(self) -> bool:
+        if self.provider == "gateway":
+            if not settings.GATEWAY_API_KEY:
+                return False
+            try:
+                client = await _get_gateway_client()
+                resp = await client.get(
+                    "/v1/models",
+                    headers={"Authorization": f"Bearer {settings.GATEWAY_API_KEY}"},
+                    timeout=10,
+                )
+                return resp.status_code == 200
+            except Exception:
+                return False
+        if self.provider == "gemini":
+            if not settings.GEMINI_API_KEY:
+                return False
+            try:
+                async with httpx.AsyncClient(timeout=10) as client:
+                    resp = await client.get(
+                        f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_VISION_MODEL}",
+                        params={"key": settings.GEMINI_API_KEY},
+                    )
+                    return resp.status_code == 200
+            except Exception:
+                return False
         if not self._capable:
             return True  # text-only model configured — vision is intentionally disabled
         try:

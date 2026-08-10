@@ -97,13 +97,13 @@ export const bulkApi = {
   saveEnv: (env_vars: Record<string, string>) => api.put("/bulk/env", { env_vars }),
 }
 
-// ── Flow Agent ────────────────────────────
-export const flowAgentApi = {
-  chat: (message: string, flowName?: string) =>
-    api.post<{ flow: { name: string; steps: string[] }; flow_json: string; used_llm: boolean }>(
-      "/flow-agent/chat",
-      { message, flow_name: flowName || "" }
-    ),
+// ── Chat (general-purpose gateway chatbot) ──
+export const chatApi = {
+  send: (
+    messages: { role: "user" | "assistant"; content: string }[],
+    provider?: "ollama" | "claude" | "gateway" | "gemini"
+  ) =>
+    api.post<{ reply: string; provider: string; model: string }>("/chat", { messages, provider }),
 }
 
 // ── Health ────────────────────────────────
@@ -115,6 +115,22 @@ export const healthApi = {
 export const agentSettingsApi = {
   update: (data: { use_flow_agent?: boolean; use_vision_agent?: boolean }) =>
     api.patch("/settings/agents", data),
+}
+
+// ── LLM Settings (local Ollama models + provider) ──
+export const llmSettingsApi = {
+  list: () => api.get("/settings/llms"),
+  update: (data: {
+    provider?: "ollama" | "claude" | "gateway" | "gemini"
+    text_model?: string
+    vision_model?: string
+    gateway_model?: string
+    gateway_vision_model?: string
+    gemini_model?: string
+    gemini_vision_model?: string
+  }) => api.patch("/settings/llms", data),
+  pull: (name: string) => api.post("/settings/llms/pull", { name }),
+  remove: (name: string) => api.delete(`/settings/llms/${encodeURIComponent(name)}`),
 }
 
 export default api

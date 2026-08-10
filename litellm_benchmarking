@@ -1,0 +1,153 @@
+# Benchmarking the AI Gateway (pre-Portal-integration)
+
+Goal: before any Portal-side development starts, confirm the Gateway + on-prem
+Ollama setup behaves reasonably under realistic concurrent load (target: 20
+concurrent users). This is descriptive, not pass/fail — we're reading actual
+latency/throughput/error-rate numbers, not checking against fixed thresholds.
+
+Tool: `scripts/benchmark_gateway.py` in this repo. Simulates N concurrent
+"users" calling the Gateway's OpenAI-compatible `/chat/completions` endpoint
+for a fixed duration, then reports latency percentiles (p50/p95/p99), error
+rate, and throughput, broken out per model.
+
+## 1. Prerequisites (on whichever machine runs the test)
+
+- Python 3.10+
+- `pip install httpx`
+- Network access to `https://ai-gateway.promon.co.in` (port 443 reachable from
+  wherever you're running this — confirm you're not behind a firewall that
+  blocks it before assuming a failure is the Gateway's fault)
+
+## 2. Get the self-signed TLS cert
+
+The Gateway uses a self-signed cert (not yet a publicly trusted CA — see
+`tls_mode: selfsigned` in `inventories/production/group_vars/all.yml`), so the
+script needs the CA file to verify the connection. It's the **public**
+certificate, not a private key, so it's fine to send over Slack/email/etc.:
+
+- File: `fetched-certs/ai-gateway.promon.co.in.crt` (in this repo, but
+  gitignored — not something `git pull` will hand you, ask whoever ran the
+  last `ansible-playbook site.yml` for a copy)
+
+## 3. Get a scoped test API key — do NOT use the master key
+
+Ask whoever holds `vault_litellm_master_key` to mint you a time-boxed,
+budget-capped virtual key instead of handing out the master key:
+
+```bash
+curl -s --cacert fetched-certs/ai-gateway.promon.co.in.crt \
+  https://ai-gateway.promon.co.in/key/generate \
+  -H "Authorization: Bearer <master key>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "duration": "7d",
+    "max_budget": 5,
+    "metadata": {"purpose": "pre-integration benchmark"}
+  }'
+```
+
+The response JSON has a `"key"` field (e.g. `"key": "sk-tXL0wt5-lOOVK9sfY2UacA"`)
+— that value is what goes into `--api-key` below. `max_budget` (USD) is a hard
+spend cap enforced by LiteLLM itself, so even a runaway/misconfigured test run
+can't overspend — this only matters once cloud models are involved (step 5).
+
+## 4. Run the default benchmark — local model only, safe, no API cost
+
+This is the one to run first. It only exercises `local-qwen25` (the on-prem
+Ollama model), so there's no cloud API billing risk:
+
+```bash
+python3 scripts/benchmark_gateway.py \
+  --base-url https://ai-gateway.promon.co.in \
+  --api-key sk-... \
+  --cacert fetched-certs/ai-gateway.promon.co.in.crt \
+  --concurrency 20 \
+  --duration 300
+```
+
+- `--concurrency 20` — simulates 20 concurrent users (our target)
+- `--duration 300` — runs for 5 minutes; bump to e.g. `900` for a more
+  representative sustained-load picture
+- Each simulated user waits ~2s (randomized) between its own requests by
+  default (`--think-time`), rather than hammering back-to-back — pass
+  `--think-time 0` if you specifically want a pure burst/stress test instead
+  of realistic usage
+
+**Known thing to watch for**: `ollama_num_parallel: 1` in `all.yml` means the
+local model processes exactly one request at a time internally — so with 20
+concurrent users, expect requests to queue behind each other rather than run
+in parallel. That's expected given current config, not a bug in the test.
+Whether that's acceptable is exactly the kind of thing this benchmark should
+surface — flag the resulting latency numbers back rather than assuming
+something's broken.
+
+## 5. Optional: include the cloud models — real money, get sign-off first
+
+```bash
+python3 scripts/benchmark_gateway.py \
+  --base-url https://ai-gateway.promon.co.in \
+  --api-key sk-... \
+  --cacert fetched-certs/ai-gateway.promon.co.in.crt \
+  --concurrency 20 \
+  --duration 300 \
+  --include-cloud
+```
+
+This also sends real, billed requests to `claude-general`/`gpt-general`/
+`gemini-general` (Anthropic/OpenAI/Gemini) for the full duration. The script
+prints a cost warning and pauses 3 seconds before starting so you can Ctrl+C
+if this wasn't intended. **Get explicit go-ahead on this one before running
+it** — a 20-concurrent-user, 5+ minute run against three paid APIs is a real
+line item, not a rounding error, and the `max_budget` cap from step 3 is your
+safety net if something runs longer than intended.
+
+## 6. Reading the output
+
+The script prints a per-model report:
+
+```
+--- local-qwen25 ---
+  requests: 340   ok: 338   errors: 2   error_rate: 0.6%
+  throughput: 1.13 req/s
+  latency ms  mean=1820  p50=1650  p95=3400  p99=4100  max=5200
+  cache signal: repeated-prompt p50=210ms vs unique-prompt p50=1900ms
+```
+
+- **p50/p95/p99** — median / 95th / 99th percentile latency in milliseconds.
+  p95/p99 matter more than the mean for user-facing expectations — they show
+  what your *slowest* real users actually experience, not just the average.
+- **error_rate** — non-200 responses. Any error above ~0 is worth digging
+  into via `docker logs promon-ai-litellm-gateway-1` — don't just note the
+  number, find out *why*.
+- **cache signal** — compares latency of intentionally-repeated prompts
+  (which Valkey should cache) against unique ones. A large gap confirms the
+  cache is doing something; a small/no gap is worth flagging.
+- Raw per-request data lands in `benchmark_results.csv` (`--output` to
+  change the path) for anyone who wants to plot distributions themselves.
+
+## 7. Watch it live in Grafana while it runs
+
+Since nothing's published to the host directly, reach Grafana via SSH local
+port-forward while the benchmark is running, to correlate the CPU/memory
+picture with the latency numbers as they happen rather than after the fact:
+
+```bash
+# on the VM, get the grafana container's internal IP
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' promon-ai-grafana-1
+
+# from your machine
+ssh -L 3000:<that-ip>:3000 devops@169.58.97.147
+# then browse http://localhost:3000
+```
+
+Specifically worth watching during the run: `ollama` container CPU (is it
+pegged at its `resource_limits` cap while requests queue?) and whether
+`litellm-gateway`/`valkey` show any memory growth over the run.
+
+## 8. Report back
+
+Send back: the printed report (or the CSV), plus what you observed in
+Grafana during the run (was `ollama` CPU-bound? did latency degrade over the
+5 minutes, or stay flat?). We're deciding whether this is ready for Portal
+integration based on the actual shape of these numbers, not a fixed bar —
+so the more concrete detail from the run, the better the call we can make.

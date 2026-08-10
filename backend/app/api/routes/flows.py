@@ -1,5 +1,5 @@
 import json
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from typing import List
 
 from app.api.deps import get_current_user
@@ -12,28 +12,15 @@ router = APIRouter(prefix="/flows", tags=["flows"])
 @router.post("/create", response_model=FlowResponse)
 async def create_flow(
     payload: FlowCreate,
-    background_tasks: BackgroundTasks,
     user: str = Depends(get_current_user),
 ):
     flow = artifact_store.create_flow(payload.dict())
-    # Trigger LLM memory analysis in background (non-blocking)
-    background_tasks.add_task(_analyse_flow_bg, flow.name, payload.task)
     return flow
-
-
-async def _analyse_flow_bg(flow_name: str, task_text: str) -> None:
-    """Background task: ask LLM to analyse the flow and save memory."""
-    try:
-        from app.agents.memory_store import analyse_and_save
-        await analyse_and_save(flow_name, task_text)
-    except Exception:
-        pass  # Memory save is best-effort; never block the response
 
 
 @router.post("/upload", response_model=FlowResponse)
 async def upload_flow(
     file: UploadFile = File(...),
-    background_tasks: BackgroundTasks = None,
     user: str = Depends(get_current_user),
 ):
     """
@@ -98,11 +85,6 @@ async def upload_flow(
         "tags":        tags if isinstance(tags, list) else [],
     }
     flow = artifact_store.create_flow(payload)
-
-    # Trigger LLM memory analysis in background (non-blocking)
-    if background_tasks:
-        background_tasks.add_task(_analyse_flow_bg, flow.name, task_str)
-
     return flow
 
 
