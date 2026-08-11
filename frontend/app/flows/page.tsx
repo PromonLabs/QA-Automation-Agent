@@ -7,9 +7,45 @@ import { Sidebar } from "@/components/layout/sidebar"
 import { Header } from "@/components/layout/header"
 import { DiskFlow } from "@/types"
 import {
-  Play, Loader2, FileText, Code2, FolderOpen, ExternalLink, CheckCircle2, Pencil, Trash2
+  Play, Loader2, FileText, Code2, FolderOpen, Folder, ArrowLeft, ExternalLink, CheckCircle2, Pencil, Trash2
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+
+// Flows are grouped into folders by name. Anything that doesn't match a
+// known group falls into "Other Flows" so nothing gets lost as new flows are added.
+type FolderDef = { key: string; name: string; match: (f: DiskFlow) => boolean }
+
+const FOLDER_DEFS: FolderDef[] = [
+  {
+    key: "mobile",
+    name: "Mobile Flows",
+    match: (f) => [
+      "mobile data add",
+      "new account creation",
+      "tusass extra data add",
+      "tusass topup talk",
+    ].includes(f.name.trim().toLowerCase()),
+  },
+  {
+    key: "internet",
+    name: "Internet Flows",
+    match: (f) => f.name.trim().toLowerCase().includes("internet"),
+  },
+]
+
+function groupFlowsByFolder(flows: DiskFlow[]) {
+  const used = new Set<string>()
+  const groups = FOLDER_DEFS.map(def => {
+    const items = flows.filter(f => !used.has(f.id) && def.match(f))
+    items.forEach(f => used.add(f.id))
+    return { ...def, items }
+  })
+  const other = flows.filter(f => !used.has(f.id))
+  if (other.length > 0) {
+    groups.push({ key: "other", name: "Other Flows", match: () => false, items: other })
+  }
+  return groups.filter(g => g.items.length > 0)
+}
 
 export default function FlowsPage() {
   const router = useRouter()
@@ -18,6 +54,7 @@ export default function FlowsPage() {
   // Track multiple running flows: flowId → executionId (once started)
   const [running, setRunning] = useState<Record<string, string | true>>({})
   const [error, setError]   = useState("")
+  const [openFolder, setOpenFolder] = useState<string | null>(null)
 
   useEffect(() => {
     diskFlowsApi.list()
@@ -54,8 +91,8 @@ export default function FlowsPage() {
     }
   }
 
-  const jsonFlows = flows.filter(f => f.flow_type === "json")
-  const normalFlows = flows.filter(f => f.flow_type === "normal")
+  const folders = groupFlowsByFolder(flows)
+  const activeFolder = folders.find(f => f.key === openFolder) || null
 
   return (
     <div className="flex min-h-screen bg-black">
@@ -81,70 +118,88 @@ export default function FlowsPage() {
                 No flows found in the <code className="text-white/30">flows/</code> folder
               </div>
             </div>
+          ) : activeFolder ? (
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <button
+                  onClick={() => setOpenFolder(null)}
+                  className="flex items-center gap-1 text-white/40 hover:text-white text-xs
+                             border border-white/10 hover:border-white/30 rounded-md px-2 py-1 mr-2 transition-colors"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  Back
+                </button>
+                <FolderOpen className="w-4 h-4 text-white/40" />
+                <h2 className="text-white/60 text-sm font-medium uppercase tracking-widest">
+                  {activeFolder.name}
+                </h2>
+                <span className="text-white/20 text-xs border border-white/10 rounded px-1.5 py-0.5">
+                  {activeFolder.items.length}
+                </span>
+              </div>
+              <div className="grid gap-3">
+                {activeFolder.items.map(flow => (
+                  <FlowCard
+                    key={flow.id}
+                    flow={flow}
+                    runState={running[flow.id]}
+                    onRun={() => runFlow(flow)}
+                    onView={(execId) => window.open(`/execution/${execId}`, "_blank", "noopener,noreferrer")}
+                    onEdit={() => router.push(`/flows/edit?id=${encodeURIComponent(flow.id)}`)}
+                    onDelete={() => deleteFlow(flow)}
+                  />
+                ))}
+              </div>
+            </section>
           ) : (
-            <div className="space-y-8">
-
-              {/* JSON Flows */}
-              {jsonFlows.length > 0 && (
-                <section>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Code2 className="w-4 h-4 text-white/40" />
-                    <h2 className="text-white/60 text-sm font-medium uppercase tracking-widest">
-                      JSON Flows
-                    </h2>
-                    <span className="text-white/20 text-xs border border-white/10 rounded px-1.5 py-0.5">
-                      {jsonFlows.length}
-                    </span>
-                  </div>
-                  <div className="grid gap-3">
-                    {jsonFlows.map(flow => (
-                      <FlowCard
-                        key={flow.id}
-                        flow={flow}
-                        runState={running[flow.id]}
-                        onRun={() => runFlow(flow)}
-                        onView={(execId) => window.open(`/execution/${execId}`, "_blank", "noopener,noreferrer")}
-                        onEdit={() => router.push(`/flows/edit?id=${encodeURIComponent(flow.id)}`)}
-                        onDelete={() => deleteFlow(flow)}
-                      />
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Normal Flows */}
-              {normalFlows.length > 0 && (
-                <section>
-                  <div className="flex items-center gap-2 mb-3">
-                    <FileText className="w-4 h-4 text-white/40" />
-                    <h2 className="text-white/60 text-sm font-medium uppercase tracking-widest">
-                      Normal Flows
-                    </h2>
-                    <span className="text-white/20 text-xs border border-white/10 rounded px-1.5 py-0.5">
-                      {normalFlows.length}
-                    </span>
-                  </div>
-                  <div className="grid gap-3">
-                    {normalFlows.map(flow => (
-                      <FlowCard
-                        key={flow.id}
-                        flow={flow}
-                        runState={running[flow.id]}
-                        onRun={() => runFlow(flow)}
-                        onView={(execId) => window.open(`/execution/${execId}`, "_blank", "noopener,noreferrer")}
-                        onEdit={() => router.push(`/flows/edit?id=${encodeURIComponent(flow.id)}`)}
-                        onDelete={() => deleteFlow(flow)}
-                      />
-                    ))}
-                  </div>
-                </section>
-              )}
-
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {folders.map(folder => (
+                <FolderCard
+                  key={folder.key}
+                  name={folder.name}
+                  items={folder.items}
+                  onOpen={() => setOpenFolder(folder.key)}
+                />
+              ))}
             </div>
           )}
         </main>
       </div>
     </div>
+  )
+}
+
+function FolderCard({
+  name,
+  items,
+  onOpen,
+}: {
+  name: string
+  items: DiskFlow[]
+  onOpen: () => void
+}) {
+  const preview = items.slice(0, 3).map(f => f.name).join(", ")
+  const extra = items.length > 3 ? ` +${items.length - 3} more` : ""
+
+  return (
+    <button
+      onClick={onOpen}
+      className="text-left bg-white/[0.03] border border-white/10 rounded-xl px-5 py-4
+                 hover:border-white/20 hover:bg-white/[0.05] transition-colors group"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <Folder className="w-4 h-4 text-white/40 shrink-0 group-hover:text-white/70 transition-colors" />
+          <span className="text-white font-medium text-sm truncate">{name}</span>
+        </div>
+        <span className="text-white/20 text-xs border border-white/10 rounded px-1.5 py-0.5 shrink-0">
+          {items.length}
+        </span>
+      </div>
+      <div className="text-white/20 text-xs mt-2 ml-6 truncate">
+        {preview}{extra}
+      </div>
+    </button>
   )
 }
 
