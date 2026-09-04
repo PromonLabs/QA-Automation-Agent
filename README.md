@@ -1,4 +1,4 @@
-# QA Automation Agent
+# QA Outomation Agent
 
 AI-powered browser automation platform using local LLMs.
 
